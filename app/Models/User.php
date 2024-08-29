@@ -39,15 +39,4 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
-
-    public function getAuthPassword()
-    {
-        return $this->usuario_clave; // Campo de contraseña personalizado
-    }
-
-    public function getAuthIdentifierName()
-    {
-        return $this->usuario_mail; // Campo de contraseña personalizado
-    }
-
 }
