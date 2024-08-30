@@ -6,9 +6,8 @@ use Illuminate\Foundation\Configuration\Middleware;
 
 use Dotenv\Dotenv;
 
-// Determine the subdomain if HTTP_HOST is set
-if (isset($_SERVER['HTTP_HOST'])) {
-    $host = parse_url($_SERVER['HTTP_HOST'], PHP_URL_HOST);
+if (isset($_SERVER['SERVER_NAME'])) {
+    $host = $_SERVER['SERVER_NAME'];
     $subdomain = explode('.', $host)[0];
 } else {
     $subdomain = null;
