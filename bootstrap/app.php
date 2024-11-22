@@ -13,6 +13,10 @@ if (isset($_SERVER['SERVER_NAME'])) {
     $subdomain = null;
 }
 
+if(isset($_SERVER['HTTP_HOST']) && ($_SERVER['HTTP_HOST'] == 'localhost:8000' || $_SERVER['HTTP_HOST'] == '127.0.0.1:8000')) {
+    $subdomain = 'localhost';
+}
+
 // Load the default environment variables
 $dotenv = Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();

@@ -6,6 +6,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Reservas\ReservaController;
 use App\Http\Controllers\ProcesoController;
+/**Ciudades */
+use App\Http\Controllers\Ciudades\CiudadController;
+use App\Http\Controllers\Ciudades\PaisController;
+
 
 Route::group([
     'middleware' => 'api',
@@ -28,3 +32,30 @@ Route::group([
 });
 
 Route::get('/procesos', [ProcesoController::class, 'ejecutar']);
+
+
+
+Route::group([
+    'middleware' => ['api', 'jwt.auth'],
+    'prefix' => 'ciudad'
+], function () {
+    Route::get('/', [CiudadController::class, 'index']);
+    Route::post('/', [CiudadController::class, 'store']);
+    Route::get('/{id}', [CiudadController::class, 'show']);
+    Route::put('/{id}', [CiudadController::class, 'update']);
+    Route::delete('/{id}', [CiudadController::class, 'destroy']);
+    Route::get('/search', [CiudadController::class, 'search']);
+});
+
+
+Route::group([
+    'middleware' => ['api', 'jwt.auth'],
+    'prefix' => 'pais'
+], function () {
+    Route::get('/', [PaisController::class, 'index']);
+    Route::post('/', [PaisController::class, 'store']);
+    Route::get('/{id}', [PaisController::class, 'show']);
+    Route::put('/{id}', [PaisController::class, 'update']);
+    Route::delete('/{id}', [PaisController::class, 'destroy']);
+    Route::get('/search', [PaisController::class, 'search']);
+});
