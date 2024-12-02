@@ -4,7 +4,7 @@ namespace App\Models\Reservas;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Clientes\Cliente;
+use App\Models\Empresas\Cliente;
 use App\Models\Usuarios\Usuario;
 use App\Models\Sistemas\Sistema;
 use App\Models\Sistemas\SistemaAplicacion;

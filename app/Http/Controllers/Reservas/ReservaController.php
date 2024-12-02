@@ -27,7 +27,8 @@ class ReservaController extends Controller
         //DB::enableQueryLog();
         $perPage = $request->get('per_page', 20);
         $items = Reserva
-        ::where(['fk_filestatus_id', '!=', 'AG'],['reserva_id', '!=', 1])->with([
+        ::where('fk_filestatus_id', '!=', 'AG')
+        ->where('reserva_id', '!=', 1)->with([
             'cliente' => function ($query) {
                 $query->select('cliente_id', 'cliente_nombre','cuit'); // Selecciona solo los campos necesarios
             },
