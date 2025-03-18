@@ -4,6 +4,8 @@ namespace App\Models\Configuracion;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Configuracion\Region;
+use App\Models\Configuracion\Ciudad;
 
 class Pais extends Model
 {
@@ -11,10 +13,13 @@ class Pais extends Model
 
     protected $table = 'pais';
     protected $primaryKey = 'pais_id';
+    public $timestamps = false;
 
     protected $fillable = [
-        // Agrega los campos correspondientes
         'pais_nombre',
+        'pais_codigo',
+        'pais_cuit',
+        'codigoafip',
         'fk_region_id',
     ];
 

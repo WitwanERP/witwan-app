@@ -24,19 +24,43 @@ class ReservaController extends Controller
     public function index(Request $request)
     {
         $startTime = microtime(true);
+        $validatedParams = $this->validateParams($request);
         //DB::enableQueryLog();
         $perPage = $request->get('per_page', 20);
+
         $items = Reserva
         ::where('fk_filestatus_id', '!=', 'AG')
-        ->where('reserva_id', '!=', 1)->with([
-            'cliente' => function ($query) {
-                $query->select('cliente_id', 'cliente_nombre','cuit'); // Selecciona solo los campos necesarios
-            },
-            'facturara' => function ($query) {
-                $query->select('cliente_id', 'cliente_nombre','cuit'); // Selecciona solo los campos necesarios
-            },
-            'servicios'
-        ])
+        ->where('reserva_id', '!=', 1);
+
+        if (isset($validatedParams['fecha_alta_desde']) && $validatedParams['fecha_alta_desde']) {
+            $items = $items->where('fecha_alta', '>=', $validatedParams['fecha_alta_desde']);
+        }
+        if (isset($validatedParams['fecha_alta_hasta']) && $validatedParams['fecha_alta_hasta']) {
+            $items = $items->where('fecha_alta', '<=', $validatedParams['fecha_alta_hasta']);
+        }
+        if (isset($validatedParams['codigo']) && $validatedParams['codigo']) {
+            $items = $items->where('codigo', 'IN', $validatedParams['fecha_alta_hasta']);
+        }
+        if (isset($validatedParams['fk_cliente_id']) && $validatedParams['fk_cliente_id']) {
+            $items = $items->where('fk_cliente_id', '=', $validatedParams['fk_cliente_id']);
+        }
+        $withRelations = [];
+        if($request->get('withRelations') && $request->get('withRelations') == 'true'){
+            $withRelations = [
+                'cliente' => function ($query) {
+                    $query->select('cliente_id', 'cliente_nombre','cuit'); // Selecciona solo los campos necesarios
+                },
+                'facturara' => function ($query) {
+                    $query->select('cliente_id', 'cliente_nombre','cuit'); // Selecciona solo los campos necesarios
+                },
+                'vendedor' => function ($query) {
+                    $query->select('usuario_id', 'usuario_nombre','usuario_apellido'); // Selecciona solo los campos necesarios
+                },
+                'servicios'
+            ];
+            $items = $items->with($withRelations);
+        }
+        $items = $items
         ->orderByDesc('fecha_alta')
         ->paginate($perPage);
 
@@ -99,5 +123,15 @@ class ReservaController extends Controller
         $reserva = $this->reservaService->guardarReserva($data);
 
         return response()->json(['message' => 'Reserva guardada con éxito', 'reserva' => $reserva]);
+    }
+    private function validateParams(Request $request){
+        return $request->validate([
+            'per_page' => 'integer|min:1|max:100',
+            'fecha_alta_desde' => 'nullable|date',
+            'fecha_alta_hasta' => 'nullable|date|after_or_equal:fecha_alta_desde',
+            'codigo' => 'nullable|string',
+            'fk_cliente_id' => 'nullable|integer|exists:cliente,cliente_id',
+        ]);
+
     }
 }

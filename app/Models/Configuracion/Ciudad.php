@@ -59,4 +59,12 @@ class Ciudad extends Model
     {
         return $this->hasMany(Ciudad::class, 'fk_ciudad_id', 'ciudad_id');
     }
+
+    public function scopeFilterActivo($query, $includeAll = false)
+{
+    if (!$includeAll) {
+        return $query->where('ciudad_activo', 1);
+    }
+    return $query;
+}
 }

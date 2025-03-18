@@ -5,7 +5,7 @@ namespace App\Models\Reservas;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Empresas\Cliente;
-use App\Models\Usuarios\Usuario;
+use App\Models\User;
 use App\Models\Sistemas\Sistema;
 use App\Models\Sistemas\SistemaAplicacion;
 use App\Models\Monedas\Moneda;
@@ -98,6 +98,17 @@ class Reserva extends Model
         'reserva_mayorista' => 'boolean',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+        // Crear un código personalizado para la reserva
+        static::creating(function ($reserva) {
+            $latestReserva = self::latest('codigo')->first(); // Obtener el último registro
+            $nextId = $latestReserva ? ((int) $latestReserva->codigo + 1) : 1;
+            $reserva->codigo = str_pad($nextId, 5, '0', STR_PAD_LEFT); // Rellenar con ceros, ej. 00001
+        });
+    }
+
     // Relationships
     public function cliente()
     {
@@ -111,7 +122,11 @@ class Reserva extends Model
 
     public function usuario()
     {
-        return $this->belongsTo(Usuario::class, 'fk_usuario_id', 'usuario_id');
+        return $this->belongsTo(User::class, 'fk_usuario_id', 'usuario_id');
+    }
+    public function vendedor()
+    {
+        return $this->belongsTo(User::class, 'agente', 'usuario_id');
     }
 
     public function sistema()

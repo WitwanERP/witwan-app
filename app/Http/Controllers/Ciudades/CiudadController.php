@@ -12,11 +12,14 @@ class CiudadController extends Controller
 {
     public function index(Request $request)
     {
-        $perPage = $request->get('per_page', 15);
-        $ciudades = Ciudad::with(['pais', 'puntosInternos'])
-            ->paginate($perPage);
+        $perPage = $request->get('per_page', 100);
+        $includeAll = filter_var($request->get('all', false), FILTER_VALIDATE_BOOLEAN);
+        $ciudades = Ciudad::filterActivo($includeAll)
+        ->with(['pais', 'puntosInternos'])
+        ->paginate($perPage);
 
         return response()->json($ciudades);
+
     }
 
     public function store(Request $request)
@@ -111,6 +114,6 @@ class CiudadController extends Controller
             $query->where('ciudad_activo', $request->activo);
         }
 
-        return response()->json($query->with(['pais'])->paginate($request->get('per_page', 15)));
+        return response()->json($query->with(['pais'])->paginate($request->get('per_page', 100)));
     }
 }
