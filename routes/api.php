@@ -10,7 +10,10 @@ use App\Http\Controllers\ProcesoController;
 use App\Http\Controllers\Ciudades\CiudadController;
 use App\Http\Controllers\Ciudades\PaisController;
 use App\Http\Controllers\Ciudades\RegionController;
+
 use App\Http\Controllers\Productos\AerolineaController;
+
+use App\Http\Controllers\Empresas\ClienteController;
 
 Route::group([
     'middleware' => 'api',
@@ -85,4 +88,16 @@ Route::group([
     Route::put('/{id}', [AerolineaController::class, 'update']);
     Route::delete('/{id}', [AerolineaController::class, 'destroy']);
     Route::get('/search', [AerolineaController::class, 'search']);
+});
+
+Route::group([
+    'middleware' => ['api', 'jwt.auth'],
+    'prefix' => 'cliente'
+], function () {
+    Route::get('/', [ClienteController::class, 'index']);
+    Route::post('/', [ClienteController::class, 'store']);
+    Route::get('/{id}', [ClienteController::class, 'show']);
+    Route::put('/{id}', [ClienteController::class, 'update']);
+    Route::delete('/{id}', [ClienteController::class, 'destroy']);
+    Route::get('/search', [ClienteController::class, 'search']);
 });

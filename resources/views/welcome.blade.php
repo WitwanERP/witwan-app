@@ -16,6 +16,9 @@
         </style>
     </head>
     <body class="font-sans antialiased ">
-        <div><img src="https://www.witwan.com/assets/onepage2/img/logo_default.png"></div>
+    <div style="padding:10px;">
+        <div style="margin-bottom:30px"><img src="https://www.witwan.com/assets/onepage2/img/logo_default.png"></div>
+        <p>Licencia: {{ $_ENV['DB_DATABASE'] }} </p>
+        </div>
     </body>
 </html>
