@@ -10,7 +10,7 @@ use App\Http\Controllers\ProcesoController;
 use App\Http\Controllers\Ciudades\CiudadController;
 use App\Http\Controllers\Ciudades\PaisController;
 use App\Http\Controllers\Ciudades\RegionController;
-
+use App\Http\Controllers\Productos\AerolineaController;
 
 Route::group([
     'middleware' => 'api',

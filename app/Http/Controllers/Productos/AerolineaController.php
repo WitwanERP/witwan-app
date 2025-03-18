@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\paises;
+namespace App\Http\Controllers\Productos;
 
 use App\Http\Controllers\Controller;
 use App\Models\Productos\Aerolinea;
