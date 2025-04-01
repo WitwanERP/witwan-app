@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Empresas;
 
-use App\Models\Empresas\Porveedor;
+use App\Models\Empresas\Proveedor;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
-class PorveedorController extends Controller
+class ProveedorController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -34,7 +37,7 @@ class PorveedorController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Porveedor $porveedor)
+    public function show(Proveedor $proveedor)
     {
         //
     }
@@ -42,7 +45,7 @@ class PorveedorController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Porveedor $porveedor)
+    public function edit(Proveedor $proveedor)
     {
         //
     }
@@ -50,7 +53,7 @@ class PorveedorController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Porveedor $porveedor)
+    public function update(Request $request, Proveedor $proveedor)
     {
         //
     }
@@ -58,7 +61,7 @@ class PorveedorController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Porveedor $porveedor)
+    public function destroy(Proveedor $proveedor)
     {
         //
     }

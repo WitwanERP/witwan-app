@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 class PnraereoController extends Controller
 {
-    $this->primar
+
     /**
      * Display a listing of the resource.
      */
