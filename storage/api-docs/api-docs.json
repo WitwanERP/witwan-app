@@ -199,7 +199,7 @@
                 ]
             }
         },
-        "/clientes": {
+        "/cliente": {
             "get": {
                 "tags": [
                     "Clientes"
@@ -375,7 +375,7 @@
                 ]
             }
         },
-        "/clientes/{id}": {
+        "/cliente/{id}": {
             "get": {
                 "tags": [
                     "Clientes"
@@ -574,7 +574,7 @@
                 ]
             }
         },
-        "/clientes/search": {
+        "/cliente/search": {
             "get": {
                 "tags": [
                     "Clientes"
