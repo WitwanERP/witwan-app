@@ -7,101 +7,46 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use OpenApi\Annotations as OA;
 
-/**
- * @OA\Info(
- *     title="API de Clientes",
- *     version="1.0",
- *     description="API para la gestión de clientes"
- * )
- * @OA\Server(
- *     url="/api",
- *     description="API Server"
- * )
- *
- * @OA\Schema(
- *     schema="Cliente",
- *     required={"cliente_nombre", "cliente_razonsocial"},
- *     @OA\Property(property="id", type="integer", format="int64", example=1),
- *     @OA\Property(property="cliente_nombre", type="string", example="Empresa XYZ"),
- *     @OA\Property(property="cliente_razonsocial", type="string", example="Empresa XYZ S.A."),
- *     @OA\Property(property="limite_credito", type="number", format="float", example=10000.00),
- *     @OA\Property(property="credito_habilitado", type="boolean", example=true),
- *     @OA\Property(property="credito_utilizado", type="number", format="float", example=5000.00),
- *     @OA\Property(property="created_at", type="string", format="date-time"),
- *     @OA\Property(property="updated_at", type="string", format="date-time")
- * )
- */
 class ClienteController extends Controller
 {
-    /**
-     * @OA\Get(
-     *     path="/clientes",
-     *     operationId="clienteIndex",
-     *     tags={"Clientes"},
-     *     summary="Obtener lista de clientes",
-     *     description="Retorna lista de clientes paginada",
-     *     @OA\Parameter(
-     *         name="per_page",
-     *         in="query",
-     *         description="Cantidad de registros por página",
-     *         required=false,
-     *         @OA\Schema(type="integer", default=100)
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Operación exitosa",
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Cliente")),
-     *             @OA\Property(property="links", type="object"),
-     *             @OA\Property(property="meta", type="object")
-     *         )
-     *     )
-     * )
-     */
     public function index(Request $request)
     {
         $perPage = $request->get('per_page', 100);
-        $clientes = Cliente::with(['pais'])
-            ->paginate($perPage);
+
+        $query = Cliente::with(['pais']);
+
+        // Filtrar por nombre
+        if ($request->has('nombre') && !empty($request->nombre)) {
+            $query->where('cliente_nombre', 'like', '%' . $request->nombre . '%');
+        }
+
+        // Filtrar por razón social
+        if ($request->has('razon_social') && !empty($request->razon_social)) {
+            $query->where('cliente_razonsocial', 'like', '%' . $request->razon_social . '%');
+        }
+
+        // Filtrar por CUIT
+        if ($request->has('cuit') && !empty($request->cuit)) {
+            $cuit = str_replace(['-', ' '], '', $request->cuit);
+            $query->where('cuit', 'like', '%' . $cuit . '%');
+        }
+
+        // Filtrar por ciudad
+        if ($request->has('ciudad') && !empty($request->ciudad)) {
+            $query->where('cliente_ciudad', 'like', '%' . $request->ciudad . '%');
+        }
+
+        // Filtrar por país
+        if ($request->has('pais_id') && !empty($request->pais_id)) {
+            $query->where('fk_pais_id', $request->pais_id);
+        }
+
+        $clientes = $query->paginate($perPage);
 
         return response()->json($clientes);
     }
 
-    /**
-     * @OA\Post(
-     *     path="/clientes",
-     *     operationId="clienteStore",
-     *     tags={"Clientes"},
-     *     summary="Crear nuevo cliente",
-     *     description="Almacena un nuevo cliente y retorna los datos",
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"cliente_nombre", "cliente_razonsocial"},
-     *             @OA\Property(property="cliente_nombre", type="string", example="Empresa XYZ"),
-     *             @OA\Property(property="cliente_razonsocial", type="string", example="Empresa XYZ S.A."),
-     *             @OA\Property(property="limite_credito", type="number", format="float", example=10000),
-     *             @OA\Property(property="credito_habilitado", type="boolean", example=true),
-     *             @OA\Property(property="credito_utilizado", type="number", format="float", example=2500)
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Cliente creado exitosamente",
-     *         @OA\JsonContent(ref="#/components/schemas/Cliente")
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Error de validación",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="errors", type="object")
-     *         )
-     *     )
-     * )
-     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -116,38 +61,30 @@ class ClienteController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
+        $data = $request->all();
+
+        if (!empty($data['cuit'])) {
+            $cuit = $data['cuit'];
+            $cuit = str_replace(['-', ' '], '', $cuit); // Eliminar guiones y espacios
+            $cuit = preg_replace('/[^0-9]/', '', $cuit); // Eliminar caracteres no numéricos
+            $esCompartido = (intval($cuit) > 5000000000 || $cuit === '555555555');
+
+            if (!$esCompartido) {
+                $clienteExistente = Cliente::where('cuit', $cuit)->first();
+                if ($clienteExistente) {
+                    return response()->json([
+                        'errors' => [
+                            'cuit' => ['Ya existe un cliente con este CUIT']
+                        ]
+                    ], 422);
+                }
+            }
+        }
+
         $cliente = Cliente::create($request->all());
         return response()->json($cliente, 201);
     }
 
-    /**
-     * @OA\Get(
-     *     path="/clientes/{id}",
-     *     operationId="clienteShow",
-     *     tags={"Clientes"},
-     *     summary="Mostrar información de un cliente",
-     *     description="Retorna los datos de un cliente específico",
-     *     @OA\Parameter(
-     *         name="id",
-     *         description="ID del cliente",
-     *         required=true,
-     *         in="path",
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Operación exitosa",
-     *         @OA\JsonContent(ref="#/components/schemas/Cliente")
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Cliente no encontrado",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Registro no encontrado")
-     *         )
-     *     )
-     * )
-     */
     public function show($id)
     {
         try {
@@ -158,50 +95,6 @@ class ClienteController extends Controller
         }
     }
 
-    /**
-     * @OA\Put(
-     *     path="/clientes/{id}",
-     *     operationId="clienteUpdate",
-     *     tags={"Clientes"},
-     *     summary="Actualizar cliente existente",
-     *     description="Actualiza los datos de un cliente específico y retorna los datos actualizados",
-     *     @OA\Parameter(
-     *         name="id",
-     *         description="ID del cliente",
-     *         required=true,
-     *         in="path",
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\RequestBody(
-     *         @OA\JsonContent(
-     *             @OA\Property(property="cliente_nombre", type="string", example="Empresa XYZ Actualizada"),
-     *             @OA\Property(property="cliente_razonsocial", type="string", example="Empresa XYZ S.A. Actualizada"),
-     *             @OA\Property(property="limite_credito", type="number", format="float", example=15000),
-     *             @OA\Property(property="credito_habilitado", type="boolean", example=true),
-     *             @OA\Property(property="credito_utilizado", type="number", format="float", example=3000)
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Operación exitosa",
-     *         @OA\JsonContent(ref="#/components/schemas/Cliente")
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Cliente no encontrado",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Cliente no encontrada")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Error de validación",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="errors", type="object")
-     *         )
-     *     )
-     * )
-     */
     public function update(Request $request, $id)
     {
         try {
@@ -222,33 +115,6 @@ class ClienteController extends Controller
         }
     }
 
-    /**
-     * @OA\Delete(
-     *     path="/clientes/{id}",
-     *     operationId="clienteDestroy",
-     *     tags={"Clientes"},
-     *     summary="Eliminar cliente",
-     *     description="Elimina un cliente específico",
-     *     @OA\Parameter(
-     *         name="id",
-     *         description="ID del cliente",
-     *         required=true,
-     *         in="path",
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=204,
-     *         description="Cliente eliminado exitosamente"
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Cliente no encontrado",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Cliente no encontrada")
-     *         )
-     *     )
-     * )
-     */
     public function destroy($id)
     {
         try {
@@ -260,47 +126,20 @@ class ClienteController extends Controller
         }
     }
 
-    /**
-     * @OA\Get(
-     *     path="/clientes/search",
-     *     operationId="clienteSearch",
-     *     tags={"Clientes"},
-     *     summary="Buscar clientes",
-     *     description="Busca clientes por nombre",
-     *     @OA\Parameter(
-     *         name="nombre",
-     *         in="query",
-     *         description="Nombre a buscar",
-     *         required=false,
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="per_page",
-     *         in="query",
-     *         description="Cantidad de registros por página",
-     *         required=false,
-     *         @OA\Schema(type="integer", default=100)
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Operación exitosa",
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Cliente")),
-     *             @OA\Property(property="links", type="object"),
-     *             @OA\Property(property="meta", type="object")
-     *         )
-     *     )
-     * )
-     */
     public function search(Request $request)
     {
         $query = Cliente::query();
+        $perPage = $request->get('per_page', 100);
 
-        if ($request->has('nombre')) {
-            $query->where('region_nombre', 'like', '%' . $request->nombre . '%');
+        if ($request->has('q') && !empty($request->q)) {
+            $searchTerm = $request->q;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('cliente_nombre', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('cliente_razonsocial', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('cuit', 'like', '%' . $searchTerm . '%');
+            });
         }
 
-        return response()->json($query->paginate($request->get('per_page', 100)));
+        return response()->json($query->paginate($perPage));
     }
 }
