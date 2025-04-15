@@ -85,22 +85,27 @@ class Cliente extends Model
         'tipo_fce',
         'factura_automatica',
     ];
-    public function setClienteLegajoAttribute($value){
+    public function setClienteLegajoAttribute($value)
+    {
         $this->attributes['cliente_legajo'] = $value ?? '';
     }
-    public function pais(){
+    public function pais()
+    {
         return $this->belongsTo(Pais::class, 'fk_pais_id', 'pais_id');
     }
-    public function ciudad(){
+    public function ciudad()
+    {
         return $this->belongsTo(Ciudad::class, 'fk_ciudad_id', 'ciudad_id');
     }
-    public function aerolineas(){
+    public function aerolineas()
+    {
         return $this->hasMany(Aerolinea::class, 'fk_cliente_id', 'cliente_id');
     }
-    public function proveedores(){
+    public function proveedores()
+    {
         return $this->hasMany(Proveedor::class, 'fk_cliente_id', 'cliente_id');
     }
-  public function tarifario1(){
+    /*public function tarifario1(){
         return $this->belongsTo(Tarifario::class, 'fk_tarifario1_id', 'tarifario_id');
     }
     public function tarifario2(){
@@ -142,7 +147,7 @@ class Cliente extends Model
     }
     public function cadenacliente(){
         return $this->belongsTo(CadenaCliente::class, 'fk_cadenacliente_id', 'cadenacliente_id');
-    }  /**/
+    }  */
 }
 /*cliente_id	int(10) Incremento automático
 cliente_nombre	varchar(150)

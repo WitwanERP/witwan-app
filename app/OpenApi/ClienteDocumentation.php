@@ -12,7 +12,12 @@ namespace App\OpenApi;
  *     url="/api",
  *     description="API Server"
  * )
- *
+ * @OA\SecurityScheme(
+ *     securityScheme="bearerAuth",
+ *     type="http",
+ *     scheme="bearer",
+ *     bearerFormat="JWT"
+ * )
  * @OA\Schema(
  *     schema="Cliente",
  *     required={"cliente_nombre", "cliente_razonsocial"},
@@ -32,6 +37,7 @@ namespace App\OpenApi;
  *     tags={"Clientes"},
  *     summary="Obtener lista de clientes",
  *     description="Retorna lista de clientes paginada con filtros opcionales",
+ * security={{"bearerAuth":{}}},
  *     @OA\Parameter(
  *         name="per_page",
  *         in="query",
@@ -92,6 +98,7 @@ namespace App\OpenApi;
  *     tags={"Clientes"},
  *     summary="Crear nuevo cliente",
  *     description="Almacena un nuevo cliente y retorna los datos",
+ * security={{"bearerAuth":{}}},
  *     @OA\RequestBody(
  *         required=true,
  *         @OA\JsonContent(
@@ -123,6 +130,7 @@ namespace App\OpenApi;
  *     tags={"Clientes"},
  *     summary="Mostrar información de un cliente",
  *     description="Retorna los datos de un cliente específico",
+ * security={{"bearerAuth":{}}},
  *     @OA\Parameter(
  *         name="id",
  *         description="ID del cliente",
@@ -150,6 +158,7 @@ namespace App\OpenApi;
  *     tags={"Clientes"},
  *     summary="Actualizar cliente existente",
  *     description="Actualiza los datos de un cliente específico y retorna los datos actualizados",
+ * security={{"bearerAuth":{}}},
  *     @OA\Parameter(
  *         name="id",
  *         description="ID del cliente",
@@ -193,6 +202,7 @@ namespace App\OpenApi;
  *     tags={"Clientes"},
  *     summary="Eliminar un cliente",
  *     description="Elimina un cliente específico",
+ * security={{"bearerAuth":{}}},
  *     @OA\Parameter(
  *         name="id",
  *         description="ID del cliente",
@@ -219,6 +229,7 @@ namespace App\OpenApi;
  *     tags={"Clientes"},
  *     summary="Buscar clientes",
  *     description="Busca clientes por término en nombre o razón social",
+ * security={{"bearerAuth":{}}},
  *     @OA\Parameter(
  *         name="q",
  *         in="query",

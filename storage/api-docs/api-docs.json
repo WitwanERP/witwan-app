@@ -15,13 +15,197 @@
         }
     ],
     "paths": {
+        "/auth/login": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Iniciar sesión y obtener token JWT",
+                "description": "Devuelve un token JWT para su uso en peticiones autenticadas",
+                "operationId": "authLogin",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "usuario_mail",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "usuario_mail": {
+                                        "type": "string",
+                                        "example": "usuario@ejemplo.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "contraseña"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "access_token": {
+                                            "type": "string"
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "bearer"
+                                        },
+                                        "expires_in": {
+                                            "type": "integer",
+                                            "example": 3600
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Credenciales inválidas",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Cerrar sesión (invalidar token)",
+                "description": "Invalida el token JWT actual",
+                "operationId": "authLogout",
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Successfully logged out"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/refresh": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Refrescar token JWT",
+                "description": "Obtiene un nuevo token JWT usando el token actual",
+                "operationId": "authRefresh",
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "access_token": {
+                                            "type": "string"
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "bearer"
+                                        },
+                                        "expires_in": {
+                                            "type": "integer",
+                                            "example": 3600
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/me": {
+            "get": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Obtener información del usuario autenticado",
+                "description": "Devuelve los datos del usuario actual",
+                "operationId": "authMe",
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "usuario_id": {
+                                            "type": "integer"
+                                        },
+                                        "usuario_mail": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/clientes": {
             "get": {
                 "tags": [
                     "Clientes"
                 ],
                 "summary": "Obtener lista de clientes",
-                "description": "Retorna lista de clientes paginada",
+                "description": "Retorna lista de clientes paginada con filtros opcionales",
                 "operationId": "clienteIndex",
                 "parameters": [
                     {
@@ -32,6 +216,51 @@
                         "schema": {
                             "type": "integer",
                             "default": 100
+                        }
+                    },
+                    {
+                        "name": "nombre",
+                        "in": "query",
+                        "description": "Filtrar por nombre del cliente",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "razon_social",
+                        "in": "query",
+                        "description": "Filtrar por razón social",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "cuit",
+                        "in": "query",
+                        "description": "Filtrar por CUIT",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "ciudad",
+                        "in": "query",
+                        "description": "Filtrar por ciudad",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "pais_id",
+                        "in": "query",
+                        "description": "Filtrar por ID de país",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
                         }
                     }
                 ],
@@ -60,7 +289,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "post": {
                 "tags": [
@@ -133,7 +367,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/clientes/{id}": {
@@ -182,7 +421,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "put": {
                 "tags": [
@@ -277,7 +521,57 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Clientes"
+                ],
+                "summary": "Eliminar un cliente",
+                "description": "Elimina un cliente específico",
+                "operationId": "clienteDestroy",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del cliente",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Cliente eliminado exitosamente"
+                    },
+                    "404": {
+                        "description": "Cliente no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Cliente no encontrada"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/clientes/search": {
@@ -286,14 +580,14 @@
                     "Clientes"
                 ],
                 "summary": "Buscar clientes",
-                "description": "Busca clientes por nombre",
+                "description": "Busca clientes por término en nombre o razón social",
                 "operationId": "clienteSearch",
                 "parameters": [
                     {
-                        "name": "nombre",
+                        "name": "q",
                         "in": "query",
-                        "description": "Nombre a buscar",
-                        "required": false,
+                        "description": "Término de búsqueda",
+                        "required": true,
                         "schema": {
                             "type": "string"
                         }
@@ -334,7 +628,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         }
     },
@@ -384,9 +683,21 @@
                 },
                 "type": "object"
             }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+                "description": "Utiliza el token JWT obtenido en el endpoint /auth/login"
+            }
         }
     },
     "tags": [
+        {
+            "name": "Autenticación",
+            "description": "Autenticación"
+        },
         {
             "name": "Clientes",
             "description": "Clientes"

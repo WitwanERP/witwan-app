@@ -78,6 +78,20 @@ class ClienteController extends Controller
                         ]
                     ], 422);
                 }
+            } // Si el CUIT es compartido, verificar duplicados por razón social (case insensitive)
+            else {
+                $razonSocial = $data['cliente_razonsocial'];
+                $clienteExistente = Cliente::whereRaw('LOWER(cliente_razonsocial) = ?', [strtolower($razonSocial)])
+                    ->where('cuit', $cuit)
+                    ->first();
+
+                if ($clienteExistente) {
+                    return response()->json([
+                        'errors' => [
+                            'cliente_razonsocial' => ['Ya existe un cliente con esta razón social y CUIT compartido']
+                        ]
+                    ], 422);
+                }
             }
         }
 
@@ -133,10 +147,10 @@ class ClienteController extends Controller
 
         if ($request->has('q') && !empty($request->q)) {
             $searchTerm = $request->q;
-            $query->where(function($q) use ($searchTerm) {
+            $query->where(function ($q) use ($searchTerm) {
                 $q->where('cliente_nombre', 'like', '%' . $searchTerm . '%')
-                  ->orWhere('cliente_razonsocial', 'like', '%' . $searchTerm . '%')
-                  ->orWhere('cuit', 'like', '%' . $searchTerm . '%');
+                    ->orWhere('cliente_razonsocial', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('cuit', 'like', '%' . $searchTerm . '%');
             });
         }
 
