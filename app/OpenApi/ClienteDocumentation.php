@@ -32,7 +32,7 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Get(
- *     path="/clientes",
+ *     path="/cliente",
  *     operationId="clienteIndex",
  *     tags={"Clientes"},
  *     summary="Obtener lista de clientes",
@@ -93,7 +93,7 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Post(
- *     path="/clientes",
+ *     path="/cliente",
  *     operationId="clienteStore",
  *     tags={"Clientes"},
  *     summary="Crear nuevo cliente",
@@ -125,7 +125,7 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Get(
- *     path="/clientes/{id}",
+ *     path="/cliente/{id}",
  *     operationId="clienteShow",
  *     tags={"Clientes"},
  *     summary="Mostrar información de un cliente",
@@ -153,7 +153,7 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Put(
- *     path="/clientes/{id}",
+ *     path="/cliente/{id}",
  *     operationId="clienteUpdate",
  *     tags={"Clientes"},
  *     summary="Actualizar cliente existente",
@@ -197,7 +197,7 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Delete(
- *     path="/clientes/{id}",
+ *     path="/cliente/{id}",
  *     operationId="clienteDestroy",
  *     tags={"Clientes"},
  *     summary="Eliminar un cliente",
@@ -224,7 +224,7 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Get(
- *     path="/clientes/search",
+ *     path="/cliente/search",
  *     operationId="clienteSearch",
  *     tags={"Clientes"},
  *     summary="Buscar clientes",
