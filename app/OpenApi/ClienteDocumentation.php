@@ -18,17 +18,31 @@ namespace App\OpenApi;
  *     scheme="bearer",
  *     bearerFormat="JWT"
  * )
- * @OA\Schema(
+@OA\Schema(
  *     schema="Cliente",
- *     required={"cliente_nombre", "cliente_razonsocial"},
+ *     required={"cliente_nombre", "cliente_razonsocial", "cuit"},
  *     @OA\Property(property="id", type="integer", format="int64", example=1),
  *     @OA\Property(property="cliente_nombre", type="string", example="Empresa XYZ"),
  *     @OA\Property(property="cliente_razonsocial", type="string", example="Empresa XYZ S.A."),
+ *     @OA\Property(property="cuit", type="string", example="30712345678"),
  *     @OA\Property(property="limite_credito", type="number", format="float", example=10000.00),
  *     @OA\Property(property="credito_habilitado", type="boolean", example=true),
  *     @OA\Property(property="credito_utilizado", type="number", format="float", example=5000.00),
- *     @OA\Property(property="created_at", type="string", format="date-time"),
- *     @OA\Property(property="updated_at", type="string", format="date-time")
+ *     @OA\Property(property="cliente_direccionfiscal", type="string", example="Av. Corrientes 1234"),
+ *     @OA\Property(property="cliente_codigopostal", type="string", example="C1043AAZ"),
+ *     @OA\Property(property="cliente_email", type="string", example="contacto@empresa.com"),
+ *     @OA\Property(property="cliente_email2", type="string", example="ventas@empresa.com"),
+ *     @OA\Property(property="cliente_emailadmin", type="string", example="admin@empresa.com"),
+ *     @OA\Property(property="cliente_fax", type="string", example="011-4567-8900"),
+ *     @OA\Property(property="cliente_legajo", type="string", example="CL-001"),
+ *     @OA\Property(property="cliente_ciudad", type="string", example="Buenos Aires"),
+ *     @OA\Property(property="cliente_provincia", type="string", example="CABA"),
+ *     @OA\Property(property="cliente_telefono", type="string", example="011-4567-8901"),
+ *     @OA\Property(property="cliente_celular", type="string", example="11-2345-6789"),
+ *     @OA\Property(property="cliente_contacto", type="string", example="Juan Pérez"),
+ *     @OA\Property(property="cliente_observaciones", type="string", example="Cliente preferencial"),
+ *     @OA\Property(property="fk_idioma_id", type="integer", example=1),
+ *     @OA\Property(property="fk_pais_id", type="integer", example=1)
  * )
  *
  * @OA\Get(
@@ -93,21 +107,36 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Post(
- *     path="/cliente",
+ *     path="/clientes",
  *     operationId="clienteStore",
  *     tags={"Clientes"},
  *     summary="Crear nuevo cliente",
  *     description="Almacena un nuevo cliente y retorna los datos",
- * security={{"bearerAuth":{}}},
+ *     security={{"bearerAuth":{}}},
  *     @OA\RequestBody(
  *         required=true,
  *         @OA\JsonContent(
- *             required={"cliente_nombre", "cliente_razonsocial"},
+ *             required={"cliente_nombre", "cliente_razonsocial", "cuit"},
  *             @OA\Property(property="cliente_nombre", type="string", example="Empresa XYZ"),
  *             @OA\Property(property="cliente_razonsocial", type="string", example="Empresa XYZ S.A."),
+ *             @OA\Property(property="cuit", type="string", example="30712345678"),
  *             @OA\Property(property="limite_credito", type="number", format="float", example=10000),
  *             @OA\Property(property="credito_habilitado", type="boolean", example=true),
- *             @OA\Property(property="credito_utilizado", type="number", format="float", example=2500)
+ *             @OA\Property(property="cliente_direccionfiscal", type="string", example="Av. Corrientes 1234"),
+ *             @OA\Property(property="cliente_codigopostal", type="string", example="C1043AAZ"),
+ *             @OA\Property(property="cliente_email", type="string", example="contacto@empresa.com"),
+ *             @OA\Property(property="cliente_email2", type="string", example="ventas@empresa.com"),
+ *             @OA\Property(property="cliente_emailadmin", type="string", example="admin@empresa.com"),
+ *             @OA\Property(property="cliente_fax", type="string", example="011-4567-8900"),
+ *             @OA\Property(property="cliente_legajo", type="string", example="CL-001"),
+ *             @OA\Property(property="fk_idioma_id", type="integer", example=1),
+ *             @OA\Property(property="cliente_ciudad", type="string", example="Buenos Aires"),
+ *             @OA\Property(property="cliente_provincia", type="string", example="CABA"),
+ *             @OA\Property(property="fk_pais_id", type="integer", example=1),
+ *             @OA\Property(property="cliente_telefono", type="string", example="011-4567-8901"),
+ *             @OA\Property(property="cliente_celular", type="string", example="11-2345-6789"),
+ *             @OA\Property(property="cliente_contacto", type="string", example="Juan Pérez"),
+ *             @OA\Property(property="cliente_observaciones", type="string", example="Cliente preferencial")
  *         )
  *     ),
  *     @OA\Response(
@@ -119,10 +148,11 @@ namespace App\OpenApi;
  *         response=422,
  *         description="Error de validación",
  *         @OA\JsonContent(
- *             @OA\Property(property="errors", type="object")
+ *             @OA\Property(property="errors", type="object", example={"cuit": {"Ya existe un cliente con este CUIT"}})
  *         )
  *     )
  * )
+ *
  *
  * @OA\Get(
  *     path="/cliente/{id}",

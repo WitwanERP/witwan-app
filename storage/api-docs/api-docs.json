@@ -295,7 +295,9 @@
                         "bearerAuth": []
                     }
                 ]
-            },
+            }
+        },
+        "/clientes": {
             "post": {
                 "tags": [
                     "Clientes"
@@ -310,7 +312,8 @@
                             "schema": {
                                 "required": [
                                     "cliente_nombre",
-                                    "cliente_razonsocial"
+                                    "cliente_razonsocial",
+                                    "cuit"
                                 ],
                                 "properties": {
                                     "cliente_nombre": {
@@ -321,6 +324,10 @@
                                         "type": "string",
                                         "example": "Empresa XYZ S.A."
                                     },
+                                    "cuit": {
+                                        "type": "string",
+                                        "example": "30712345678"
+                                    },
                                     "limite_credito": {
                                         "type": "number",
                                         "format": "float",
@@ -330,10 +337,65 @@
                                         "type": "boolean",
                                         "example": true
                                     },
-                                    "credito_utilizado": {
-                                        "type": "number",
-                                        "format": "float",
-                                        "example": 2500
+                                    "cliente_direccionfiscal": {
+                                        "type": "string",
+                                        "example": "Av. Corrientes 1234"
+                                    },
+                                    "cliente_codigopostal": {
+                                        "type": "string",
+                                        "example": "C1043AAZ"
+                                    },
+                                    "cliente_email": {
+                                        "type": "string",
+                                        "example": "contacto@empresa.com"
+                                    },
+                                    "cliente_email2": {
+                                        "type": "string",
+                                        "example": "ventas@empresa.com"
+                                    },
+                                    "cliente_emailadmin": {
+                                        "type": "string",
+                                        "example": "admin@empresa.com"
+                                    },
+                                    "cliente_fax": {
+                                        "type": "string",
+                                        "example": "011-4567-8900"
+                                    },
+                                    "cliente_legajo": {
+                                        "type": "string",
+                                        "example": "CL-001"
+                                    },
+                                    "fk_idioma_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "cliente_ciudad": {
+                                        "type": "string",
+                                        "example": "Buenos Aires"
+                                    },
+                                    "cliente_provincia": {
+                                        "type": "string",
+                                        "example": "CABA"
+                                    },
+                                    "fk_pais_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "cliente_telefono": {
+                                        "type": "string",
+                                        "example": "011-4567-8901"
+                                    },
+                                    "cliente_celular": {
+                                        "type": "string",
+                                        "example": "11-2345-6789"
+                                    },
+                                    "cliente_contacto": {
+                                        "type": "string",
+                                        "example": "Juan Pérez"
+                                    },
+                                    "cliente_observaciones": {
+                                        "type": "string",
+                                        "example": "Cliente preferencial"
                                     }
                                 },
                                 "type": "object"
@@ -359,7 +421,12 @@
                                 "schema": {
                                     "properties": {
                                         "errors": {
-                                            "type": "object"
+                                            "type": "object",
+                                            "example": {
+                                                "cuit": [
+                                                    "Ya existe un cliente con este CUIT"
+                                                ]
+                                            }
                                         }
                                     },
                                     "type": "object"
@@ -642,7 +709,8 @@
             "Cliente": {
                 "required": [
                     "cliente_nombre",
-                    "cliente_razonsocial"
+                    "cliente_razonsocial",
+                    "cuit"
                 ],
                 "properties": {
                     "id": {
@@ -658,6 +726,10 @@
                         "type": "string",
                         "example": "Empresa XYZ S.A."
                     },
+                    "cuit": {
+                        "type": "string",
+                        "example": "30712345678"
+                    },
                     "limite_credito": {
                         "type": "number",
                         "format": "float",
@@ -672,13 +744,65 @@
                         "format": "float",
                         "example": 5000
                     },
-                    "created_at": {
+                    "cliente_direccionfiscal": {
                         "type": "string",
-                        "format": "date-time"
+                        "example": "Av. Corrientes 1234"
                     },
-                    "updated_at": {
+                    "cliente_codigopostal": {
                         "type": "string",
-                        "format": "date-time"
+                        "example": "C1043AAZ"
+                    },
+                    "cliente_email": {
+                        "type": "string",
+                        "example": "contacto@empresa.com"
+                    },
+                    "cliente_email2": {
+                        "type": "string",
+                        "example": "ventas@empresa.com"
+                    },
+                    "cliente_emailadmin": {
+                        "type": "string",
+                        "example": "admin@empresa.com"
+                    },
+                    "cliente_fax": {
+                        "type": "string",
+                        "example": "011-4567-8900"
+                    },
+                    "cliente_legajo": {
+                        "type": "string",
+                        "example": "CL-001"
+                    },
+                    "cliente_ciudad": {
+                        "type": "string",
+                        "example": "Buenos Aires"
+                    },
+                    "cliente_provincia": {
+                        "type": "string",
+                        "example": "CABA"
+                    },
+                    "cliente_telefono": {
+                        "type": "string",
+                        "example": "011-4567-8901"
+                    },
+                    "cliente_celular": {
+                        "type": "string",
+                        "example": "11-2345-6789"
+                    },
+                    "cliente_contacto": {
+                        "type": "string",
+                        "example": "Juan Pérez"
+                    },
+                    "cliente_observaciones": {
+                        "type": "string",
+                        "example": "Cliente preferencial"
+                    },
+                    "fk_idioma_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "fk_pais_id": {
+                        "type": "integer",
+                        "example": 1
                     }
                 },
                 "type": "object"

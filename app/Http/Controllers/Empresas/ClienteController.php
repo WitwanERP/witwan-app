@@ -49,19 +49,39 @@ class ClienteController extends Controller
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $data = $request->all();
+
+        $validator = Validator::make($data, [
             'cliente_nombre' => 'required|string|max:250',
             'cliente_razonsocial' => 'required|string|max:250',
+            'cuit' => 'required|string|max:250',
             'limite_credito' => 'numeric',
             'credito_habilitado' => 'boolean',
-            'credito_utilizado' => 'numeric',
+            'cliente_direccionfiscal' => 'string|nullable',
+            'cliente_codigopostal' => 'string|nullable',
+            'cliente_email' => 'email|nullable',
+            'cliente_email2' => 'email|nullable',
+            'cliente_emailadmin' => 'email|nullable',
+            'cliente_fax' => 'string|nullable',
+            'cliente_legajo' => 'string|nullable',
+            'fk_idioma_id' => 'exists:idiomas,id',
+            'cliente_ciudad' => 'string|nullable',
+            'cliente_provincia' => 'string|nullable',
+            'cliente_pais_id' => 'exists:paises,id',
+            'cliente_telefono' => 'string|nullable',
+            'cliente_celular' => 'string|nullable',
+            'cliente_contacto' => 'string|nullable',
+            'cliente_observaciones' => 'string|nullable',
+            'fk_pais_id' => 'exists:paises,id',
+
+
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $data = $request->all();
+
 
         if (!empty($data['cuit'])) {
             $cuit = $data['cuit'];
@@ -95,7 +115,13 @@ class ClienteController extends Controller
             }
         }
 
-        $cliente = Cliente::create($request->all());
+        // Agregar campos de fecha y usuario
+        $now = now();
+        $data['fechacarga'] = $now; // Fecha de creación
+        $data['um'] = $now;        // Última modificación
+        $data['fk_usuario_id'] = auth()->id(); // Usuario que está creando
+
+        $cliente = Cliente::create($data);
         return response()->json($cliente, 201);
     }
 
@@ -113,6 +139,7 @@ class ClienteController extends Controller
     {
         try {
             $cliente = Cliente::findOrFail($id);
+            $data = $request->all();
 
             $validator = Validator::make($request->all(), [
                 'cliente_nombre' => 'string|max:100',
@@ -122,7 +149,10 @@ class ClienteController extends Controller
                 return response()->json(['errors' => $validator->errors()], 422);
             }
 
-            $cliente->update($request->all());
+            $data['um'] = now();
+            $data['fk_usuario_id'] = auth()->id();
+            $cliente->update($data);
+
             return response()->json($cliente);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Cliente no encontrada'], 404);
