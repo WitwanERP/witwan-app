@@ -199,6 +199,234 @@
                 ]
             }
         },
+        "/geo/ciudad": {
+            "get": {
+                "tags": [
+                    "Configuración - Ciudades"
+                ],
+                "summary": "Listar todas las ciudades",
+                "description": "Obtiene una lista de todas las ciudades disponibles",
+                "operationId": "ciudadIndex",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Cantidad de registros por página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 100
+                        }
+                    },
+                    {
+                        "name": "pais_id",
+                        "in": "query",
+                        "description": "Filtrar por país",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Ciudad"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/ciudades/{id}": {
+            "get": {
+                "tags": [
+                    "Configuración - Ciudades"
+                ],
+                "summary": "Obtener una ciudad por ID",
+                "description": "Muestra los detalles de una ciudad específica",
+                "operationId": "ciudadShow",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la ciudad",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Ciudad"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Ciudad no encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Ciudad no encontrada"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/ciudades/search": {
+            "get": {
+                "tags": [
+                    "Configuración - Ciudades"
+                ],
+                "summary": "Buscar ciudades",
+                "description": "Busca ciudades por nombre",
+                "operationId": "ciudadSearch",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Término de búsqueda",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "pais_id",
+                        "in": "query",
+                        "description": "Filtrar por país",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Cantidad de registros por página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Ciudad"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/ciudades/by-pais/{pais_id}": {
+            "get": {
+                "tags": [
+                    "Configuración - Ciudades"
+                ],
+                "summary": "Obtener ciudades por país",
+                "description": "Obtiene todas las ciudades de un país específico",
+                "operationId": "ciudadByPais",
+                "parameters": [
+                    {
+                        "name": "pais_id",
+                        "in": "path",
+                        "description": "ID del país",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Ciudad"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/cliente": {
             "get": {
                 "tags": [
@@ -702,10 +930,476 @@
                     }
                 ]
             }
+        },
+        "/condiciones-iva": {
+            "get": {
+                "tags": [
+                    "Configuración - Condiciones de IVA"
+                ],
+                "summary": "Listar todas las condiciones de IVA",
+                "description": "Obtiene una lista de todas las condiciones de IVA disponibles",
+                "operationId": "condicionIvaIndex",
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/CondicionIva"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/condiciones-iva/{id}": {
+            "get": {
+                "tags": [
+                    "Configuración - Condiciones de IVA"
+                ],
+                "summary": "Obtener una condición de IVA por ID",
+                "description": "Muestra los detalles de una condición de IVA específica",
+                "operationId": "condicionIvaShow",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la condición de IVA",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CondicionIva"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Condición de IVA no encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Condición de IVA no encontrada"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/condiciones-iva/search": {
+            "get": {
+                "tags": [
+                    "Configuración - Condiciones de IVA"
+                ],
+                "summary": "Buscar condiciones de IVA",
+                "description": "Busca condiciones de IVA por nombre",
+                "operationId": "condicionIvaSearch",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Término de búsqueda",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Cantidad de registros por página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CondicionIva"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/geo/pais": {
+            "get": {
+                "tags": [
+                    "Configuración - Países"
+                ],
+                "summary": "Listar todos los países",
+                "description": "Obtiene una lista de todos los países disponibles",
+                "operationId": "paisIndex",
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Pais"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/paises/{id}": {
+            "get": {
+                "tags": [
+                    "Configuración - Países"
+                ],
+                "summary": "Obtener un país por ID",
+                "description": "Muestra los detalles de un país específico",
+                "operationId": "paisShow",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del país",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Pais"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "País no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "País no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/paises/search": {
+            "get": {
+                "tags": [
+                    "Configuración - Países"
+                ],
+                "summary": "Buscar países",
+                "description": "Busca países por nombre o código",
+                "operationId": "paisSearch",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Término de búsqueda",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Cantidad de registros por página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Pais"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tipo-factura": {
+            "get": {
+                "tags": [
+                    "Configuración - Tipos de Factura"
+                ],
+                "summary": "Listar todos los tipos de factura",
+                "description": "Obtiene una lista de todos los tipos de factura disponibles",
+                "operationId": "tipoFacturaIndex",
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/TipoFactura"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tipo-factura/{id}": {
+            "get": {
+                "tags": [
+                    "Configuración - Tipos de Factura"
+                ],
+                "summary": "Obtener un tipo de factura por ID",
+                "description": "Muestra los detalles de un tipo de factura específico",
+                "operationId": "tipoFacturaShow",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del tipo de factura",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TipoFactura"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Tipo de factura no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Tipo de factura no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tipo-factura/search": {
+            "get": {
+                "tags": [
+                    "Configuración - Tipos de Factura"
+                ],
+                "summary": "Buscar tipos de factura",
+                "description": "Busca tipos de factura por nombre",
+                "operationId": "tipoFacturaSearch",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Término de búsqueda",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Cantidad de registros por página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/TipoFactura"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
         "schemas": {
+            "Ciudad": {
+                "properties": {
+                    "ciudad_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "ciudad_nombre": {
+                        "type": "string",
+                        "example": "Buenos Aires"
+                    },
+                    "fk_pais_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "ciudad_codigo": {
+                        "type": "string",
+                        "example": "BSAS"
+                    },
+                    "ciudad_codigopostal": {
+                        "type": "string",
+                        "example": "C1001"
+                    },
+                    "pais": {
+                        "$ref": "#/components/schemas/Pais"
+                    }
+                },
+                "type": "object"
+            },
             "Cliente": {
                 "required": [
                     "cliente_nombre",
@@ -806,6 +1500,85 @@
                     }
                 },
                 "type": "object"
+            },
+            "CondicionIva": {
+                "properties": {
+                    "condicioniva_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "condicioniva_nombre": {
+                        "type": "string",
+                        "example": "Responsable Inscripto"
+                    },
+                    "condicioniva_descripcion": {
+                        "type": "string",
+                        "example": "Contribuyente inscripto en el régimen general"
+                    },
+                    "condicioniva_codigo": {
+                        "type": "string",
+                        "example": "RI"
+                    },
+                    "condicioniva_activo": {
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "Pais": {
+                "properties": {
+                    "pais_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "pais_nombre": {
+                        "type": "string",
+                        "example": "Argentina"
+                    },
+                    "pais_codigo": {
+                        "type": "string",
+                        "example": "AR"
+                    },
+                    "pais_iso3": {
+                        "type": "string",
+                        "example": "ARG"
+                    },
+                    "pais_numerico": {
+                        "type": "string",
+                        "example": "032"
+                    },
+                    "pais_gentilicio": {
+                        "type": "string",
+                        "example": "Argentino/a"
+                    }
+                },
+                "type": "object"
+            },
+            "TipoFactura": {
+                "properties": {
+                    "tipofactura_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "tipofactura_nombre": {
+                        "type": "string",
+                        "example": "Factura A"
+                    },
+                    "tipofactura_letra": {
+                        "type": "string",
+                        "example": "A"
+                    },
+                    "tipofactura_descripcion": {
+                        "type": "string",
+                        "example": "Factura para responsables inscriptos"
+                    },
+                    "tipofactura_comprobante_id": {
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
             }
         },
         "securitySchemes": {
@@ -823,8 +1596,24 @@
             "description": "Autenticación"
         },
         {
+            "name": "Configuración - Ciudades",
+            "description": "Configuración - Ciudades"
+        },
+        {
             "name": "Clientes",
             "description": "Clientes"
+        },
+        {
+            "name": "Configuración - Condiciones de IVA",
+            "description": "Configuración - Condiciones de IVA"
+        },
+        {
+            "name": "Configuración - Países",
+            "description": "Configuración - Países"
+        },
+        {
+            "name": "Configuración - Tipos de Factura",
+            "description": "Configuración - Tipos de Factura"
         }
     ]
 }

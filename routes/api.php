@@ -6,7 +6,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Reservas\ReservaController;
 use App\Http\Controllers\ProcesoController;
+
 /**Ciudades */
+
 use App\Http\Controllers\Ciudades\CiudadController;
 use App\Http\Controllers\Ciudades\PaisController;
 use App\Http\Controllers\Ciudades\RegionController;
@@ -14,6 +16,12 @@ use App\Http\Controllers\Ciudades\RegionController;
 use App\Http\Controllers\Productos\AerolineaController;
 
 use App\Http\Controllers\Empresas\ClienteController;
+
+
+use App\Http\Controllers\Configuracion\Admin\CondicionIvaController;
+use App\Http\Controllers\Configuracion\Admin\TipoFacturaController;
+
+
 
 Route::group([
     'middleware' => 'api',
@@ -100,4 +108,31 @@ Route::group([
     Route::put('/{id}', [ClienteController::class, 'update']);
     Route::delete('/{id}', [ClienteController::class, 'destroy']);
     Route::get('/search', [ClienteController::class, 'search']);
+});
+
+
+Route::group([
+    'middleware' => ['api', 'jwt.auth'],
+    'prefix' => 'configuracion'
+], function () {
+    Route::group([
+        'prefix' => 'condicioniva'
+    ], function () {
+        Route::get('/', [CondicionIvaController::class, 'index']);
+        Route::post('/', [CondicionIvaController::class, 'store']);
+        Route::get('/{id}', [CondicionIvaController::class, 'show']);
+        Route::put('/{id}', [CondicionIvaController::class, 'update']);
+        Route::delete('/{id}', [CondicionIvaController::class, 'destroy']);
+        Route::get('/search', [CondicionIvaController::class, 'search']);
+    });
+    Route::group([
+        'prefix' => 'tipofactura'
+    ], function () {
+        Route::get('/', [TipoFacturaController::class, 'index']);
+        Route::post('/', [TipoFacturaController::class, 'store']);
+        Route::get('/{id}', [TipoFacturaController::class, 'show']);
+        Route::put('/{id}', [TipoFacturaController::class, 'update']);
+        Route::delete('/{id}', [TipoFacturaController::class, 'destroy']);
+        Route::get('/search', [TipoFacturaController::class, 'search']);
+    });
 });
