@@ -11,6 +11,490 @@
         }
     ],
     "paths": {
+        "/ciudades": {
+            "get": {
+                "tags": [
+                    "Ciudades"
+                ],
+                "summary": "Listar ciudades",
+                "description": "Obtiene una lista paginada de ciudades",
+                "operationId": "ciudadIndex",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Cantidad de registros por página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de ciudades",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Ciudad"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Ciudades"
+                ],
+                "summary": "Crear ciudad",
+                "description": "Crea una ciudad",
+                "operationId": "ciudadStore",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "ciudad_nombre",
+                                    "fk_pais_id"
+                                ],
+                                "properties": {
+                                    "ciudad_nombre": {
+                                        "type": "string",
+                                        "example": "Buenos Aires"
+                                    },
+                                    "fk_pais_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "ciudad_activo": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "ciudad_codigo": {
+                                        "type": "string",
+                                        "example": "BUE"
+                                    },
+                                    "nombre_en": {
+                                        "type": "string",
+                                        "example": "Buenos Aires"
+                                    },
+                                    "nombre_pg": {
+                                        "type": "string",
+                                        "example": "Buenos Aires"
+                                    },
+                                    "ap": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "codigo_tourico": {
+                                        "type": "string",
+                                        "example": "T123"
+                                    },
+                                    "codigo_amex": {
+                                        "type": "integer",
+                                        "example": 456
+                                    },
+                                    "codigo_hb": {
+                                        "type": "string",
+                                        "example": "HB789"
+                                    },
+                                    "codigo_ws1": {
+                                        "type": "string",
+                                        "example": "WS1"
+                                    },
+                                    "codigo_ws2": {
+                                        "type": "string",
+                                        "example": "WS2"
+                                    },
+                                    "codigo_ws3": {
+                                        "type": "string",
+                                        "example": "WS3"
+                                    },
+                                    "codigo_ws4": {
+                                        "type": "string",
+                                        "example": "WS4"
+                                    },
+                                    "codigo_ws5": {
+                                        "type": "string",
+                                        "example": "WS5"
+                                    },
+                                    "latitud": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": -34.6037
+                                    },
+                                    "longitud": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": -58.3816
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Ciudad creada exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Ciudad"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/ciudades/{id}": {
+            "get": {
+                "tags": [
+                    "Ciudades"
+                ],
+                "summary": "Mostrar ciudad",
+                "description": "Obtiene los datos de una ciudad por ID",
+                "operationId": "ciudadShow",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la ciudad",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Datos de la ciudad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Ciudad"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Ciudad no encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Registro no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Ciudades"
+                ],
+                "summary": "Actualizar ciudad",
+                "description": "Actualiza los datos de una ciudad existente",
+                "operationId": "ciudadUpdate",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la ciudad",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "ciudad_nombre": {
+                                        "type": "string",
+                                        "example": "Ciudad Actualizada"
+                                    },
+                                    "ciudad_activo": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "ciudad_codigo": {
+                                        "type": "string",
+                                        "example": "BUE"
+                                    },
+                                    "nombre_en": {
+                                        "type": "string",
+                                        "example": "Buenos Aires"
+                                    },
+                                    "nombre_pg": {
+                                        "type": "string",
+                                        "example": "Buenos Aires"
+                                    },
+                                    "ap": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "codigo_tourico": {
+                                        "type": "string",
+                                        "example": "T123"
+                                    },
+                                    "codigo_amex": {
+                                        "type": "integer",
+                                        "example": 456
+                                    },
+                                    "codigo_hb": {
+                                        "type": "string",
+                                        "example": "HB789"
+                                    },
+                                    "codigo_ws1": {
+                                        "type": "string",
+                                        "example": "WS1"
+                                    },
+                                    "codigo_ws2": {
+                                        "type": "string",
+                                        "example": "WS2"
+                                    },
+                                    "codigo_ws3": {
+                                        "type": "string",
+                                        "example": "WS3"
+                                    },
+                                    "codigo_ws4": {
+                                        "type": "string",
+                                        "example": "WS4"
+                                    },
+                                    "codigo_ws5": {
+                                        "type": "string",
+                                        "example": "WS5"
+                                    },
+                                    "latitud": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": -34.6037
+                                    },
+                                    "longitud": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": -58.3816
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Ciudad actualizada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Ciudad"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Ciudad no encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Registro no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Ciudades"
+                ],
+                "summary": "Eliminar ciudad",
+                "description": "Elimina una ciudad por ID",
+                "operationId": "ciudadDestroy",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la ciudad",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Ciudad eliminada exitosamente"
+                    },
+                    "404": {
+                        "description": "Ciudad no encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Registro no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/ciudades/search": {
+            "get": {
+                "tags": [
+                    "Ciudades"
+                ],
+                "summary": "Buscar ciudades",
+                "description": "Busca ciudades por nombre o código",
+                "operationId": "ciudadSearch",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Término de búsqueda",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Cantidad de registros por página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Ciudad"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/clientes": {
             "get": {
                 "tags": [
@@ -102,23 +586,23 @@
                                     },
                                     "fk_tipoclavefiscal_id": {
                                         "type": "integer",
-                                        "example": 1
+                                        "example": "[1 => CUIT/ROOT, 2 => RUC, 3 => NIF, 6 => DNI, 4 => CIF, 8 => Pasaporte, 9 => CUIL]"
                                     },
                                     "fk_tipofactura_id": {
                                         "type": "integer",
-                                        "example": 1
+                                        "example": "[1 => A, 2 => B, 3 => E]"
                                     },
                                     "fk_condicioniva_id": {
                                         "type": "integer",
-                                        "example": 1
+                                        "example": "[1 => Responsable Inscripto, 3 => Monotributista, 2 => Exento, 4 => CF]"
                                     },
                                     "fk_pais_id": {
                                         "type": "integer",
-                                        "example": 1
+                                        "example": "Tomar del endpoint de paises"
                                     },
                                     "fk_ciudad_id": {
                                         "type": "integer",
-                                        "example": 1
+                                        "example": "Tomar del endpoint de ciudades"
                                     },
                                     "cliente_direccionfiscal": {
                                         "type": "string",
@@ -422,10 +906,481 @@
                     }
                 ]
             }
+        },
+        "/paises": {
+            "get": {
+                "tags": [
+                    "Paises"
+                ],
+                "summary": "Listar países",
+                "description": "Obtiene una lista paginada de países",
+                "operationId": "paisIndex",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Cantidad de registros por página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de países",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Pais"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Paises"
+                ],
+                "summary": "Crear país",
+                "description": "Crea un país",
+                "operationId": "paisStore",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "pais_nombre",
+                                    "pais_codigo"
+                                ],
+                                "properties": {
+                                    "pais_nombre": {
+                                        "type": "string",
+                                        "example": "Argentina"
+                                    },
+                                    "pais_codigo": {
+                                        "type": "string",
+                                        "example": "AR"
+                                    },
+                                    "pais_iso3": {
+                                        "type": "string",
+                                        "example": "ARG"
+                                    },
+                                    "pais_numerico": {
+                                        "type": "string",
+                                        "example": "032"
+                                    },
+                                    "pais_gentilicio": {
+                                        "type": "string",
+                                        "example": "Argentino/a"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "País creado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Pais"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/paises/{id}": {
+            "get": {
+                "tags": [
+                    "Paises"
+                ],
+                "summary": "Mostrar país",
+                "description": "Obtiene los datos de un país por ID",
+                "operationId": "paisShow",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del país",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Datos del país",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Pais"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "País no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Registro no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Paises"
+                ],
+                "summary": "Actualizar país",
+                "description": "Actualiza los datos de un país existente",
+                "operationId": "paisUpdate",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del país",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "pais_nombre": {
+                                        "type": "string",
+                                        "example": "Argentina Actualizada"
+                                    },
+                                    "pais_codigo": {
+                                        "type": "string",
+                                        "example": "AR"
+                                    },
+                                    "pais_iso3": {
+                                        "type": "string",
+                                        "example": "ARG"
+                                    },
+                                    "pais_numerico": {
+                                        "type": "string",
+                                        "example": "032"
+                                    },
+                                    "pais_gentilicio": {
+                                        "type": "string",
+                                        "example": "Argentino/a"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "País actualizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Pais"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "País no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Registro no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Paises"
+                ],
+                "summary": "Eliminar país",
+                "description": "Elimina un país por ID",
+                "operationId": "paisDestroy",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del país",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "País eliminado exitosamente"
+                    },
+                    "404": {
+                        "description": "País no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Registro no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/paises/search": {
+            "get": {
+                "tags": [
+                    "Paises"
+                ],
+                "summary": "Buscar países",
+                "description": "Busca países por nombre o código",
+                "operationId": "paisSearch",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Término de búsqueda",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Cantidad de registros por página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Pais"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
         "schemas": {
+            "Ciudad": {
+                "properties": {
+                    "ciudad_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "ciudad_activo": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "fk_pais_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "fk_ciudad_id": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "ciudad_nombre": {
+                        "type": "string",
+                        "example": "Buenos Aires"
+                    },
+                    "ciudad_codigo": {
+                        "type": "string",
+                        "example": "BUE"
+                    },
+                    "nombre_en": {
+                        "type": "string",
+                        "example": "Buenos Aires"
+                    },
+                    "nombre_pg": {
+                        "type": "string",
+                        "example": "Buenos Aires"
+                    },
+                    "ap": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "codigo_tourico": {
+                        "type": "string",
+                        "example": "T123"
+                    },
+                    "codigo_amex": {
+                        "type": "integer",
+                        "example": 456
+                    },
+                    "codigo_hb": {
+                        "type": "string",
+                        "example": "HB789"
+                    },
+                    "codigo_ws1": {
+                        "type": "string",
+                        "example": "WS1"
+                    },
+                    "codigo_ws2": {
+                        "type": "string",
+                        "example": "WS2"
+                    },
+                    "codigo_ws3": {
+                        "type": "string",
+                        "example": "WS3"
+                    },
+                    "codigo_ws4": {
+                        "type": "string",
+                        "example": "WS4"
+                    },
+                    "codigo_ws5": {
+                        "type": "string",
+                        "example": "WS5"
+                    },
+                    "latitud": {
+                        "type": "number",
+                        "format": "float",
+                        "example": -34.6037
+                    },
+                    "longitud": {
+                        "type": "number",
+                        "format": "float",
+                        "example": -58.3816
+                    }
+                },
+                "type": "object"
+            },
             "Cliente": {
                 "properties": {
                     "cliente_id": {
@@ -446,11 +1401,11 @@
                     },
                     "fk_tipoclavefiscal_id": {
                         "type": "integer",
-                        "example": 1
+                        "example": "[1 => CUIT/ROOT,2 => RUC,3 => NIF,6 => DNI,4 => CIF,8 => Pasaporte,9 => CUIL]"
                     },
                     "fk_tipofactura_id": {
                         "type": "integer",
-                        "example": 1
+                        "example": "[1 => CUIT/ROOT,2 => RUC,3 => NIF,6 => DNI,4 => CIF,8 => Pasaporte,9 => CUIL]"
                     },
                     "fk_condicioniva_id": {
                         "type": "integer",
@@ -486,6 +1441,35 @@
                     }
                 },
                 "type": "object"
+            },
+            "Pais": {
+                "properties": {
+                    "pais_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "pais_nombre": {
+                        "type": "string",
+                        "example": "Argentina"
+                    },
+                    "pais_codigo": {
+                        "type": "string",
+                        "example": "AR"
+                    },
+                    "pais_iso3": {
+                        "type": "string",
+                        "example": "ARG"
+                    },
+                    "pais_numerico": {
+                        "type": "string",
+                        "example": "032"
+                    },
+                    "pais_gentilicio": {
+                        "type": "string",
+                        "example": "Argentino/a"
+                    }
+                },
+                "type": "object"
             }
         },
         "securitySchemes": {
@@ -499,8 +1483,16 @@
     },
     "tags": [
         {
+            "name": "Ciudades",
+            "description": "Ciudades"
+        },
+        {
             "name": "Clientes",
             "description": "Clientes"
+        },
+        {
+            "name": "Paises",
+            "description": "Paises"
         }
     ],
     "security": [

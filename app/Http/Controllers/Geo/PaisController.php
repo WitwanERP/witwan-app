@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Geo;
 
-use App\Models\Pai;
+use App\Models\Pais;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
