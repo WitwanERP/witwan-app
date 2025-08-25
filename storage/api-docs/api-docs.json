@@ -1,0 +1,511 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Witwan API",
+        "description": "Documentación de la API Witwan",
+        "version": "1.0"
+    },
+    "servers": [
+        {
+            "url": "/api"
+        }
+    ],
+    "paths": {
+        "/clientes": {
+            "get": {
+                "tags": [
+                    "Clientes"
+                ],
+                "summary": "Listar clientes",
+                "description": "Obtiene una lista paginada de clientes",
+                "operationId": "clienteIndex",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Cantidad de registros por página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de clientes",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Cliente"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Clientes"
+                ],
+                "summary": "Crear cliente",
+                "description": "Crea un nuevo cliente",
+                "operationId": "clienteStore",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "cliente_nombre",
+                                    "cliente_razonsocial",
+                                    "cuit",
+                                    "fk_tipoclavefiscal_id",
+                                    "fk_tipofactura_id",
+                                    "fk_condicioniva_id",
+                                    "fk_pais_id",
+                                    "fk_ciudad_id",
+                                    "cliente_direccionfiscal",
+                                    "cliente_email"
+                                ],
+                                "properties": {
+                                    "cliente_nombre": {
+                                        "type": "string",
+                                        "example": "Empresa Ejemplo"
+                                    },
+                                    "cliente_razonsocial": {
+                                        "type": "string",
+                                        "example": "Empresa Ejemplo S.A."
+                                    },
+                                    "cuit": {
+                                        "type": "string",
+                                        "example": "20272022500"
+                                    },
+                                    "fk_tipoclavefiscal_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "fk_tipofactura_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "fk_condicioniva_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "fk_pais_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "fk_ciudad_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "cliente_direccionfiscal": {
+                                        "type": "string",
+                                        "example": "Av. Corrientes 1234"
+                                    },
+                                    "cliente_email": {
+                                        "type": "string",
+                                        "example": "contacto@empresa.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Cliente creado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Cliente"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/clientes/{id}": {
+            "get": {
+                "tags": [
+                    "Clientes"
+                ],
+                "summary": "Mostrar cliente",
+                "description": "Obtiene los datos de un cliente por ID",
+                "operationId": "clienteShow",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del cliente",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Datos del cliente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Cliente"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Cliente no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Registro no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Clientes"
+                ],
+                "summary": "Actualizar cliente",
+                "description": "Actualiza los datos de un cliente existente",
+                "operationId": "clienteUpdate",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del cliente",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "cliente_nombre": {
+                                        "type": "string",
+                                        "example": "Empresa Ejemplo Actualizada"
+                                    },
+                                    "cliente_razonsocial": {
+                                        "type": "string",
+                                        "example": "Empresa Ejemplo S.A. Actualizada"
+                                    },
+                                    "cuit": {
+                                        "type": "string",
+                                        "example": "20272022500"
+                                    },
+                                    "cliente_email": {
+                                        "type": "string",
+                                        "example": "nuevo@empresa.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cliente actualizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Cliente"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Cliente no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Registro no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Clientes"
+                ],
+                "summary": "Eliminar cliente",
+                "description": "Elimina un cliente por ID",
+                "operationId": "clienteDestroy",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del cliente",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Cliente eliminado exitosamente"
+                    },
+                    "404": {
+                        "description": "Cliente no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Registro no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/clientes/search": {
+            "get": {
+                "tags": [
+                    "Clientes"
+                ],
+                "summary": "Buscar clientes",
+                "description": "Busca clientes por término en nombre, razón social o CUIT",
+                "operationId": "clienteSearch",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Término de búsqueda",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Cantidad de registros por página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Cliente"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Cliente": {
+                "properties": {
+                    "cliente_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "cliente_nombre": {
+                        "type": "string",
+                        "example": "Empresa Ejemplo"
+                    },
+                    "cliente_razonsocial": {
+                        "type": "string",
+                        "example": "Empresa Ejemplo S.A."
+                    },
+                    "cuit": {
+                        "type": "string",
+                        "example": "20272022500"
+                    },
+                    "fk_tipoclavefiscal_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "fk_tipofactura_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "fk_condicioniva_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "fk_pais_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "fk_ciudad_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "cliente_direccionfiscal": {
+                        "type": "string",
+                        "example": "Av. Corrientes 1234"
+                    },
+                    "cliente_email": {
+                        "type": "string",
+                        "example": "contacto@empresa.com"
+                    },
+                    "fechacarga": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "um": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "fk_usuario_id": {
+                        "type": "integer",
+                        "example": 1005
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "sanctum": {
+                "type": "apiKey",
+                "description": "Enter token in format (Bearer <token>)",
+                "name": "Authorization",
+                "in": "header"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Clientes",
+            "description": "Clientes"
+        }
+    ],
+    "security": [
+        {
+            "sanctum": []
+        }
+    ]
+}

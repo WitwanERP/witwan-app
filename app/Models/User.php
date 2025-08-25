@@ -40,4 +40,14 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
+
+    public function tipousuario()
+    {
+        return $this->belongsTo(Tipousuario::class, 'fk_tipousuario_id');
+    }
+
+    public function permisogrupos()
+    {
+        return $this->hasMany(Permisogrupo::class, 'fk_tipousuario_id', 'fk_tipousuario_id');
+    }
 }
