@@ -28,7 +28,7 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Get(
- *     path="/clientes",
+ *     path="/clientes/clientes",
  *     security={{"bearerAuth":{}}},
  *     operationId="clienteIndex",
  *     tags={"Clientes"},
@@ -55,7 +55,7 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Post(
- *     path="/clientes",
+ *     path="/clientes/clientes",
  *     operationId="clienteStore",
  *     tags={"Clientes"},
  *     summary="Crear cliente",
@@ -92,7 +92,7 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Get(
- *     path="/clientes/{id}",
+ *     path="/clientes/clientes/{id}",
  *     operationId="clienteShow",
  *     tags={"Clientes"},
  *     summary="Mostrar cliente",
@@ -120,7 +120,7 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Put(
- *     path="/clientes/{id}",
+ *     path="/clientes/clientes/{id}",
  *     operationId="clienteUpdate",
  *     tags={"Clientes"},
  *     summary="Actualizar cliente",
@@ -163,7 +163,7 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Delete(
- *     path="/clientes/{id}",
+ *     path="/clientes/clientes/{id}",
  *     operationId="clienteDestroy",
  *     tags={"Clientes"},
  *     summary="Eliminar cliente",
@@ -190,7 +190,7 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Get(
- *     path="/clientes/search",
+ *     path="/clientes/clientes/search",
  *     operationId="clienteSearch",
  *     tags={"Clientes"},
  *     summary="Buscar clientes",

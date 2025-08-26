@@ -11,7 +11,7 @@
         }
     ],
     "paths": {
-        "/ciudades": {
+        "/geo/ciudades": {
             "get": {
                 "tags": [
                     "Ciudades"
@@ -190,7 +190,7 @@
                 ]
             }
         },
-        "/ciudades/{id}": {
+        "/geo/ciudades/{id}": {
             "get": {
                 "tags": [
                     "Ciudades"
@@ -433,7 +433,7 @@
                 ]
             }
         },
-        "/ciudades/search": {
+        "/geo/ciudades/search": {
             "get": {
                 "tags": [
                     "Ciudades"
@@ -495,7 +495,7 @@
                 ]
             }
         },
-        "/clientes": {
+        "/clientes/clientes": {
             "get": {
                 "tags": [
                     "Clientes"
@@ -652,7 +652,7 @@
                 ]
             }
         },
-        "/clientes/{id}": {
+        "/clientes/clientes/{id}": {
             "get": {
                 "tags": [
                     "Clientes"
@@ -845,7 +845,7 @@
                 ]
             }
         },
-        "/clientes/search": {
+        "/clientes/clientes/search": {
             "get": {
                 "tags": [
                     "Clientes"
@@ -907,7 +907,7 @@
                 ]
             }
         },
-        "/paises": {
+        "/geo/paises": {
             "get": {
                 "tags": [
                     "Paises"
@@ -1036,7 +1036,7 @@
                 ]
             }
         },
-        "/paises/{id}": {
+        "/geo/paises/{id}": {
             "get": {
                 "tags": [
                     "Paises"
@@ -1233,7 +1233,7 @@
                 ]
             }
         },
-        "/paises/search": {
+        "/geo/paises/search": {
             "get": {
                 "tags": [
                     "Paises"

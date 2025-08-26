@@ -14,7 +14,7 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Get(
- *     path="/paises",
+ *     path="/geo/paises",
  *     operationId="paisIndex",
  *     tags={"Paises"},
  *     summary="Listar países",
@@ -40,7 +40,7 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Post(
- *     path="/paises",
+ *     path="/geo/paises",
  *     operationId="paisStore",
  *     tags={"Paises"},
  *     summary="Crear país",
@@ -72,7 +72,7 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Get(
- *     path="/paises/{id}",
+ *     path="/geo/paises/{id}",
  *     operationId="paisShow",
  *     tags={"Paises"},
  *     summary="Mostrar país",
@@ -100,7 +100,7 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Put(
- *     path="/paises/{id}",
+ *     path="/geo/paises/{id}",
  *     operationId="paisUpdate",
  *     tags={"Paises"},
  *     summary="Actualizar país",
@@ -144,7 +144,7 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Delete(
- *     path="/paises/{id}",
+ *     path="/geo/paises/{id}",
  *     operationId="paisDestroy",
  *     tags={"Paises"},
  *     summary="Eliminar país",
@@ -171,7 +171,7 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Get(
- *     path="/paises/search",
+ *     path="/geo/paises/search",
  *     operationId="paisSearch",
  *     tags={"Paises"},
  *     summary="Buscar países",

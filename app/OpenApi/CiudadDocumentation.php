@@ -27,7 +27,7 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Get(
- *     path="/ciudades",
+ *     path="/geo/ciudades",
  *     operationId="ciudadIndex",
  *     tags={"Ciudades"},
  *     summary="Listar ciudades",
@@ -53,7 +53,7 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Post(
- *     path="/ciudades",
+ *     path="/geo/ciudades",
  *     operationId="ciudadStore",
  *     tags={"Ciudades"},
  *     summary="Crear ciudad",
@@ -97,7 +97,7 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Get(
- *     path="/ciudades/{id}",
+ *     path="/geo/ciudades/{id}",
  *     operationId="ciudadShow",
  *     tags={"Ciudades"},
  *     summary="Mostrar ciudad",
@@ -125,7 +125,7 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Put(
- *     path="/ciudades/{id}",
+ *     path="/geo/ciudades/{id}",
  *     operationId="ciudadUpdate",
  *     tags={"Ciudades"},
  *     summary="Actualizar ciudad",
@@ -180,7 +180,7 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Delete(
- *     path="/ciudades/{id}",
+ *     path="/geo/ciudades/{id}",
  *     operationId="ciudadDestroy",
  *     tags={"Ciudades"},
  *     summary="Eliminar ciudad",
@@ -207,7 +207,7 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Get(
- *     path="/ciudades/search",
+ *     path="/geo/ciudades/search",
  *     operationId="ciudadSearch",
  *     tags={"Ciudades"},
  *     summary="Buscar ciudades",
