@@ -4,11 +4,6 @@ namespace App\OpenApi;
 
 /**
  *
- *  * @OA\Info(
- *     title="Witwan API",
- *     version="1.0",
- *     description="Documentación de la API Witwan"
- * )
  * @OA\Schema(
  *     schema="Cliente",
  *     @OA\Property(property="cliente_id", type="integer", example=1),
