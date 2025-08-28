@@ -130,7 +130,14 @@ class CiudadController extends Controller
 
         if ($request->has('q') && !empty($request->q)) {
             $searchTerm = $request->q;
-            // Implementar búsqueda en campos principales
+            if ($request->has('pais_id') && !empty($request->pais_id)) {
+                $query->where('fk_pais_id', $request->pais_id);
+            }
+            if ($searchTerm) {
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('ciudad_nombre', 'LIKE', "%{$searchTerm}%");
+                });
+            }
         }
 
         return response()->json($query->paginate($perPage));

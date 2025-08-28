@@ -131,6 +131,9 @@ class PaiController extends Controller
         if ($request->has('q') && !empty($request->q)) {
             $searchTerm = $request->q;
             // Implementar búsqueda en campos principales
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('pais_nombre', 'LIKE', "%{$searchTerm}%");
+            });
         }
 
         return response()->json($query->paginate($perPage));
