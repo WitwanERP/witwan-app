@@ -12,81 +12,208 @@ use App\Http\Controllers\Admin\BSP\{ReportebspController, ReportebsptktControlle
 use App\Http\Controllers\Admin\Caja\{ConciliabancoController, ConciliacionController, OrdenadminController, ReciboController};
 use App\Http\Controllers\Admin\Clientes\CreditoextraController;
 use App\Http\Controllers\Admin\Contabilidad\{
-    AsientocontableController, CanjeController, CentrocostoController, CierrearqueoController,
-    CierrecajaController, CondicionivaController, CtaaplicadaController, MovimientoController,
-    NubeanaliticoController, PlancuentumController
+    AsientocontableController,
+    CanjeController,
+    CentrocostoController,
+    CierrearqueoController,
+    CierrecajaController,
+    CondicionivaController,
+    CtaaplicadaController,
+    MovimientoController,
+    NubeanaliticoController,
+    PlancuentumController
 };
 use App\Http\Controllers\Admin\Documentos\{
-    FacturaController, FacturaEnvioController, FacturaaerolineaController, FacturaboletumController,
-    FacturaclienteController, FacturaproveedorController, NotacreditoController, NotadebitoController
+    FacturaController,
+    FacturaEnvioController,
+    FacturaaerolineaController,
+    FacturaboletumController,
+    FacturaclienteController,
+    FacturaproveedorController,
+    NotacreditoController,
+    NotadebitoController
 };
 use App\Http\Controllers\Admin\General\{
-    CrmbancoController, FormapagoController, GrupocomsionController, ImputacionController,
-    ItemgastoController, IvaController, IvatipoController, LotedocumentoController,
-    ModelocomisionController, ModelofeeController, ModoivaventumController, PayrollController,
-    PrecompraController, PreventumController, TarjetacreditoController
+    CrmbancoController,
+    FormapagoController,
+    GrupocomsionController,
+    ImputacionController,
+    ItemgastoController,
+    IvaController,
+    IvatipoController,
+    LotedocumentoController,
+    ModelocomisionController,
+    ModelofeeController,
+    ModoivaventumController,
+    PayrollController,
+    PrecompraController,
+    PreventumController,
+    TarjetacreditoController
 };
 use App\Http\Controllers\Admin\Monedas\{CotizacionController, MonedaController};
 
 // Business Controllers
 use App\Http\Controllers\Empresas\Clientes\{
-    CadenaclienteController, ClienteController, ClienteExtraController, PasajeroController, TagController
+    CadenaclienteController,
+    ClienteController,
+    ClienteExtraController,
+    PasajeroController,
+    TagController
 };
 use App\Http\Controllers\Empresas\Proveedores\{
-    CadenahoteleraController, ConvenioController, ProveedorController
+    CadenahoteleraController,
+    ConvenioController,
+    ProveedorController
 };
 
 // Geo Controllers
 use App\Http\Controllers\Geo\{
-    CiudadController, CiudadtouricoController, CiudadxmlController, GrupopaiController,
-    PaiController, RegionController
+    CiudadController,
+    CiudadtouricoController,
+    CiudadxmlController,
+    GrupopaiController,
+    PaisController,
+    RegionController
 };
 
 // Product Controllers
 use App\Http\Controllers\Productos\{
-    AlojamientoController, AlojamientofacilidadController, AlojamientohabitacionController,
-    AlojamientotipoController, AsvController, CupoController, CupoaereoController,
-    CupohistorialController, CuposborradoController, CupotktController, DataoffController,
-    DestacadoController, DiumController, ExcursionController, GdController, GuiumController,
-    HotelcategoriumController, InterfaseController, InterfasedatumController,
-    PkdController, PkdgaleriumController, PkdinamicoController, PkditemController, PkdproductoController,
-    PnraereoController, PnrremarkController, PnrremarksconfigController, PnrsegmentController,
-    ProductoController, ProductoExtraController, ProductogaleriumController, ProductogrupoController,
-    RegimanController, SoldoutController, SubmoduloController, TarifaController,
-    TarifacategoriumController, TarifarioController, TarifarioarchivoController, TarifariocomisionController
+    AlojamientoController,
+    AlojamientofacilidadController,
+    AlojamientohabitacionController,
+    AlojamientotipoController,
+    AsvController,
+    CupoController,
+    CupoaereoController,
+    CupohistorialController,
+    CuposborradoController,
+    CupotktController,
+    DataoffController,
+    DestacadoController,
+    DiumController,
+    ExcursionController,
+    GdController,
+    GuiumController,
+    HotelcategoriumController,
+    InterfaseController,
+    InterfasedatumController,
+    PkdController,
+    PkdgaleriumController,
+    PkdinamicoController,
+    PkditemController,
+    PkdproductoController,
+    PnraereoController,
+    PnrremarkController,
+    PnrremarksconfigController,
+    PnrsegmentController,
+    ProductoController,
+    ProductoExtraController,
+    ProductogaleriumController,
+    ProductogrupoController,
+    RegimanController,
+    SoldoutController,
+    SubmoduloController,
+    TarifaController,
+    TarifacategoriumController,
+    TarifarioController,
+    TarifarioarchivoController,
+    TarifariocomisionController
 };
 
 // Reservation Controllers
 use App\Http\Controllers\Reservas\{
-    CtzController, FilearchivoController, FilecomentarioController, FilemailController,
-    FilenotificacionController, FilestatusController, IdentidadfiscalController,
-    MailController, NegocioController, ReservaController, ReservaExtraController,
-    ReservainController, ServicioController, ServicioExtraController, ServicioNominaController,
-    ServicioasociadoController, ServiciocontableController, ServicioctzController, ServiciofacturaController
+    CtzController,
+    FilearchivoController,
+    FilecomentarioController,
+    FilemailController,
+    FilenotificacionController,
+    FilestatusController,
+    IdentidadfiscalController,
+    MailController,
+    NegocioController,
+    ReservaController,
+    ReservaExtraController,
+    ReservainController,
+    ServicioController,
+    ServicioExtraController,
+    ServicioNominaController,
+    ServicioasociadoController,
+    ServiciocontableController,
+    ServicioctzController,
+    ServiciofacturaController
 };
 
 // System Controllers
 use App\Http\Controllers\Sistema\{CiSessionController, HistorialController, HistorialfileController, HistorialsqlController};
 use App\Http\Controllers\Users\{PermisoController, PermisogrupoController, PersonalAccessTokenController};
 use App\Http\Controllers\General\{
-    AereoController, AerolineaController, AeropuertoController, AeropuertociudadController,
-    AgenteemisorController, AutorizacionpnrController, CiudadauxiliarController, DiccionarioController,
-    FeriadoController, IdiomaController, LoginterfaseController, MtUsuarioemailController,
-    NoturmtController, PasajeroExtraController, PluginController, ProgramafidelidadController,
-    ProyectoController, RelClientesistemaController, RelClientetagController, RelEerrController,
-    RelFacturaproveedorocupacionController, RelFacturareciboController, RelFacturareportebspController,
-    RelFilefacturaController, RelFilereciboController, RelGrupopaispaiController, RelGuiaidiomaController,
-    RelOcupacionprecompraController, RelOcupacionvigenciumController, RelOrdenadminocupacionController,
-    RelPasajerotagController, RelProductoalojamientofacilidadController, RelProductobaseController,
-    RelProductociudadController, RelProveedorsistemaController, RelServicioController,
-    RelServiciofacturaController, RelUsuariomodelocomisionController, RelUsuariotipousuarioController,
-    RelUsuariousuarioController, RelVigenciadiumController, RelacionsigavController,
-    SessionController, SistemaController, SolicitudController, SyscategoryController,
-    SysconfigController, SysloginController, SysmenuController, SysmoduleController,
-    SysnotificationController, SyspermController, SysroleController, SysuserController,
-    SysuserpermController, TipoboletoController, TipocambioController, TipoclavefiscalController,
-    TipofacturaController, TiposervicioController, TipousuarioController, TrasladoController,
-    UsuarioController, UsuariocomisionController, VigenciaalojamientoController, VigenciumController, XmlinController
+    AereoController,
+    AerolineaController,
+    AeropuertoController,
+    AeropuertociudadController,
+    AgenteemisorController,
+    AutorizacionpnrController,
+    CiudadauxiliarController,
+    DiccionarioController,
+    FeriadoController,
+    IdiomaController,
+    LoginterfaseController,
+    MtUsuarioemailController,
+    NoturmtController,
+    PasajeroExtraController,
+    PluginController,
+    ProgramafidelidadController,
+    ProyectoController,
+    RelClientesistemaController,
+    RelClientetagController,
+    RelEerrController,
+    RelFacturaproveedorocupacionController,
+    RelFacturareciboController,
+    RelFacturareportebspController,
+    RelFilefacturaController,
+    RelFilereciboController,
+    RelGrupopaispaiController,
+    RelGuiaidiomaController,
+    RelOcupacionprecompraController,
+    RelOcupacionvigenciumController,
+    RelOrdenadminocupacionController,
+    RelPasajerotagController,
+    RelProductoalojamientofacilidadController,
+    RelProductobaseController,
+    RelProductociudadController,
+    RelProveedorsistemaController,
+    RelServicioController,
+    RelServiciofacturaController,
+    RelUsuariomodelocomisionController,
+    RelUsuariotipousuarioController,
+    RelUsuariousuarioController,
+    RelVigenciadiumController,
+    RelacionsigavController,
+    SessionController,
+    SistemaController,
+    SolicitudController,
+    SyscategoryController,
+    SysconfigController,
+    SysloginController,
+    SysmenuController,
+    SysmoduleController,
+    SysnotificationController,
+    SyspermController,
+    SysroleController,
+    SysuserController,
+    SysuserpermController,
+    TipoboletoController,
+    TipocambioController,
+    TipoclavefiscalController,
+    TipofacturaController,
+    TiposervicioController,
+    TipousuarioController,
+    TrasladoController,
+    UsuarioController,
+    UsuariocomisionController,
+    VigenciaalojamientoController,
+    VigenciumController,
+    XmlinController
 };
 
 // Other Controllers
@@ -232,7 +359,7 @@ Route::group(['middleware' => 'jwt.auth'], function () {
         Route::apiResource('ciudades-tourico', CiudadtouricoController::class);
         Route::apiResource('ciudades-xml', CiudadxmlController::class);
         Route::apiResource('grupos-pais', GrupopaiController::class);
-        Route::apiResource('paises', PaiController::class);
+        Route::apiResource('paises', PaisController::class);
         Route::apiResource('regiones', RegionController::class);
     });
 
@@ -430,7 +557,7 @@ Route::group(['middleware' => 'jwt.auth'], function () {
     |--------------------------------------------------------------------------
     */
     Route::group(['prefix' => 'search'], function () {
-        Route::get('global', function(Request $request) {
+        Route::get('global', function (Request $request) {
             // Implementar búsqueda global aquí
             return response()->json(['message' => 'Global search endpoint']);
         });

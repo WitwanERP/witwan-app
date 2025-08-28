@@ -40,6 +40,13 @@ namespace App\OpenApi;
  *         required=false,
  *         @OA\Schema(type="integer", default=100)
  *     ),
+ *     @OA\Parameter(
+ *         name="search",
+ *         in="query",
+ *         description="Término de búsqueda",
+ *         required=false,
+ *         @OA\Schema(type="string")
+ *     ),
  *     @OA\Response(
  *         response=200,
  *         description="Lista de ciudades",
@@ -206,37 +213,5 @@ namespace App\OpenApi;
  *     )
  * )
  *
- * @OA\Get(
- *     path="/geo/ciudades/search",
- *     operationId="ciudadSearch",
- *     tags={"Ciudades"},
- *     summary="Buscar ciudades",
- *     description="Busca ciudades por nombre o código",
- *     security={{"bearerAuth":{}}},
- *     @OA\Parameter(
- *         name="q",
- *         in="query",
- *         description="Término de búsqueda",
- *         required=false,
- *         @OA\Schema(type="string")
- *     ),
- *     @OA\Parameter(
- *         name="per_page",
- *         in="query",
- *         description="Cantidad de registros por página",
- *         required=false,
- *         @OA\Schema(type="integer", default=100)
- *     ),
- *     @OA\Response(
- *         response=200,
- *         description="Operación exitosa",
- *         @OA\JsonContent(
- *             type="object",
- *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Ciudad")),
- *             @OA\Property(property="links", type="object"),
- *             @OA\Property(property="meta", type="object")
- *         )
- *     )
- * )
  */
 class CiudadDocumentation {}

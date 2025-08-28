@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
-class PaiController extends Controller
+class PaisController extends Controller
 {
     /**
      * Display a listing of the resource.

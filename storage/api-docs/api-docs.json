@@ -105,6 +105,15 @@
                             "type": "integer",
                             "default": 100
                         }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Término de búsqueda",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {
@@ -494,68 +503,6 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Registro no encontrado"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/geo/ciudades/search": {
-            "get": {
-                "tags": [
-                    "Ciudades"
-                ],
-                "summary": "Buscar ciudades",
-                "description": "Busca ciudades por nombre o código",
-                "operationId": "ciudadSearch",
-                "parameters": [
-                    {
-                        "name": "q",
-                        "in": "query",
-                        "description": "Término de búsqueda",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "per_page",
-                        "in": "query",
-                        "description": "Cantidad de registros por página",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "default": 100
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Operación exitosa",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Ciudad"
-                                            }
-                                        },
-                                        "links": {
-                                            "type": "object"
-                                        },
-                                        "meta": {
-                                            "type": "object"
                                         }
                                     },
                                     "type": "object"

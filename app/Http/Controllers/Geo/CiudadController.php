@@ -22,6 +22,7 @@ class CiudadController extends Controller
         // Agregar filtros básicos aquí
         if ($request->has('search') && !empty($request->search)) {
             // Implementar búsqueda según los campos de la tabla
+            $query->where('ciudad_nombre', 'LIKE', "%{$request->search}%");
         }
 
         return response()->json($query->paginate($perPage));
