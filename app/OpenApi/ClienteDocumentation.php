@@ -37,6 +37,13 @@ namespace App\OpenApi;
  *         required=false,
  *         @OA\Schema(type="integer", default=100)
  *     ),
+ *     @OA\Parameter(
+ *         name="search",
+ *         in="query",
+ *         description="Término de búsqueda",
+ *         required=false,
+ *         @OA\Schema(type="string")
+ *     ),
  *     @OA\Response(
  *         response=200,
  *         description="Lista de clientes",
@@ -180,39 +187,6 @@ namespace App\OpenApi;
  *         description="Cliente no encontrado",
  *         @OA\JsonContent(
  *             @OA\Property(property="message", type="string", example="Registro no encontrado")
- *         )
- *     )
- * )
- *
- * @OA\Get(
- *     path="/clientes/clientes/search",
- *     operationId="clienteSearch",
- *     tags={"Clientes"},
- *     summary="Buscar clientes",
- *     description="Busca clientes por término en nombre, razón social o CUIT",
- *     security={{"bearerAuth":{}}},
- *     @OA\Parameter(
- *         name="q",
- *         in="query",
- *         description="Término de búsqueda",
- *         required=false,
- *         @OA\Schema(type="string")
- *     ),
- *     @OA\Parameter(
- *         name="per_page",
- *         in="query",
- *         description="Cantidad de registros por página",
- *         required=false,
- *         @OA\Schema(type="integer", default=100)
- *     ),
- *     @OA\Response(
- *         response=200,
- *         description="Operación exitosa",
- *         @OA\JsonContent(
- *             type="object",
- *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Cliente")),
- *             @OA\Property(property="links", type="object"),
- *             @OA\Property(property="meta", type="object")
  *         )
  *     )
  * )

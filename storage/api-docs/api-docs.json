@@ -536,6 +536,15 @@
                             "type": "integer",
                             "default": 100
                         }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Término de búsqueda",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {
@@ -853,68 +862,6 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Registro no encontrado"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/clientes/clientes/search": {
-            "get": {
-                "tags": [
-                    "Clientes"
-                ],
-                "summary": "Buscar clientes",
-                "description": "Busca clientes por término en nombre, razón social o CUIT",
-                "operationId": "clienteSearch",
-                "parameters": [
-                    {
-                        "name": "q",
-                        "in": "query",
-                        "description": "Término de búsqueda",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "per_page",
-                        "in": "query",
-                        "description": "Cantidad de registros por página",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "default": 100
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Operación exitosa",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Cliente"
-                                            }
-                                        },
-                                        "links": {
-                                            "type": "object"
-                                        },
-                                        "meta": {
-                                            "type": "object"
                                         }
                                     },
                                     "type": "object"

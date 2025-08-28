@@ -22,7 +22,12 @@ class ClienteController extends Controller
 
         // Agregar filtros básicos aquí
         if ($request->has('search') && !empty($request->search)) {
-            // Implementar búsqueda según los campos de la tabla
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('cliente_nombre', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('cliente_razonsocial', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('cuit', 'LIKE', "%{$searchTerm}%");
+            });
         }
 
         return response()->json($query->paginate($perPage));
@@ -237,25 +242,5 @@ class ClienteController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Registro no encontrado'], 404);
         }
-    }
-
-    /**
-     * Search resources.
-     */
-    public function search(Request $request)
-    {
-        $query = Cliente::query();
-        $perPage = $request->get('per_page', 100);
-
-        if ($request->has('q') && !empty($request->q)) {
-            $searchTerm = $request->q;
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('cliente_nombre', 'LIKE', "%{$searchTerm}%")
-                    ->orWhere('cliente_razonsocial', 'LIKE', "%{$searchTerm}%")
-                    ->orWhere('cuit', 'LIKE', "%{$searchTerm}%");
-            });
-        }
-
-        return response()->json($query->paginate($perPage));
     }
 }
