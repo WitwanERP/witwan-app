@@ -249,7 +249,11 @@ class ClienteController extends Controller
 
         if ($request->has('q') && !empty($request->q)) {
             $searchTerm = $request->q;
-            // Implementar búsqueda en campos principales
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('cliente_nombre', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('cliente_razonsocial', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('cuit', 'LIKE', "%{$searchTerm}%");
+            });
         }
 
         return response()->json($query->paginate($perPage));
