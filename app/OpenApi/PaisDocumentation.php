@@ -27,6 +27,14 @@ namespace App\OpenApi;
  *         required=false,
  *         @OA\Schema(type="integer", default=100)
  *     ),
+ *     @OA\Parameter(
+ *         name="search",
+ *         in="query",
+ *         description="Término de búsqueda",
+ *         required=false,
+ *         @OA\Schema(type="string")
+ *     )
+ *
  *     @OA\Response(
  *         response=200,
  *         description="Lista de países",

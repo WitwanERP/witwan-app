@@ -17,11 +17,15 @@ class PaisController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->get('per_page', 100);
-        $query = Pai::query();
+        $query = Pais::query();
 
         // Agregar filtros básicos aquí
         if ($request->has('search') && !empty($request->search)) {
             // Implementar búsqueda según los campos de la tabla
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('pais_nombre', 'LIKE', "%{$searchTerm}%");
+            });
         }
 
         return response()->json($query->paginate($perPage));
@@ -41,7 +45,7 @@ class PaisController extends Controller
         }
 
         $data = $request->all();
-        $model = new Pai();
+        $model = new Pais();
         $tableColumns = collect(Schema::getColumnListing($model->getTable()));
 
         // Agregar campos automáticos si existen
@@ -55,7 +59,7 @@ class PaisController extends Controller
             $data['fk_usuario_id'] = auth()->id();
         }
 
-        $item = Pai::create($data);
+        $item = Pais::create($data);
         return response()->json($item, 201);
     }
 
@@ -65,7 +69,7 @@ class PaisController extends Controller
     public function show($id)
     {
         try {
-            $item = Pai::findOrFail($id);
+            $item = Pais::findOrFail($id);
             return response()->json($item);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Registro no encontrado'], 404);
@@ -78,7 +82,7 @@ class PaisController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $item = Pai::findOrFail($id);
+            $item = Pais::findOrFail($id);
 
             $validator = Validator::make($request->all(), [
                 // Agregar reglas de validación aquí
@@ -112,30 +116,11 @@ class PaisController extends Controller
     public function destroy($id)
     {
         try {
-            $item = Pai::findOrFail($id);
+            $item = Pais::findOrFail($id);
             $item->delete();
             return response()->json(null, 204);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Registro no encontrado'], 404);
         }
-    }
-
-    /**
-     * Search resources.
-     */
-    public function search(Request $request)
-    {
-        $query = Pai::query();
-        $perPage = $request->get('per_page', 100);
-
-        if ($request->has('q') && !empty($request->q)) {
-            $searchTerm = $request->q;
-            // Implementar búsqueda en campos principales
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('pais_nombre', 'LIKE', "%{$searchTerm}%");
-            });
-        }
-
-        return response()->json($query->paginate($perPage));
     }
 }
