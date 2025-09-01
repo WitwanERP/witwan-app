@@ -33,8 +33,7 @@ namespace App\OpenApi;
  *         description="Término de búsqueda",
  *         required=false,
  *         @OA\Schema(type="string")
- *     )
- *
+ *     ),
  *     @OA\Response(
  *         response=200,
  *         description="Lista de países",
