@@ -22,6 +22,7 @@ class NegocioController extends Controller
         // Agregar filtros básicos aquí
         if ($request->has('search') && !empty($request->search)) {
             // Implementar búsqueda según los campos de la tabla
+
         }
 
         return response()->json($query->paginate($perPage));
@@ -81,7 +82,7 @@ class NegocioController extends Controller
             $item = Negocio::findOrFail($id);
 
             $validator = Validator::make($request->all(), [
-                // Agregar reglas de validación aquí
+                "negocio_nombre" => "required|string|max:100",
             ]);
 
             if ($validator->fails()) {
@@ -131,6 +132,9 @@ class NegocioController extends Controller
         if ($request->has('q') && !empty($request->q)) {
             $searchTerm = $request->q;
             // Implementar búsqueda en campos principales
+        }
+        if ($request->has('nombre') && !empty($request->nombre)) {
+            $query->where("negocio_nombre", "like", "%" . $request->nombre . "%");
         }
 
         return response()->json($query->paginate($perPage));
