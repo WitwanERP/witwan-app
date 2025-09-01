@@ -1,9 +1,9 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "Documentación Witwan API ",
-        "description": "",
-        "version": ""
+        "title": "Witwan API",
+        "description": "Documentación de la API Witwan",
+        "version": "1.0"
     },
     "servers": [
         {
@@ -894,6 +894,15 @@
                         "schema": {
                             "type": "integer",
                             "default": 100
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Término de búsqueda",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
