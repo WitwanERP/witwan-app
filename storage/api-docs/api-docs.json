@@ -25,7 +25,7 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "email",
+                                    "usuario_mail",
                                     "password"
                                 ],
                                 "properties": {
