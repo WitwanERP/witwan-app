@@ -29,7 +29,7 @@
                                     "password"
                                 ],
                                 "properties": {
-                                    "email": {
+                                    "usuario_mail": {
                                         "type": "string",
                                         "example": "usuario@ejemplo.com"
                                     },
