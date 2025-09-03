@@ -444,6 +444,7 @@ Route::group(['middleware' => 'jwt.auth'], function () {
         // Reservation search routes
         Route::get('reservas/search', [ReservaController::class, 'search']);
         Route::get('servicios/search', [ServicioController::class, 'search']);
+        Route::get('negocios/search', [NegocioController::class, 'search']);
     });
 
     /*
