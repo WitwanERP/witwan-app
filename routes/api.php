@@ -57,9 +57,9 @@ use App\Http\Controllers\Empresas\Clientes\{
     CadenaclienteController,
     ClienteController,
     ClienteExtraController,
-    PasajeroController,
     TagController
 };
+use App\Http\Controllers\Empresas\Pasajeros\PasajeroController;
 use App\Http\Controllers\Empresas\Proveedores\{
     CadenahoteleraController,
     ConvenioController,
@@ -220,6 +220,7 @@ use App\Http\Controllers\General\{
 use App\Http\Controllers\Banner\BannerController;
 use App\Http\Controllers\Base\BaseController;
 use App\Http\Controllers\Eventos\ColaeventoController;
+use App\Http\Controllers\Reservas\ReservaServicioController;
 
 /*
 |--------------------------------------------------------------------------
@@ -442,9 +443,18 @@ Route::group(['middleware' => 'jwt.auth'], function () {
         Route::apiResource('servicios-facturas', ServiciofacturaController::class);
 
         // Reservation search routes
+        Route::get('reservas/reservar', [ReservaController::class, 'reservar']);
         Route::get('reservas/search', [ReservaController::class, 'search']);
         Route::get('servicios/search', [ServicioController::class, 'search']);
         Route::get('negocios/search', [NegocioController::class, 'search']);
+    });
+
+    Route::group(['prefix' => 'reservas-servicios'], function () {
+        Route::post('/', [ReservaServicioController::class, 'store']);
+        Route::get('/{id}', [ReservaServicioController::class, 'show']);
+        Route::put('/{id}', [ReservaServicioController::class, 'update']);
+        Route::patch('/{id}/status', [ReservaServicioController::class, 'cambiarStatus']);
+        Route::post('/{id}/recalcular-totales', [ReservaServicioController::class, 'recalcularTotales']);
     });
 
     /*

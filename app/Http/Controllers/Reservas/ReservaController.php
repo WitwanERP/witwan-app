@@ -174,7 +174,7 @@ class ReservaController extends Controller
 
         return response()->json($query->paginate($perPage));
     }
-        private function validateParams(Request $request)
+    private function validateParams(Request $request)
     {
         return $request->validate([
             'per_page' => 'integer|min:1|max:100',
@@ -183,5 +183,26 @@ class ReservaController extends Controller
             'codigo' => 'nullable|string',
             'fk_cliente_id' => 'nullable|integer|exists:cliente,cliente_id',
         ]);
+    }
+
+    public function reservar(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'fk_cliente_id' => 'required|integer|exists:cliente,cliente_id',
+            'fk_vendedor_id' => 'nullable|integer|exists:usuario,usuario_id',
+            'comentarios' => 'nullable|string',
+            'servicios.*' => 'required|array|min:1',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $data = $request->all();
+
+        // Lógica para crear la reserva y los servicios asociados
+        // ...
+
+        return response()->json(['message' => 'Reserva creada exitosamente'], 201);
     }
 }
