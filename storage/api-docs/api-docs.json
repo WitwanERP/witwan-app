@@ -25,11 +25,11 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "email",
+                                    "usuario_mail",
                                     "password"
                                 ],
                                 "properties": {
-                                    "email": {
+                                    "usuario_mail": {
                                         "type": "string",
                                         "example": "usuario@ejemplo.com"
                                     },
