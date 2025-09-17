@@ -25,11 +25,11 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "usuario_mail",
+                                    "email",
                                     "password"
                                 ],
                                 "properties": {
-                                    "usuario_mail": {
+                                    "email": {
                                         "type": "string",
                                         "example": "usuario@ejemplo.com"
                                     },
@@ -877,6 +877,451 @@
                 ]
             }
         },
+        "/reservas/negocios": {
+            "get": {
+                "tags": [
+                    "Negocios"
+                ],
+                "summary": "Listar negocios",
+                "description": "Obtiene una lista paginada de negocios",
+                "operationId": "negocioIndex",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Cantidad de registros por página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 100
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Término de búsqueda",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de negocios",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Negocio"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Negocios"
+                ],
+                "summary": "Crear negocio",
+                "description": "Crea un nuevo negocio",
+                "operationId": "negocioStore",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "negocio_nombre"
+                                ],
+                                "properties": {
+                                    "negocio_nombre": {
+                                        "type": "string",
+                                        "example": "Hotel Paradise"
+                                    },
+                                    "negocio_vencimiento": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2024-12-31 23:59:59"
+                                    },
+                                    "fk_ciudad_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "fk_sistema_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "negocio_descripcion": {
+                                        "type": "string",
+                                        "example": "Hotel de lujo con vista al mar"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Negocio creado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Negocio"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Permiso denegado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Permiso denegado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/reservas/negocios/{id}": {
+            "get": {
+                "tags": [
+                    "Negocios"
+                ],
+                "summary": "Mostrar negocio",
+                "description": "Obtiene los datos de un negocio por ID",
+                "operationId": "negocioShow",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del negocio",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Datos del negocio",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Negocio"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Negocio no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Registro no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Negocios"
+                ],
+                "summary": "Actualizar negocio",
+                "description": "Actualiza los datos de un negocio existente",
+                "operationId": "negocioUpdate",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del negocio",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "negocio_nombre": {
+                                        "type": "string",
+                                        "example": "Hotel Paradise Renovado"
+                                    },
+                                    "negocio_vencimiento": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2025-12-31 23:59:59"
+                                    },
+                                    "fk_ciudad_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "fk_sistema_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "negocio_descripcion": {
+                                        "type": "string",
+                                        "example": "Hotel renovado con nuevas instalaciones"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Negocio actualizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Negocio"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Negocio no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Registro no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Negocios"
+                ],
+                "summary": "Eliminar negocio",
+                "description": "Elimina un negocio por ID",
+                "operationId": "negocioDestroy",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del negocio",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Negocio eliminado exitosamente"
+                    },
+                    "404": {
+                        "description": "Negocio no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Registro no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/reservas/negocios/search": {
+            "get": {
+                "tags": [
+                    "Negocios"
+                ],
+                "summary": "Búsqueda avanzada de negocios",
+                "description": "Busca negocios con filtros específicos",
+                "operationId": "negocioSearch",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Cantidad de registros por página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 100
+                        }
+                    },
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Término de búsqueda general",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "nombre",
+                        "in": "query",
+                        "description": "Búsqueda por nombre del negocio",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "vencimiento",
+                        "in": "query",
+                        "description": "Fecha de vencimiento desde (dd/mm/yyyy)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "31/12/2024"
+                        }
+                    },
+                    {
+                        "name": "vencimiento_to",
+                        "in": "query",
+                        "description": "Fecha de vencimiento hasta (dd/mm/yyyy)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "31/12/2025"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Resultados de búsqueda",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Negocio"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/geo/paises": {
             "get": {
                 "tags": [
@@ -1273,6 +1718,396 @@
                     }
                 ]
             }
+        },
+        "/pasajeros/pasajeros": {
+            "get": {
+                "tags": [
+                    "Pasajeros"
+                ],
+                "summary": "Listar pasajeros",
+                "description": "Obtiene una lista paginada de pasajeros",
+                "operationId": "pasajeroIndex",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Cantidad de registros por página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 100
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Término de búsqueda",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de pasajeros",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Pasajero"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Pasajeros"
+                ],
+                "summary": "Crear pasajero",
+                "description": "Crea un nuevo pasajero",
+                "operationId": "pasajeroStore",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "pasajero_nombre",
+                                    "pasajero_apellido",
+                                    "pasajero_email",
+                                    "fk_cliente_id"
+                                ],
+                                "properties": {
+                                    "pasajero_nombre": {
+                                        "type": "string",
+                                        "example": "Juan"
+                                    },
+                                    "pasajero_apellido": {
+                                        "type": "string",
+                                        "example": "Pérez"
+                                    },
+                                    "pasajero_email": {
+                                        "type": "string",
+                                        "example": "juan.perez@email.com"
+                                    },
+                                    "fk_cliente_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "pasajero_nacionalidad": {
+                                        "type": "string",
+                                        "example": "Argentina"
+                                    },
+                                    "pasajero_nacimiento": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "1990-05-15"
+                                    },
+                                    "pasajero_sexo": {
+                                        "type": "string",
+                                        "enum": [
+                                            "M",
+                                            "F"
+                                        ],
+                                        "example": "M"
+                                    },
+                                    "tipodoc": {
+                                        "type": "string",
+                                        "example": "DNI"
+                                    },
+                                    "nrodoc": {
+                                        "type": "string",
+                                        "example": "12345678"
+                                    },
+                                    "fk_pais_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "fk_ciudad_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "observaciones": {
+                                        "type": "string",
+                                        "example": "Observaciones del pasajero"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Pasajero creado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Pasajero"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Permiso denegado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Permiso denegado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/pasajeros/pasajeros/{id}": {
+            "get": {
+                "tags": [
+                    "Pasajeros"
+                ],
+                "summary": "Mostrar pasajero",
+                "description": "Obtiene los datos de un pasajero por ID",
+                "operationId": "pasajeroShow",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del pasajero",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Datos del pasajero",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Pasajero"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Pasajero no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Registro no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Pasajeros"
+                ],
+                "summary": "Actualizar pasajero",
+                "description": "Actualiza los datos de un pasajero existente",
+                "operationId": "pasajeroUpdate",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del pasajero",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "pasajero_nombre": {
+                                        "type": "string",
+                                        "example": "Juan Carlos"
+                                    },
+                                    "pasajero_apellido": {
+                                        "type": "string",
+                                        "example": "Pérez López"
+                                    },
+                                    "pasajero_email": {
+                                        "type": "string",
+                                        "example": "nuevo@email.com"
+                                    },
+                                    "fk_cliente_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "pasajero_nacionalidad": {
+                                        "type": "string",
+                                        "example": "Argentina"
+                                    },
+                                    "observaciones": {
+                                        "type": "string",
+                                        "example": "Nuevas observaciones"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Pasajero actualizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Pasajero"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Pasajero no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Registro no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Pasajeros"
+                ],
+                "summary": "Eliminar pasajero",
+                "description": "Elimina un pasajero por ID",
+                "operationId": "pasajeroDestroy",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del pasajero",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Pasajero eliminado exitosamente"
+                    },
+                    "404": {
+                        "description": "Pasajero no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Registro no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -1421,6 +2256,44 @@
                 },
                 "type": "object"
             },
+            "Negocio": {
+                "properties": {
+                    "negocio_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "negocio_nombre": {
+                        "type": "string",
+                        "example": "Hotel Paradise"
+                    },
+                    "negocio_vencimiento": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-12-31 23:59:59"
+                    },
+                    "fk_ciudad_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "negocio_descripcion": {
+                        "type": "string",
+                        "example": "Hotel de lujo con vista al mar"
+                    },
+                    "fk_sistema_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "ciudad": {
+                        "description": "Relación con ciudad",
+                        "type": "object"
+                    },
+                    "sistema": {
+                        "description": "Relación con sistema",
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
             "Pais": {
                 "properties": {
                     "pais_id": {
@@ -1449,6 +2322,81 @@
                     }
                 },
                 "type": "object"
+            },
+            "Pasajero": {
+                "properties": {
+                    "pasajero_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "pasajero_nombre": {
+                        "type": "string",
+                        "example": "Juan"
+                    },
+                    "pasajero_apellido": {
+                        "type": "string",
+                        "example": "Pérez"
+                    },
+                    "pasajero_apodo": {
+                        "type": "string",
+                        "example": "Juanito"
+                    },
+                    "pasajero_nacionalidad": {
+                        "type": "string",
+                        "example": "Argentina"
+                    },
+                    "pasajero_nacimiento": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "1990-05-15"
+                    },
+                    "pasajero_sexo": {
+                        "type": "string",
+                        "enum": [
+                            "M",
+                            "F"
+                        ],
+                        "example": "M"
+                    },
+                    "pasajero_email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "juan.perez@email.com"
+                    },
+                    "fk_cliente_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "tipodoc": {
+                        "type": "string",
+                        "example": "DNI"
+                    },
+                    "nrodoc": {
+                        "type": "string",
+                        "example": "12345678"
+                    },
+                    "fk_pais_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "fk_ciudad_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "pasajero_direccionfiscal": {
+                        "type": "string",
+                        "example": "Av. Corrientes 1234"
+                    },
+                    "observaciones": {
+                        "type": "string",
+                        "example": "Observaciones del pasajero"
+                    },
+                    "ultimo_mail": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
             }
         },
         "securitySchemes": {
@@ -1474,8 +2422,16 @@
             "description": "Clientes"
         },
         {
+            "name": "Negocios",
+            "description": "Negocios"
+        },
+        {
             "name": "Paises",
             "description": "Paises"
+        },
+        {
+            "name": "Pasajeros",
+            "description": "Pasajeros"
         }
     ],
     "security": [
