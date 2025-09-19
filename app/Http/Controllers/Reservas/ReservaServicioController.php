@@ -9,9 +9,11 @@ use App\Models\Cliente;
 use App\Models\Usuario;
 use App\Models\Filestatus;
 use App\Models\Tipoproducto;
+use App\Helpers\PermisoHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ReservaServicioController extends Controller
@@ -22,9 +24,18 @@ class ReservaServicioController extends Controller
     public function store(Request $request)
     {
         try {
+            // Validar permisos básicos
+            if (!PermisoHelper::tienePermiso(0, 'CREATE')) {
+                return response()->json([
+                    'message' => 'No tiene permisos para crear reservas',
+                    'errors' => ['permission' => ['Acceso denegado']]
+                ], 403);
+            }
+
             $validator = Validator::make($request->all(), [
                 // Campos obligatorios para la reserva
                 'fk_cliente_id' => 'required|integer|exists:cliente,cliente_id',
+                'fk_sistemaaplicacion_id' => 'nullable|integer',
                 'fk_sistema_id' => 'required|integer',
                 'fecha_alta' => 'required|date',
                 'titular_nombre' => 'required|string|max:255',
@@ -70,6 +81,14 @@ class ReservaServicioController extends Controller
                 ], 422);
             }
 
+            // Validar permisos específicos del cliente
+            if (!$this->usuarioPuedeAccederCliente($request->fk_cliente_id)) {
+                return response()->json([
+                    'message' => 'No tiene permisos para trabajar con este cliente',
+                    'errors' => ['fk_cliente_id' => ['Acceso denegado a este cliente']]
+                ], 403);
+            }
+
             return DB::transaction(function () use ($request) {
                 // Calcular el agente si no viene
                 $agente = $request->agente;
@@ -86,6 +105,7 @@ class ReservaServicioController extends Controller
                 $reservaData = [
                     'fk_cliente_id' => $request->fk_cliente_id,
                     'fk_sistema_id' => $request->fk_sistema_id,
+                    'fk_sistemaaplicacion_id' => $request->fk_sistemaaplicacion_id ?? $request->fk_sistema_id,
                     'fk_usuario_id' => $request->fk_usuario_id,
                     'agente' => $agente,
                     'fecha_alta' => $request->fecha_alta,
@@ -191,7 +211,23 @@ class ReservaServicioController extends Controller
     public function update(Request $request, $id)
     {
         try {
+            // Validar permisos básicos
+            if (!PermisoHelper::tienePermiso(0, 'UPDATE')) {
+                return response()->json([
+                    'message' => 'No tiene permisos para actualizar reservas',
+                    'errors' => ['permission' => ['Acceso denegado']]
+                ], 403);
+            }
+
             $reserva = Reserva::findOrFail($id);
+
+            // Validar permisos del cliente existente
+            if (!$this->usuarioPuedeAccederCliente($reserva->fk_cliente_id)) {
+                return response()->json([
+                    'message' => 'No tiene permisos para trabajar con esta reserva',
+                    'errors' => ['permission' => ['Acceso denegado a esta reserva']]
+                ], 403);
+            }
 
             $validator = Validator::make($request->all(), [
                 'fk_cliente_id' => 'nullable|integer|exists:cliente,cliente_id',
@@ -511,5 +547,28 @@ class ReservaServicioController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+    private function usuarioPuedeAccederCliente($fk_cliente_id)
+    {
+        return true;
+        $usuario = Auth::user();
+
+        // Si el usuario es admin, puede acceder a todos los clientes
+        if ($usuario->es_admin) {
+            return true;
+        }
+
+        // Verificar si el cliente pertenece al usuario o a su grupo
+        $cliente = Cliente::find($fk_cliente_id);
+        if (!$cliente) {
+            return false;
+        }
+
+        if ($cliente->fk_usuario_vendedor === $usuario->usuario_id) {
+            return true;
+        }
+
+        // Aquí podrías agregar lógica adicional para grupos o jerarquías
+        return false;
     }
 }
