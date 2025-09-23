@@ -877,6 +877,216 @@
                 ]
             }
         },
+        "/clientes/clientes/{clientId}/credit-limit": {
+            "get": {
+                "tags": [
+                    "Clientes"
+                ],
+                "summary": "Consultar límite de crédito",
+                "description": "Obtiene información sobre el límite de crédito disponible de un cliente",
+                "operationId": "clienteCreditLimit",
+                "parameters": [
+                    {
+                        "name": "clientId",
+                        "in": "path",
+                        "description": "ID del cliente",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "value",
+                        "in": "query",
+                        "description": "Monto a verificar si está disponible en el crédito",
+                        "required": false,
+                        "schema": {
+                            "type": "number",
+                            "format": "float"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Información del crédito del cliente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "CodeClientBackOffice": {
+                                            "type": "integer",
+                                            "example": 123
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "OK",
+                                                "NO-OK"
+                                            ],
+                                            "example": "OK"
+                                        },
+                                        "Message": {
+                                            "type": "string",
+                                            "example": "Autorizado."
+                                        },
+                                        "credito_autorizado": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 50000
+                                        },
+                                        "credito_utilizado": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 25000
+                                        },
+                                        "credito_disponible": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 25000
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Cliente no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "CodeClientBackOffice": {
+                                            "type": "integer"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "NO-OK"
+                                        },
+                                        "Message": {
+                                            "type": "string",
+                                            "example": "Cliente no encontrado."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/clientes/clientes/{clientId}/remaining-credit": {
+            "get": {
+                "tags": [
+                    "Clientes"
+                ],
+                "summary": "Consultar crédito disponible",
+                "description": "Obtiene información detallada sobre el crédito disponible de un cliente",
+                "operationId": "clienteRemainingCredit",
+                "parameters": [
+                    {
+                        "name": "clientId",
+                        "in": "path",
+                        "description": "ID del cliente",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Información detallada del crédito disponible",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "cliente_id": {
+                                            "type": "integer",
+                                            "example": 123
+                                        },
+                                        "cliente_nombre": {
+                                            "type": "string",
+                                            "example": "Empresa Ejemplo S.A."
+                                        },
+                                        "credito_habilitado": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "limite_credito": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 50000
+                                        },
+                                        "credito_extra": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 5000
+                                        },
+                                        "credito_autorizado": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 55000
+                                        },
+                                        "credito_utilizado": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 25000
+                                        },
+                                        "credito_disponible": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 30000
+                                        },
+                                        "porcentaje_utilizado": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 45.45
+                                        },
+                                        "mensaje": {
+                                            "type": "string",
+                                            "example": "Crédito disponible"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Cliente no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Cliente no encontrado"
+                                        },
+                                        "cliente_id": {
+                                            "type": "integer",
+                                            "example": 123
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/reservas/negocios": {
             "get": {
                 "tags": [

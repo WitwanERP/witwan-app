@@ -3,10 +3,15 @@
 namespace App\Http\Controllers\Empresas\Clientes;
 
 use App\Models\Cliente;
+use App\Models\Creditoextra;
+use App\Models\Factura;
+use App\Models\Reserva;
+use App\Models\Movimiento;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Helpers\PermisoHelper;
 
@@ -242,5 +247,175 @@ class ClienteController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Registro no encontrado'], 404);
         }
+    }
+
+    /**
+     * Get client credit limit information
+     */
+    public function creditLimit($clientId, Request $request)
+    {
+        try {
+            $cliente = Cliente::findOrFail($clientId);
+
+            // Check if credit is enabled for this client
+            if ($cliente->credito_habilitado == 0) {
+                return response()->json([
+                    'CodeClientBackOffice' => $clientId,
+                    'status' => 'NO-OK',
+                    'Message' => 'Cliente sin crédito disponible. Favor contactar al administrador.',
+                    'credito_autorizado' => 0,
+                    'credito_utilizado' => 0,
+                    'credito_disponible' => 0
+                ]);
+            }
+
+            // Get extra credit for today
+            $creditoExtra = Creditoextra::where('fk_cliente_id', $clientId)
+                ->whereDate('creditoextra_fecha', today())
+                ->orderBy('creditoextra_id', 'desc')
+                ->first();
+
+            $extraCredit = $creditoExtra ? $creditoExtra->creditoextra_monto : 0;
+            $creditoAutorizado = $cliente->limite_credito + $extraCredit;
+
+            // Calculate used credit
+            $creditoUtilizado = $this->calculateUsedCredit($clientId);
+
+            // Add requested amount if provided
+            $valorSolicitado = $request->input('value', 0);
+            $creditoUtilizadoTotal = $creditoUtilizado + floatval($valorSolicitado);
+
+            $status = $creditoUtilizadoTotal < $creditoAutorizado ? 'OK' : 'NO-OK';
+            $message = $status === 'OK' ? 'Autorizado.' : 'Cliente sin crédito disponible. Favor contactar al administrador.';
+
+            return response()->json([
+                'CodeClientBackOffice' => $clientId,
+                'status' => $status,
+                'Message' => $message,
+                'credito_autorizado' => $creditoAutorizado,
+                'credito_utilizado' => $creditoUtilizadoTotal,
+                'credito_disponible' => $creditoAutorizado - $creditoUtilizadoTotal
+            ]);
+
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'CodeClientBackOffice' => $clientId,
+                'status' => 'NO-OK',
+                'Message' => 'Cliente no encontrado.'
+            ], 404);
+        }
+    }
+
+    /**
+     * Calculate used credit for a client
+     */
+    private function calculateUsedCredit($clientId)
+    {
+        $usado = 0;
+
+        // 1. Calculate from unpaid invoices
+        $facturas = DB::select("
+            SELECT ROUND(factura_conceptos_gravados*1.19+factura_conceptos_gravadosespecial*1.105 + factura_conceptos_exentos + factura_conceptos_nogravados,0) +
+                   IF(factura_fecha>'2015-12-17',factura_rgterrestres,0) -
+                   CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(factura.remitofull, ':', 3), ':', -1) AS DECIMAL(12,2)) AS total,
+                   (SELECT COALESCE(SUM(rel_facturarecibo.monto), 0) FROM rel_facturarecibo WHERE rel_facturarecibo.fk_factura_id=factura.factura_id) AS aplicado
+            FROM factura
+            WHERE statusfactura != 'AN' AND statusfactura != 'NU' AND fk_cliente_id = ?
+        ", [$clientId]);
+
+        foreach ($facturas as $factura) {
+            $usado += $factura->total - $factura->aplicado;
+        }
+
+        // 2. Calculate from closed/confirmed reservations not yet invoiced
+        $reservas = DB::select("
+            SELECT reserva.*, reserva.fk_moneda_id AS fmoneda
+            FROM reserva
+            JOIN servicio ON servicio.fk_reserva_id = reserva.reserva_id
+            WHERE (status != 'CA' AND servicio_id NOT IN (SELECT DISTINCT(fk_servicio_id) FROM rel_serviciofactura WHERE fk_servicio_id IS NOT NULL))
+              AND fk_cliente_id = ?
+              AND fk_filestatus_id IN ('CL','CO')
+              AND reserva.total != reserva.cobrado
+            GROUP BY reserva_id
+        ", [$clientId]);
+
+        foreach ($reservas as $reserva) {
+            // Get currency exchange rate - simplified version
+            $tcmoneda = $this->getCurrencyRate($reserva->fmoneda);
+            $usado += ($reserva->total - $reserva->cobrado) * $tcmoneda;
+        }
+
+        return $usado;
+    }
+
+    /**
+     * Get remaining credit for a client
+     */
+    public function remainingCredit($clientId)
+    {
+        try {
+            $cliente = Cliente::findOrFail($clientId);
+
+            // Check if credit is enabled for this client
+            if ($cliente->credito_habilitado == 0) {
+                return response()->json([
+                    'cliente_id' => $clientId,
+                    'cliente_nombre' => $cliente->cliente_nombre,
+                    'credito_habilitado' => false,
+                    'limite_credito' => 0,
+                    'credito_extra' => 0,
+                    'credito_autorizado' => 0,
+                    'credito_utilizado' => 0,
+                    'credito_disponible' => 0,
+                    'mensaje' => 'Cliente sin crédito habilitado'
+                ]);
+            }
+
+            // Get extra credit for today
+            $creditoExtra = Creditoextra::where('fk_cliente_id', $clientId)
+                ->whereDate('creditoextra_fecha', today())
+                ->orderBy('creditoextra_id', 'desc')
+                ->first();
+
+            $extraCredit = $creditoExtra ? $creditoExtra->creditoextra_monto : 0;
+            $creditoAutorizado = $cliente->limite_credito + $extraCredit;
+
+            // Calculate used credit
+            $creditoUtilizado = $this->calculateUsedCredit($clientId);
+            $creditoDisponible = $creditoAutorizado - $creditoUtilizado;
+
+            return response()->json([
+                'cliente_id' => $clientId,
+                'cliente_nombre' => $cliente->cliente_nombre,
+                'credito_habilitado' => true,
+                'limite_credito' => $cliente->limite_credito,
+                'credito_extra' => $extraCredit,
+                'credito_autorizado' => $creditoAutorizado,
+                'credito_utilizado' => $creditoUtilizado,
+                'credito_disponible' => $creditoDisponible,
+                'porcentaje_utilizado' => $creditoAutorizado > 0 ? round(($creditoUtilizado / $creditoAutorizado) * 100, 2) : 0,
+                'mensaje' => $creditoDisponible > 0 ? 'Crédito disponible' : 'Sin crédito disponible'
+            ]);
+
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'error' => 'Cliente no encontrado',
+                'cliente_id' => $clientId
+            ], 404);
+        }
+    }
+
+    /**
+     * Get currency exchange rate (simplified version)
+     * In a real implementation, this would fetch from a currency table
+     */
+    private function getCurrencyRate($currencyId)
+    {
+        // Simplified - in real implementation this would query the currency exchange table
+        // For now, assuming CLP (Chilean Peso) as base currency
+        if ($currencyId === 'CLP' || $currencyId === 'USD') {
+            return 1.0; // Base currency or USD
+        }
+        return 1.0; // Default rate
     }
 }

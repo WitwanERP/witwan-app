@@ -337,6 +337,8 @@ Route::group(['middleware' => 'jwt.auth'], function () {
 
         // Client search routes
         Route::get('clientes/search', [ClienteController::class, 'search']);
+        Route::get('clientes/{clientId}/credit-limit', [ClienteController::class, 'creditLimit']);
+        Route::get('clientes/{clientId}/remaining-credit', [ClienteController::class, 'remainingCredit']);
         Route::get('pasajeros/search', [PasajeroController::class, 'search']);
     });
 

@@ -190,5 +190,93 @@ namespace App\OpenApi;
  *         )
  *     )
  * )
+ *
+ * @OA\Get(
+ *     path="/clientes/clientes/{clientId}/credit-limit",
+ *     operationId="clienteCreditLimit",
+ *     tags={"Clientes"},
+ *     summary="Consultar límite de crédito",
+ *     description="Obtiene información sobre el límite de crédito disponible de un cliente",
+ *     security={{"bearerAuth":{}}},
+ *     @OA\Parameter(
+ *         name="clientId",
+ *         in="path",
+ *         description="ID del cliente",
+ *         required=true,
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Parameter(
+ *         name="value",
+ *         in="query",
+ *         description="Monto a verificar si está disponible en el crédito",
+ *         required=false,
+ *         @OA\Schema(type="number", format="float")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Información del crédito del cliente",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="CodeClientBackOffice", type="integer", example=123),
+ *             @OA\Property(property="status", type="string", enum={"OK", "NO-OK"}, example="OK"),
+ *             @OA\Property(property="Message", type="string", example="Autorizado."),
+ *             @OA\Property(property="credito_autorizado", type="number", format="float", example=50000.00),
+ *             @OA\Property(property="credito_utilizado", type="number", format="float", example=25000.00),
+ *             @OA\Property(property="credito_disponible", type="number", format="float", example=25000.00)
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Cliente no encontrado",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="CodeClientBackOffice", type="integer"),
+ *             @OA\Property(property="status", type="string", example="NO-OK"),
+ *             @OA\Property(property="Message", type="string", example="Cliente no encontrado.")
+ *         )
+ *     )
+ * )
+ *
+ * @OA\Get(
+ *     path="/clientes/clientes/{clientId}/remaining-credit",
+ *     operationId="clienteRemainingCredit",
+ *     tags={"Clientes"},
+ *     summary="Consultar crédito disponible",
+ *     description="Obtiene información detallada sobre el crédito disponible de un cliente",
+ *     security={{"bearerAuth":{}}},
+ *     @OA\Parameter(
+ *         name="clientId",
+ *         in="path",
+ *         description="ID del cliente",
+ *         required=true,
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Información detallada del crédito disponible",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="cliente_id", type="integer", example=123),
+ *             @OA\Property(property="cliente_nombre", type="string", example="Empresa Ejemplo S.A."),
+ *             @OA\Property(property="credito_habilitado", type="boolean", example=true),
+ *             @OA\Property(property="limite_credito", type="number", format="float", example=50000.00),
+ *             @OA\Property(property="credito_extra", type="number", format="float", example=5000.00),
+ *             @OA\Property(property="credito_autorizado", type="number", format="float", example=55000.00),
+ *             @OA\Property(property="credito_utilizado", type="number", format="float", example=25000.00),
+ *             @OA\Property(property="credito_disponible", type="number", format="float", example=30000.00),
+ *             @OA\Property(property="porcentaje_utilizado", type="number", format="float", example=45.45),
+ *             @OA\Property(property="mensaje", type="string", example="Crédito disponible")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Cliente no encontrado",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="error", type="string", example="Cliente no encontrado"),
+ *             @OA\Property(property="cliente_id", type="integer", example=123)
+ *         )
+ *     )
+ * )
  */
 class ClienteDocumentation {}
