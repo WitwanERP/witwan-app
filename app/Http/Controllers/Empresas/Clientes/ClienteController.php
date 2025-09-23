@@ -4,9 +4,7 @@ namespace App\Http\Controllers\Empresas\Clientes;
 
 use App\Models\Cliente;
 use App\Models\Creditoextra;
-use App\Models\Factura;
-use App\Models\Reserva;
-use App\Models\Movimiento;
+use App\Models\Cotizacion;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -14,6 +12,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Helpers\PermisoHelper;
+use App\Helpers\SysconfigHelper;
 
 class ClienteController extends Controller
 {
@@ -254,6 +253,16 @@ class ClienteController extends Controller
      */
     public function creditLimit($clientId, Request $request)
     {
+        // Check if credit system is blocked
+        $bloquearCredito = SysconfigHelper::get('bloquearCredito', '0');
+        if ($bloquearCredito === '1') {
+            return response()->json([
+                'CodeClientBackOffice' => $clientId,
+                'status' => 'NO-OK',
+                'Message' => 'Sistema no disponible'
+            ], 401);
+        }
+
         try {
             $cliente = Cliente::findOrFail($clientId);
 
@@ -329,14 +338,14 @@ class ClienteController extends Controller
 
         // 2. Calculate from closed/confirmed reservations not yet invoiced
         $reservas = DB::select("
-            SELECT reserva.*, reserva.fk_moneda_id AS fmoneda
+            SELECT reserva.reserva_id, reserva.total, reserva.cobrado, reserva.fk_moneda_id AS fmoneda
             FROM reserva
             JOIN servicio ON servicio.fk_reserva_id = reserva.reserva_id
             WHERE (status != 'CA' AND servicio_id NOT IN (SELECT DISTINCT(fk_servicio_id) FROM rel_serviciofactura WHERE fk_servicio_id IS NOT NULL))
               AND fk_cliente_id = ?
               AND fk_filestatus_id IN ('CL','CO')
               AND reserva.total != reserva.cobrado
-            GROUP BY reserva_id
+            GROUP BY reserva.reserva_id, reserva.total, reserva.cobrado, reserva.fk_moneda_id
         ", [$clientId]);
 
         foreach ($reservas as $reserva) {
@@ -406,16 +415,34 @@ class ClienteController extends Controller
     }
 
     /**
-     * Get currency exchange rate (simplified version)
-     * In a real implementation, this would fetch from a currency table
+     * Get currency exchange rate from cotizacion table
      */
-    private function getCurrencyRate($currencyId)
+    private function getCurrencyRate($currencyId, $date = null)
     {
-        // Simplified - in real implementation this would query the currency exchange table
-        // For now, assuming CLP (Chilean Peso) as base currency
-        if ($currencyId === 'CLP' || $currencyId === 'USD') {
-            return 1.0; // Base currency or USD
+        if (!$date) {
+            $date = date('Y-m-d');
         }
-        return 1.0; // Default rate
+
+        // Get the most recent exchange rate for the currency and date
+        $cotizacion = Cotizacion::where('cotizacion_moneda', $currencyId)
+            ->whereDate('cotizacion_fecha', '<=', $date)
+            ->orderBy('cotizacion_fecha', 'desc')
+            ->first();
+
+        if ($cotizacion) {
+            return $cotizacion->cotizacion_relacion;
+        }
+
+        // If no rate found, try to get the most recent rate for this currency
+        $cotizacion = Cotizacion::where('cotizacion_moneda', $currencyId)
+            ->orderBy('cotizacion_fecha', 'desc')
+            ->first();
+
+        if ($cotizacion) {
+            return $cotizacion->cotizacion_relacion;
+        }
+
+        // Default to 1.0 if no exchange rate found
+        return 1.0;
     }
 }
