@@ -2318,6 +2318,236 @@
                     }
                 ]
             }
+        },
+        "/admin/caja/recibos/process": {
+            "post": {
+                "tags": [
+                    "Recibos"
+                ],
+                "summary": "Procesar recibo con reservas y facturas",
+                "description": "Procesa un recibo completo incluyendo asiento contable, relaciones con reservas y facturas",
+                "operationId": "reciboProcess",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "fecha",
+                                    "cliente_id",
+                                    "moneda_id",
+                                    "monto_total",
+                                    "reservas",
+                                    "movimientos"
+                                ],
+                                "properties": {
+                                    "fecha": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-01-15"
+                                    },
+                                    "cliente_id": {
+                                        "type": "integer",
+                                        "example": 123
+                                    },
+                                    "moneda_id": {
+                                        "type": "string",
+                                        "example": "USD"
+                                    },
+                                    "monto_total": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 5000
+                                    },
+                                    "reservas": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "reserva_id": {
+                                                    "type": "integer",
+                                                    "example": 456
+                                                },
+                                                "monto": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 3000
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "facturas": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "factura_id": {
+                                                    "type": "integer",
+                                                    "example": 789
+                                                },
+                                                "monto_aplicado": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 2000
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "movimientos": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "cuenta_id": {
+                                                    "type": "integer",
+                                                    "example": 1101
+                                                },
+                                                "tipo": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "debe",
+                                                        "haber"
+                                                    ],
+                                                    "example": "debe"
+                                                },
+                                                "monto": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 5000
+                                                },
+                                                "descripcion": {
+                                                    "type": "string",
+                                                    "example": "Pago en efectivo"
+                                                },
+                                                "banco": {
+                                                    "type": "string",
+                                                    "example": "Banco Estado"
+                                                },
+                                                "operacion": {
+                                                    "type": "string",
+                                                    "example": "TRANSFERENCIA"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "cotizacion_personalizada": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 950.5
+                                    },
+                                    "tipo_cambio_general": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 900
+                                    },
+                                    "recibo_tipo": {
+                                        "type": "string",
+                                        "example": "PAGO"
+                                    },
+                                    "observaciones": {
+                                        "type": "string",
+                                        "example": "Pago reservas enero 2025"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Recibo procesado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Recibo procesado exitosamente"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "recibo_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "recibo_nro": {
+                                                    "type": "string",
+                                                    "example": "REC-00000001"
+                                                },
+                                                "asiento_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "monto_total": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 5000
+                                                },
+                                                "cotizacion_aplicada": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 950.5
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error en el procesamiento",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error al procesar el recibo"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "El asiento contable no está balanceado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -2607,6 +2837,49 @@
                     }
                 },
                 "type": "object"
+            },
+            "Recibo": {
+                "properties": {
+                    "recibo_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "recibo_tipo": {
+                        "type": "string",
+                        "example": "PAGO"
+                    },
+                    "recibo_nro": {
+                        "type": "string",
+                        "example": "REC-00000001"
+                    },
+                    "fecha": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-01-15"
+                    },
+                    "fk_cliente_id": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "fk_moneda_id": {
+                        "type": "string",
+                        "example": "USD"
+                    },
+                    "monto": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 5000
+                    },
+                    "statusrecibo": {
+                        "type": "string",
+                        "example": "OK"
+                    },
+                    "observaciones": {
+                        "type": "string",
+                        "example": "Pago reservas enero"
+                    }
+                },
+                "type": "object"
             }
         },
         "securitySchemes": {
@@ -2642,6 +2915,10 @@
         {
             "name": "Pasajeros",
             "description": "Pasajeros"
+        },
+        {
+            "name": "Recibos",
+            "description": "Recibos"
         }
     ],
     "security": [
