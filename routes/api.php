@@ -262,6 +262,7 @@ Route::group(['middleware' => 'jwt.auth'], function () {
             Route::apiResource('conciliaciones', ConciliacionController::class);
             Route::apiResource('ordenes-admin', OrdenadminController::class);
             Route::apiResource('recibos', ReciboController::class);
+            Route::post('recibos/process', [ReciboController::class, 'process']);
         });
 
         // Client Management
