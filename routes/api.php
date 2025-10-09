@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\Route;
 // Controllers
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AssistantController;
+use App\Http\Controllers\Api\TariffController;
+use App\Http\Controllers\Api\TestPricingController;
+use App\Http\Controllers\Api\AdvancePaymentController;
 
 // Admin Controllers
 use App\Http\Controllers\Admin\BSP\{ReportebspController, ReportebsptktController};
@@ -564,6 +567,50 @@ Route::group(['middleware' => 'jwt.auth'], function () {
     Route::apiResource('banners', BannerController::class);
     Route::apiResource('base', BaseController::class);
     Route::apiResource('eventos', ColaeventoController::class);
+
+    /*
+    |--------------------------------------------------------------------------
+    | PRICING/TARIFF ROUTES
+    |--------------------------------------------------------------------------
+    */
+    Route::group(['prefix' => 'tariff'], function () {
+        Route::post('calculate', [TariffController::class, 'calculate']);
+        Route::post('calculate-bulk', [TariffController::class, 'calculateBulk']);
+        Route::post('legacy', [TariffController::class, 'legacy']); // Compatibilidad con método obsoleto
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | QUOTE ROUTES - Búsqueda + Tarifación Unificada
+    |--------------------------------------------------------------------------
+    */
+    Route::group(['prefix' => 'quote'], function () {
+        Route::post('search', [App\Http\Controllers\Api\QuoteController::class, 'search']);
+        Route::post('search-by-id', [App\Http\Controllers\Api\QuoteController::class, 'searchById']);
+        Route::post('calculate', [App\Http\Controllers\Api\QuoteController::class, 'calculate']);
+        Route::post('calculate-multiple', [App\Http\Controllers\Api\QuoteController::class, 'calculateMultiple']);
+        Route::post('availability', [App\Http\Controllers\Api\QuoteController::class, 'availability']);
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | TEST PRICING ROUTES (Temporal)
+    |--------------------------------------------------------------------------
+    */
+    Route::group(['prefix' => 'pricing'], function () {
+        Route::get('status', [TestPricingController::class, 'status']);
+        Route::post('test', [TestPricingController::class, 'test']);
+        Route::post('mock', [TestPricingController::class, 'mock']);
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | ADVANCE PAYMENT ROUTES
+    |--------------------------------------------------------------------------
+    */
+    Route::group(['prefix' => 'advance-payment'], function () {
+        Route::post('create', [AdvancePaymentController::class, 'create']);
+    });
 
     /*
     |--------------------------------------------------------------------------

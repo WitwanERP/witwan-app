@@ -267,7 +267,7 @@ class ReciboController extends Controller
                 ]);
             }
 
-            // 8. Relacionar reservas con el recibo
+            // 8. Relacionar reservas con el recibo y actualizar cache de cobrado
             foreach ($reservasData as $reserva) {
                 RelFilerecibo::create([
                     'fk_file_id' => $reserva['reserva_id'],
@@ -276,6 +276,9 @@ class ReciboController extends Controller
                     'fk_moneda_id' => $data['moneda_id'],
                     'monto' => $reserva['monto']
                 ]);
+
+                // Actualizar el campo cobrado de la reserva (cache)
+                $this->updateReservaCobrado($reserva['reserva_id']);
             }
 
             // 9. Relacionar facturas si existen
@@ -355,5 +358,36 @@ class ReciboController extends Controller
         $nextNumber = $lastRecibo ? ($lastRecibo->recibo_id + 1) : 1;
 
         return 'REC-' . str_pad($nextNumber, 8, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Update reserva.cobrado field using exchange rates from movimiento.cotizacion_moneda
+     */
+    private function updateReservaCobrado($reservaId)
+    {
+        // Obtener la reserva y su moneda base
+        $reserva = Reserva::findOrFail($reservaId);
+        $monedaBaseReserva = $reserva->fk_moneda_id;
+
+        // Calcular total cobrado usando la cotización de los movimientos del recibo
+        $totalCobradoEnMonedaBase = DB::selectOne("
+            SELECT COALESCE(SUM(
+                CASE
+                    WHEN rfr.fk_moneda_id = ? THEN rfr.monto
+                    ELSE rfr.monto / COALESCE(m.cotizacion_moneda, 1.0)
+                END
+            ), 0) as total_cobrado
+            FROM rel_filerecibo rfr
+            JOIN recibo r ON rfr.fk_recibo_id = r.recibo_id
+            LEFT JOIN movimiento m ON m.fk_recibo_id = r.recibo_id AND m.cotizacion_moneda > 0
+            WHERE rfr.fk_file_id = ?
+            AND r.statusrecibo != 'AN'
+        ", [$monedaBaseReserva, $reservaId])->total_cobrado;
+
+        // Actualizar el campo cobrado en la reserva
+        Reserva::where('reserva_id', $reservaId)
+            ->update(['cobrado' => $totalCobradoEnMonedaBase]);
+
+        return $totalCobradoEnMonedaBase;
     }
 }

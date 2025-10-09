@@ -11,6 +11,216 @@
         }
     ],
     "paths": {
+        "/advance-payment/create": {
+            "post": {
+                "tags": [
+                    "Advance Payment"
+                ],
+                "summary": "Crear anticipo con reserva y recibo",
+                "description": "Crea un file de anticipo generando automáticamente una reserva, servicio tipo ANT, recibo y movimientos contables correspondientes",
+                "operationId": "advancePaymentCreate",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "cliente_id",
+                                    "monto",
+                                    "moneda"
+                                ],
+                                "properties": {
+                                    "cliente_id": {
+                                        "description": "ID del cliente para el anticipo",
+                                        "type": "integer",
+                                        "example": 123
+                                    },
+                                    "monto": {
+                                        "description": "Monto del anticipo",
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 500
+                                    },
+                                    "moneda": {
+                                        "description": "Código de moneda (USD, EUR, etc.)",
+                                        "type": "string",
+                                        "example": "USD"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Anticipo creado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "File de anticipo creado exitosamente"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "reserva_id": {
+                                                    "type": "integer",
+                                                    "example": 456
+                                                },
+                                                "servicio_id": {
+                                                    "type": "integer",
+                                                    "example": 789
+                                                },
+                                                "recibo_id": {
+                                                    "type": "integer",
+                                                    "example": 321
+                                                },
+                                                "movimientos": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "integer"
+                                                    },
+                                                    "example": [
+                                                        101,
+                                                        102
+                                                    ]
+                                                },
+                                                "resumen": {
+                                                    "properties": {
+                                                        "cliente": {
+                                                            "type": "string",
+                                                            "example": "Juan Pérez"
+                                                        },
+                                                        "monto": {
+                                                            "type": "number",
+                                                            "example": 500
+                                                        },
+                                                        "moneda": {
+                                                            "type": "string",
+                                                            "example": "USD"
+                                                        },
+                                                        "fecha": {
+                                                            "type": "string",
+                                                            "format": "date",
+                                                            "example": "2025-01-15"
+                                                        },
+                                                        "forma_pago": {
+                                                            "type": "string",
+                                                            "example": "Efectivo"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error de validación"
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "cliente_id": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    },
+                                                    "example": [
+                                                        "El campo cliente_id es obligatorio"
+                                                    ]
+                                                },
+                                                "monto": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    },
+                                                    "example": [
+                                                        "El monto debe ser mayor a 0"
+                                                    ]
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Cliente no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Cliente no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error interno del servidor"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Descripción del error técnico"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/auth/login": {
             "post": {
                 "tags": [
@@ -2892,6 +3102,10 @@
         }
     },
     "tags": [
+        {
+            "name": "Advance Payment",
+            "description": "Advance Payment"
+        },
         {
             "name": "Auth",
             "description": "Auth"
