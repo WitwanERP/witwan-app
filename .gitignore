@@ -21,3 +21,5 @@ yarn-error.log
 /.vscode
 .qodo
 CLAUDE.md
+*.sql
+*:Zone.Identifier
