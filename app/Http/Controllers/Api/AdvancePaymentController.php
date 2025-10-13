@@ -8,8 +8,9 @@ use App\Models\Servicio;
 use App\Models\Recibo;
 use App\Models\Movimiento;
 use App\Models\Cliente;
-use App\Models\Formapago;
 use App\Models\Plancuentum;
+use App\Models\Asientocontable;
+use App\Models\Cotizacion;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -32,8 +33,9 @@ class AdvancePaymentController extends Controller
                 'cliente_id' => 'required|integer|exists:cliente,cliente_id',
                 'monto' => 'required|numeric|min:0.01',
                 'moneda' => 'required|string|size:3',
-                'forma_pago_id' => 'nullable|integer|exists:formapago,formapago_id',
-                'observaciones' => 'nullable|string|max:500'
+                'forma_pago_id' => 'required|integer|exists:plancuentum,plancuenta_id',
+                'observaciones' => 'nullable|string|max:500',
+                'nro_documento' => 'nullable|string|max:100'
             ]);
 
             // Iniciar transacción
@@ -42,27 +44,33 @@ class AdvancePaymentController extends Controller
             // Obtener datos del cliente
             $cliente = Cliente::findOrFail($validatedData['cliente_id']);
 
-            // Obtener forma de pago (efectivo por defecto)
-            $formaPago = $this->getFormaPago($validatedData['forma_pago_id'] ?? null);
+            // Obtener cotización de la moneda
+            $cotizacion = $this->getCurrencyRate($validatedData['moneda'], now());
 
             // Obtener cuentas contables necesarias
             $cuentaRecibos = $this->getCuentaRecibos();
+            $cuentaFormaPago = Plancuentum::findOrFail($validatedData['forma_pago_id']);
+
+            // 0. Crear asiento contable
+            $asientoContable = Asientocontable::create([]);
 
             // 1. Crear la reserva
-            $reserva = $this->createReserva($cliente, $validatedData);
+            $reserva = $this->createReserva($cliente, $validatedData, $cotizacion);
 
             // 2. Crear el servicio ANT
-            $servicio = $this->createServicioAnticipo($reserva, $validatedData);
+            $servicio = $this->createServicioAnticipo($reserva, $validatedData, $cotizacion);
 
             // 3. Crear el recibo
-            $recibo = $this->createRecibo($cliente, $validatedData);
+            $recibo = $this->createRecibo($cliente, $validatedData, $cotizacion);
 
             // 4. Crear movimientos contables
             $movimientos = $this->createMovimientosContables(
                 $recibo,
+                $asientoContable,
                 $cuentaRecibos,
-                $formaPago,
-                $validatedData
+                $cuentaFormaPago,
+                $validatedData,
+                $cotizacion
             );
 
             // Crear relación en rel_filerecibo
@@ -91,13 +99,13 @@ class AdvancePaymentController extends Controller
                         'monto' => $validatedData['monto'],
                         'moneda' => $validatedData['moneda'],
                         'fecha' => now()->format('Y-m-d'),
-                        'forma_pago' => $formaPago->formapago_nombre
+                        'cotizacion' => $cotizacion,
+                        'asiento_contable_id' => $asientoContable->asientocontable_id
                     ]
                 ]
             ];
 
             return response()->json($response);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollback();
             return response()->json([
@@ -105,7 +113,6 @@ class AdvancePaymentController extends Controller
                 'message' => 'Error en la validación de datos',
                 'errors' => $e->errors()
             ], 400);
-
         } catch (\Exception $e) {
             DB::rollback();
 
@@ -126,7 +133,7 @@ class AdvancePaymentController extends Controller
     /**
      * Crear la reserva base
      */
-    private function createReserva(Cliente $cliente, array $data): Reserva
+    private function createReserva(Cliente $cliente, array $data, float $cotizacion): Reserva
     {
         $userId = Auth::id() ?? 1; // Usuario por defecto si no hay autenticación
         $fechaAlta = now();
@@ -136,7 +143,8 @@ class AdvancePaymentController extends Controller
             'fk_cliente_id' => $cliente->cliente_id,
             'cliente_usuario' => $cliente->cliente_id,
             'facturar_a' => $cliente->cliente_id,
-            'fk_sistema_id' => 1, // Sistema por defecto
+            'fk_sistema_id' => 2,
+            'fk_sistemaaplicacion_id' => 2,
             'fk_usuario_id' => $userId,
             'agente' => $userId,
             'fk_filestatus_id' => 'ACT', // Activo
@@ -146,7 +154,7 @@ class AdvancePaymentController extends Controller
             'um' => $fechaAlta,
             'umu' => $userId,
             'codigo' => $this->generateReservaCode(),
-            'tipocodigo' => 'ANT',
+            'tipocodigo' => 'MA',
             'titular_nombre' => $cliente->cliente_nombre,
             'titular_apellido' => $cliente->cliente_apellido ?? '',
             'titular_email' => $cliente->cliente_email ?? '',
@@ -180,7 +188,7 @@ class AdvancePaymentController extends Controller
     /**
      * Crear el servicio de anticipo
      */
-    private function createServicioAnticipo(Reserva $reserva, array $data): Servicio
+    private function createServicioAnticipo(Reserva $reserva, array $data, float $cotizacion): Servicio
     {
         $userId = Auth::id() ?? 1;
         $fechaServicio = now();
@@ -205,6 +213,8 @@ class AdvancePaymentController extends Controller
             'fk_base_id' => null,
             'status' => 'OK',
             'moneda_costo' => $data['moneda'],
+            'cotcosto' => $cotizacion,
+            'cotventa' => $cotizacion,
             'iva' => 0,
             'fk_moneda_id' => $data['moneda'],
             'impuestos' => 0,
@@ -238,23 +248,25 @@ class AdvancePaymentController extends Controller
     /**
      * Crear el recibo
      */
-    private function createRecibo(Cliente $cliente, array $data): Recibo
+    private function createRecibo(Cliente $cliente, array $data, float $cotizacion): Recibo
     {
         $userId = Auth::id() ?? 1;
         $fechaRecibo = now();
 
         $reciboData = [
-            'recibo_tipo' => 'ANT',
+            'recibo_tipo' => 'R',
             'recibo_nro' => $this->generateReciboNumber(),
             'fecha' => $fechaRecibo,
             'fk_cliente_id' => $cliente->cliente_id,
             'fk_moneda_id' => $data['moneda'],
             'monto' => $data['monto'],
             'fk_usuario_id' => $userId,
-            'statusrecibo' => 'ACT',
+            'statusrecibo' => 'OK',
             'actualiza' => 1,
             'observaciones' => $data['observaciones'] ?? 'Anticipo',
-            'automatico' => 1
+            'automatico' => 1,
+            'cotizacion_moneda' => $cotizacion,
+            'tipo' => ''
         ];
 
         return Recibo::create($reciboData);
@@ -265,27 +277,30 @@ class AdvancePaymentController extends Controller
      */
     private function createMovimientosContables(
         Recibo $recibo,
+        Asientocontable $asientoContable,
         Plancuentum $cuentaRecibos,
-        Formapago $formaPago,
-        array $data
+        Plancuentum $cuentaFormaPago,
+        array $data,
+        float $cotizacion
     ): array {
         $userId = Auth::id() ?? 1;
         $fecha = now();
         $movimientos = [];
+        $nroDocumento = $data['nro_documento'] ?? '';
 
-        // Línea 1: Débito a cuenta de recibos
+        // Línea 1: Débito a forma de pago (entrada de dinero)
         $movimiento1Data = [
-            'fk_asientocontable_id' => null,
-            'statusmovimiento' => 'ACT',
+            'fk_asientocontable_id' => $asientoContable->asientocontable_id,
+            'statusmovimiento' => 'OK',
             'fk_file_id' => null,
-            'fk_plancuenta_id' => $cuentaRecibos->plancuenta_id,
+            'fk_plancuenta_id' => $cuentaFormaPago->plancuenta_id,
             'fk_moneda_id' => $data['moneda'],
-            'cuenta_debito' => 1, // Débito
+            'cuenta_debito' => $cuentaFormaPago->plancuenta_id,
             'cuenta_credito' => 0,
-            'cotizacion_moneda' => 1.0,
+            'cotizacion_moneda' => $cotizacion,
             'monto' => $data['monto'],
-            'montofinal' => $data['monto'],
-            'tipo' => 'REC',
+            'montofinal' => $data['monto'] * $cotizacion,
+            'tipo' => '',
             'fecha' => $fecha,
             'fecha_acreditacion' => $fecha,
             'regdate' => $fecha,
@@ -299,7 +314,7 @@ class AdvancePaymentController extends Controller
             'fk_facturaproveedor_id' => null,
             'descripcion' => 'Anticipo recibido - ' . ($data['observaciones'] ?? 'Sin observaciones'),
             'banco' => '',
-            'nrodocumento' => $recibo->recibo_nro,
+            'nrodocumento' => $nroDocumento,
             'operacion' => '',
             'fk_recibo_id' => $recibo->recibo_id,
             'porcentajeadministracion' => 0,
@@ -324,19 +339,19 @@ class AdvancePaymentController extends Controller
         $movimiento1 = Movimiento::create($movimiento1Data);
         $movimientos[] = $movimiento1;
 
-        // Línea 2: Crédito a forma de pago
+        // Línea 2: Crédito a cuenta de recibos (anticipo del cliente)
         $movimiento2Data = [
-            'fk_asientocontable_id' => null,
-            'statusmovimiento' => 'ACT',
+            'fk_asientocontable_id' => $asientoContable->asientocontable_id,
+            'statusmovimiento' => 'OK',
             'fk_file_id' => null,
-            'fk_plancuenta_id' => $formaPago->fk_plancuenta_id,
+            'fk_plancuenta_id' => $cuentaFormaPago->plancuenta_id,
             'fk_moneda_id' => $data['moneda'],
-            'cuenta_debito' => 0,
-            'cuenta_credito' => 1, // Crédito
-            'cotizacion_moneda' => 1.0,
+            'cuenta_debito' => $cuentaFormaPago->plancuenta_id,
+            'cuenta_credito' => $cuentaRecibos->plancuenta_id,
+            'cotizacion_moneda' => $cotizacion,
             'monto' => $data['monto'],
-            'montofinal' => $data['monto'],
-            'tipo' => 'REC',
+            'montofinal' => $data['monto'] * $cotizacion,
+            'tipo' => '',
             'fecha' => $fecha,
             'fecha_acreditacion' => $fecha,
             'regdate' => $fecha,
@@ -348,9 +363,9 @@ class AdvancePaymentController extends Controller
             'fk_notadebito_id' => null,
             'fk_ordenadmin_id' => null,
             'fk_facturaproveedor_id' => null,
-            'descripcion' => 'Anticipo por ' . $formaPago->formapago_nombre . ' - ' . ($data['observaciones'] ?? 'Sin observaciones'),
+            'descripcion' => 'Anticipo del cliente - ' . ($data['observaciones'] ?? 'Sin observaciones'),
             'banco' => '',
-            'nrodocumento' => $recibo->recibo_nro,
+            'nrodocumento' => $nroDocumento,
             'operacion' => '',
             'fk_recibo_id' => $recibo->recibo_id,
             'porcentajeadministracion' => 0,
@@ -379,51 +394,27 @@ class AdvancePaymentController extends Controller
     }
 
     /**
-     * Obtener forma de pago (efectivo por defecto)
-     */
-    private function getFormaPago(?int $formaPagoId): Formapago
-    {
-        if ($formaPagoId) {
-            $formaPago = Formapago::find($formaPagoId);
-            if ($formaPago) {
-                return $formaPago;
-            }
-        }
-
-        // Buscar forma de pago "Efectivo" por defecto
-        $efectivo = Formapago::where('formapago_nombre', 'LIKE', '%efectivo%')
-            ->orWhere('formapago_nombre', 'LIKE', '%cash%')
-            ->first();
-
-        if ($efectivo) {
-            return $efectivo;
-        }
-
-        // Si no existe, usar la primera forma de pago disponible
-        $primera = Formapago::first();
-        if ($primera) {
-            return $primera;
-        }
-
-        throw new \Exception('No se encontró ninguna forma de pago configurada en el sistema');
-    }
-
-    /**
-     * Obtener cuenta contable para recibos
+     * Obtener cuenta contable para recibos desde sysconfig
      */
     private function getCuentaRecibos(): Plancuentum
     {
-        // Buscar cuenta de recibos
-        $cuentaRecibos = Plancuentum::where('plancuenta_nombre', 'LIKE', '%recibo%')
-            ->orWhere('plancuenta_nombre', 'LIKE', '%anticipo%')
-            ->orWhere('plancuenta_codigo', 'LIKE', '%1101%') // Código típico para cuentas por cobrar
+        // Obtener ID de cuenta desde sysconfig
+        $cuentaRecibosCfg = DB::table('sysconfig')
+            ->where('sysconfig_key', 'cuentarecibos')
             ->first();
 
-        if ($cuentaRecibos) {
-            return $cuentaRecibos;
+        if (!$cuentaRecibosCfg || empty($cuentaRecibosCfg->sysconfig_value)) {
+            throw new \Exception('No se encontró configuración de cuenta de recibos en sysconfig (key: cuentarecibos)');
         }
 
-        throw new \Exception('No se encontró cuenta contable para recibos. Configure una cuenta con "recibos" en el nombre.');
+        $cuentaId = (int) $cuentaRecibosCfg->sysconfig_value;
+        $cuenta = Plancuentum::find($cuentaId);
+
+        if (!$cuenta) {
+            throw new \Exception("La cuenta de recibos configurada (ID: $cuentaId) no existe en plancuentum");
+        }
+
+        return $cuenta;
     }
 
     /**
@@ -431,8 +422,30 @@ class AdvancePaymentController extends Controller
      */
     private function generateReservaCode(): int
     {
-        $lastReserva = Reserva::orderBy('reserva_id', 'desc')->first();
-        return $lastReserva ? $lastReserva->codigo + 1 : 1000;
+        $maxCodigo = Reserva::max('codigo');
+        return $maxCodigo ? $maxCodigo + 1 : 1000;
+    }
+
+    /**
+     * Obtener cotización de moneda
+     */
+    private function getCurrencyRate(string $moneda, $fecha): float
+    {
+        $cotizacion = Cotizacion::where('cotizacion_moneda', $moneda)
+            ->whereDate('cotizacion_fecha', '<=', $fecha)
+            ->orderBy('cotizacion_fecha', 'desc')
+            ->first();
+
+        if ($cotizacion) {
+            return $cotizacion->cotizacion_relacion;
+        }
+
+        // Fallback: buscar la cotización más reciente
+        $cotizacion = Cotizacion::where('cotizacion_moneda', $moneda)
+            ->orderBy('cotizacion_fecha', 'desc')
+            ->first();
+
+        return $cotizacion ? $cotizacion->cotizacion_relacion : 1.0;
     }
 
     /**
@@ -440,19 +453,23 @@ class AdvancePaymentController extends Controller
      */
     private function generateReciboNumber(): string
     {
-        $prefix = 'ANT';
-        $year = date('Y');
-        $lastRecibo = Recibo::where('recibo_nro', 'LIKE', $prefix . $year . '%')
-            ->orderBy('recibo_id', 'desc')
-            ->first();
+        // Obtener el último número de recibo (numeración global única)
+        $lastRecibo = Recibo::orderBy('recibo_id', 'desc')->first();
 
-        if ($lastRecibo) {
-            $lastNumber = (int) substr($lastRecibo->recibo_nro, -6);
-            $newNumber = $lastNumber + 1;
-        } else {
-            $newNumber = 1;
+        if ($lastRecibo && is_numeric($lastRecibo->recibo_nro)) {
+            return (string) ((int) $lastRecibo->recibo_nro + 1);
         }
 
-        return $prefix . $year . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
+        // Si no hay recibos o el último no es numérico, buscar el máximo valor numérico
+        $maxNumerico = Recibo::whereRaw('recibo_nro REGEXP "^[0-9]+$"')
+            ->orderByRaw('CAST(recibo_nro AS UNSIGNED) DESC')
+            ->first();
+
+        if ($maxNumerico) {
+            return (string) ((int) $maxNumerico->recibo_nro + 1);
+        }
+
+        // Si no hay ningún recibo numérico, empezar desde 1
+        return '1';
     }
 }
