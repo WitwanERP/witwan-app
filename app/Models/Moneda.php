@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class Moneda
- * 
+ *
  * @property string $moneda_id
  * @property string $moneda_nombre
  * @property string $descripcion
@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $moneda_basica
  * @property string $iso_code
  * @property int $publicaweb
- * 
+ *
  * @property Alojamiento|null $alojamiento
  * @property Collection|Canje[] $canjes
  * @property Collection|Cliente[] $clientes
@@ -32,7 +32,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property Collection|Movimiento[] $movimientos
  * @property Collection|Notadebito[] $notadebitos
  * @property Collection|Ordenadmin[] $ordenadmins
- * @property Collection|Plancuentum[] $plancuenta
+ * @property Collection|Plancuenta[] $plancuenta
  * @property Collection|Pnraereo[] $pnraereos
  * @property Collection|Recibo[] $recibos
  * @property RelFilerecibo|null $rel_filerecibo
@@ -128,7 +128,7 @@ class Moneda extends Model
 
 	public function plancuenta()
 	{
-		return $this->hasMany(Plancuentum::class, 'fk_moneda_id', 'moneda_id');
+		return $this->hasMany(Plancuenta::class, 'fk_moneda_id', 'moneda_id');
 	}
 
 	public function pnraereos()

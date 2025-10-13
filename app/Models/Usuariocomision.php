@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class Usuariocomision
- * 
+ *
  * @property int $usuariocomision_id
  * @property int $fk_usuario_id
  * @property int $fk_file_id
@@ -24,9 +24,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $descripcion
  * @property int $fk_plancuenta_id
  * @property int $fk_factura_id
- * 
+ *
  * @property Moneda $moneda
- * @property Plancuentum $plancuentum
+ * @property Plancuenta $plancuenta
  * @property Reserva $reserva
  * @property Servicio $servicio
  * @property Usuario $usuario
@@ -69,9 +69,9 @@ class Usuariocomision extends Model
 		return $this->belongsTo(Moneda::class, 'fk_moneda_id', 'moneda_id');
 	}
 
-	public function plancuentum()
+	public function plancuenta()
 	{
-		return $this->belongsTo(Plancuentum::class, 'fk_plancuenta_id');
+		return $this->belongsTo(Plancuenta::class, 'fk_plancuenta_id');
 	}
 
 	public function reserva()

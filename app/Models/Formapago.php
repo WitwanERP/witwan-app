@@ -10,12 +10,12 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class Formapago
- * 
+ *
  * @property int $formapago_id
  * @property string $formapago_nombre
  * @property int $fk_plancuenta_id
- * 
- * @property Plancuentum $plancuentum
+ *
+ * @property Plancuenta $plancuenta
  *
  * @package App\Models
  */
@@ -34,8 +34,8 @@ class Formapago extends Model
 		'fk_plancuenta_id'
 	];
 
-	public function plancuentum()
+	public function plancuenta()
 	{
-		return $this->belongsTo(Plancuentum::class, 'fk_plancuenta_id');
+		return $this->belongsTo(Plancuenta::class, 'fk_plancuenta_id');
 	}
 }

@@ -8,7 +8,7 @@ use App\Models\Servicio;
 use App\Models\Recibo;
 use App\Models\Movimiento;
 use App\Models\Cliente;
-use App\Models\Plancuentum;
+use App\Models\Plancuenta;
 use App\Models\Asientocontable;
 use App\Models\Cotizacion;
 use Illuminate\Http\Request;
@@ -49,7 +49,7 @@ class AdvancePaymentController extends Controller
 
             // Obtener cuentas contables necesarias
             $cuentaRecibos = $this->getCuentaRecibos();
-            $cuentaFormaPago = Plancuentum::findOrFail($validatedData['forma_pago_id']);
+            $cuentaFormaPago = Plancuenta::findOrFail($validatedData['forma_pago_id']);
 
             // 0. Crear asiento contable
             $asientoContable = Asientocontable::create([]);
@@ -278,8 +278,8 @@ class AdvancePaymentController extends Controller
     private function createMovimientosContables(
         Recibo $recibo,
         Asientocontable $asientoContable,
-        Plancuentum $cuentaRecibos,
-        Plancuentum $cuentaFormaPago,
+        Plancuenta $cuentaRecibos,
+        Plancuenta $cuentaFormaPago,
         array $data,
         float $cotizacion
     ): array {
@@ -396,7 +396,7 @@ class AdvancePaymentController extends Controller
     /**
      * Obtener cuenta contable para recibos desde sysconfig
      */
-    private function getCuentaRecibos(): Plancuentum
+    private function getCuentaRecibos(): Plancuenta
     {
         // Obtener ID de cuenta desde sysconfig
         $cuentaRecibosCfg = DB::table('sysconfig')
@@ -408,10 +408,10 @@ class AdvancePaymentController extends Controller
         }
 
         $cuentaId = (int) $cuentaRecibosCfg->sysconfig_value;
-        $cuenta = Plancuentum::find($cuentaId);
+        $cuenta = Plancuenta::find($cuentaId);
 
         if (!$cuenta) {
-            throw new \Exception("La cuenta de recibos configurada (ID: $cuentaId) no existe en plancuentum");
+            throw new \Exception("La cuenta de recibos configurada (ID: $cuentaId) no existe en plancuenta");
         }
 
         return $cuenta;

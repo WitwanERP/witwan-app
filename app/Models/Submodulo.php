@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class Submodulo
- * 
+ *
  * @property string $tipoproducto_id
  * @property string $tipoproducto_nombre
  * @property int $tipoproducto_eventual
@@ -30,8 +30,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $submodulo_aereos
  * @property int $submodulo_orden
  * @property string $campoendocumento
- * 
- * @property Plancuentum $plancuentum
+ *
+ * @property Plancuenta $plancuenta
  * @property Proveedor $proveedor
  * @property Collection|Alojamientofacilidad[] $alojamientofacilidads
  * @property Collection|Iva[] $ivas
@@ -87,9 +87,9 @@ class Submodulo extends Model
 		'campoendocumento'
 	];
 
-	public function plancuentum()
+	public function plancuenta()
 	{
-		return $this->belongsTo(Plancuentum::class, 'cuenta_renta');
+		return $this->belongsTo(Plancuenta::class, 'cuenta_renta');
 	}
 
 	public function proveedor()

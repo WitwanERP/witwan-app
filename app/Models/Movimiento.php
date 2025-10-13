@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class Movimiento
- * 
+ *
  * @property int $movimiento_id
  * @property int $fk_asientocontable_id
  * @property string $statusmovimiento
@@ -58,7 +58,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $filtro_file
  * @property int $filtro_servicio
  * @property int $auxiliar
- * 
+ *
  * @property Asientocontable $asientocontable
  * @property Cliente $cliente
  * @property Factura $factura
@@ -68,7 +68,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property Notacredito $notacredito
  * @property Notadebito $notadebito
  * @property Ordenadmin $ordenadmin
- * @property Plancuentum $plancuentum
+ * @property Plancuenta $plancuenta
  * @property Proveedor $proveedor
  * @property Recibo $recibo
  * @property Reserva $reserva
@@ -213,9 +213,9 @@ class Movimiento extends Model
 		return $this->belongsTo(Ordenadmin::class, 'fk_ordenadmin_id');
 	}
 
-	public function plancuentum()
+	public function plancuenta()
 	{
-		return $this->belongsTo(Plancuentum::class, 'fk_plancuenta_id');
+		return $this->belongsTo(Plancuenta::class, 'fk_plancuenta_id');
 	}
 
 	public function proveedor()

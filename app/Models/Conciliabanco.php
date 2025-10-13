@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class Conciliabanco
- * 
+ *
  * @property int $conciliabanco_id
  * @property int $fk_plancuenta_id
  * @property string $conciliabanco_nombre
@@ -20,8 +20,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $conciliabanco_cerrado
  * @property float $conciliabanco_saldo
  * @property string $archivo
- * 
- * @property Plancuentum $plancuentum
+ *
+ * @property Plancuenta $plancuenta
  *
  * @package App\Models
  */
@@ -49,8 +49,8 @@ class Conciliabanco extends Model
 		'archivo'
 	];
 
-	public function plancuentum()
+	public function plancuenta()
 	{
-		return $this->belongsTo(Plancuentum::class, 'fk_plancuenta_id');
+		return $this->belongsTo(Plancuenta::class, 'fk_plancuenta_id');
 	}
 }

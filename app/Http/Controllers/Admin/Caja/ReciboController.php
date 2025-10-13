@@ -161,7 +161,7 @@ class ReciboController extends Controller
             'facturas.*.factura_id' => 'required_with:facturas|integer|exists:factura,factura_id',
             'facturas.*.monto_aplicado' => 'required_with:facturas|numeric|min:0',
             'movimientos' => 'required|array|min:2',
-            'movimientos.*.cuenta_id' => 'required|integer|exists:plancuentum,plancuenta_id',
+            'movimientos.*.cuenta_id' => 'required|integer|exists:plancuenta,plancuenta_id',
             'movimientos.*.tipo' => 'required|in:debe,haber',
             'movimientos.*.monto' => 'required|numeric|min:0',
             'movimientos.*.descripcion' => 'nullable|string',
@@ -215,8 +215,8 @@ class ReciboController extends Controller
 
             // 4. Obtener cotización
             $cotizacion = $data['cotizacion_personalizada'] ??
-                         $data['tipo_cambio_general'] ??
-                         $this->getCurrencyRate($data['moneda_id'], $data['fecha']);
+                $data['tipo_cambio_general'] ??
+                $this->getCurrencyRate($data['moneda_id'], $data['fecha']);
 
             // 5. Crear el recibo
             $recibo = Recibo::create([
@@ -315,7 +315,6 @@ class ReciboController extends Controller
                     'cotizacion_aplicada' => $cotizacion
                 ]
             ], 201);
-
         } catch (\Exception $e) {
             DB::rollBack();
 

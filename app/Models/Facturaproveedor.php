@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class Facturaproveedor
- * 
+ *
  * @property int $facturaproveedor_id
  * @property string $facturaproveedor_nro
  * @property string $facturaproveedor_tipodocumento
@@ -54,10 +54,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $fk_itemgasto_id
  * @property int $deesc
  * @property int $splitted
- * 
+ *
  * @property Itemgasto $itemgasto
  * @property Moneda $moneda
- * @property Plancuentum $plancuentum
+ * @property Plancuenta $plancuenta
  * @property Proveedor $proveedor
  * @property Proyecto $proyecto
  * @property Usuario $usuario
@@ -157,9 +157,9 @@ class Facturaproveedor extends Model
 		return $this->belongsTo(Moneda::class, 'fk_moneda_id', 'moneda_id');
 	}
 
-	public function plancuentum()
+	public function plancuenta()
 	{
-		return $this->belongsTo(Plancuentum::class, 'fk_plancuenta_id');
+		return $this->belongsTo(Plancuenta::class, 'fk_plancuenta_id');
 	}
 
 	public function proveedor()

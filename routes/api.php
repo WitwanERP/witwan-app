@@ -24,7 +24,7 @@ use App\Http\Controllers\Admin\Contabilidad\{
     CtaaplicadaController,
     MovimientoController,
     NubeanaliticoController,
-    PlancuentumController
+    PlancuentaController
 };
 use App\Http\Controllers\Admin\Documentos\{
     FacturaController,
@@ -284,7 +284,7 @@ Route::group(['middleware' => 'jwt.auth'], function () {
             Route::apiResource('cuentas-aplicadas', CtaaplicadaController::class);
             Route::apiResource('movimientos', MovimientoController::class);
             Route::apiResource('nube-analitico', NubeanaliticoController::class);
-            Route::apiResource('plan-cuentas', PlancuentumController::class);
+            Route::apiResource('plan-cuentas', PlancuentaController::class);
         });
 
         // Document Management (Documentos)

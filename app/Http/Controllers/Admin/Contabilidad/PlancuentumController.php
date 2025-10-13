@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Admin\Contabilidad;
 
-use App\Models\Plancuentum;
+use App\Models\Plancuenta;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
-class PlancuentumController extends Controller
+class PlancuentaController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -17,7 +17,7 @@ class PlancuentumController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->get('per_page', 100);
-        $query = Plancuentum::query();
+        $query = Plancuenta::query();
 
         // Agregar filtros básicos aquí
         if ($request->has('search') && !empty($request->search)) {
@@ -41,7 +41,7 @@ class PlancuentumController extends Controller
         }
 
         $data = $request->all();
-        $model = new Plancuentum();
+        $model = new Plancuenta();
         $tableColumns = collect(Schema::getColumnListing($model->getTable()));
 
         // Agregar campos automáticos si existen
@@ -55,7 +55,7 @@ class PlancuentumController extends Controller
             $data['fk_usuario_id'] = auth()->id();
         }
 
-        $item = Plancuentum::create($data);
+        $item = Plancuenta::create($data);
         return response()->json($item, 201);
     }
 
@@ -65,7 +65,7 @@ class PlancuentumController extends Controller
     public function show($id)
     {
         try {
-            $item = Plancuentum::findOrFail($id);
+            $item = Plancuenta::findOrFail($id);
             return response()->json($item);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Registro no encontrado'], 404);
@@ -78,7 +78,7 @@ class PlancuentumController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $item = Plancuentum::findOrFail($id);
+            $item = Plancuenta::findOrFail($id);
 
             $validator = Validator::make($request->all(), [
                 // Agregar reglas de validación aquí
@@ -112,7 +112,7 @@ class PlancuentumController extends Controller
     public function destroy($id)
     {
         try {
-            $item = Plancuentum::findOrFail($id);
+            $item = Plancuenta::findOrFail($id);
             $item->delete();
             return response()->json(null, 204);
         } catch (ModelNotFoundException $e) {
@@ -125,7 +125,7 @@ class PlancuentumController extends Controller
      */
     public function search(Request $request)
     {
-        $query = Plancuentum::query();
+        $query = Plancuenta::query();
         $perPage = $request->get('per_page', 100);
 
         if ($request->has('q') && !empty($request->q)) {
