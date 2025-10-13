@@ -118,7 +118,7 @@ class Plancuenta extends Model
         return $this->hasMany(Movimiento::class, 'fk_plancuenta_id');
     }
 
-    public function plancuenta()
+    public function plancuentaHijo()
     {
         return $this->hasMany(Plancuenta::class, 'fk_plancuenta_id');
     }
