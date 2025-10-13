@@ -33,7 +33,7 @@ class AdvancePaymentController extends Controller
                 'cliente_id' => 'required|integer|exists:cliente,cliente_id',
                 'monto' => 'required|numeric|min:0.01',
                 'moneda' => 'required|string|size:3',
-                'forma_pago_id' => 'required|integer|exists:plancuentum,plancuenta_id',
+                'forma_pago_id' => 'required|integer|exists:plancuenta,plancuenta_id',
                 'observaciones' => 'nullable|string|max:500',
                 'nro_documento' => 'nullable|string|max:100'
             ]);
