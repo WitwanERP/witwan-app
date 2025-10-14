@@ -190,7 +190,8 @@ class AdvancePaymentController extends Controller
             'escotizacion' => 0,
             'codigo_externo' => '',
             'mostrarreprogramados' => 0,
-            'operativo' => 0
+            'operativo' => 0,
+            'inicio' => now(),
         ];
 
         return Reserva::create($reservaData);
@@ -214,7 +215,6 @@ class AdvancePaymentController extends Controller
             'fk_ciudad_id' => 0,
             'vigencia_ini' => $fechaServicio,
             'vigencia_fin' => $fechaServicio,
-            'inicio' => $fechaServicio,
             'adultos' => 1,
             'menores' => 0,
             'juniors' => 0,
