@@ -208,10 +208,10 @@ class AdvancePaymentController extends Controller
             'servicio_nombre' => 'ANTICIPO',
             'fk_reserva_id' => $reserva->reserva_id,
             'fk_tipoproducto_id' => 'ANT',
-            'fk_producto_id' => null, // No hay producto específico para anticipos
-            'fk_proveedor_id' => null,
-            'fk_prestador_id' => null,
-            'fk_ciudad_id' => null,
+            'fk_producto_id' => 0, // No hay producto específico para anticipos
+            'fk_proveedor_id' => 0,
+            'fk_prestador_id' => 0,
+            'fk_ciudad_id' => 0,
             'vigencia_ini' => $fechaServicio,
             'vigencia_fin' => $fechaServicio,
             'adultos' => 1,
@@ -219,9 +219,9 @@ class AdvancePaymentController extends Controller
             'juniors' => 0,
             'infante' => 0,
             'jubilado' => 0,
-            'fk_tarifacategoria_id' => null,
-            'fk_regimen_id' => null,
-            'fk_base_id' => null,
+            'fk_tarifacategoria_id' => 0,
+            'fk_regimen_id' => 0,
+            'fk_base_id' => 0,
             'status' => 'CO', // los valores de este campo son CO, CL, CA, RQ, DE, DV
             'moneda_costo' => $data['moneda'],
             'cotcosto' => $cotizacion,
