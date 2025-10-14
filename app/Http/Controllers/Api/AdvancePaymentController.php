@@ -150,6 +150,7 @@ class AdvancePaymentController extends Controller
             'fk_filestatus_id' => 'CO', // los valores de este campo son CO, CL, CA, RQ, DE, DV
             'fecha_alta' => $fechaAlta,
             'fecha_vencimiento' => $fechaVencimiento,
+            'inicio' => $fechaAlta,
             'regdate' => $fechaAlta,
             'um' => $fechaAlta,
             'umu' => $userId,
@@ -191,7 +192,6 @@ class AdvancePaymentController extends Controller
             'codigo_externo' => '',
             'mostrarreprogramados' => 0,
             'operativo' => 0,
-            'inicio' => now(),
         ];
 
         return Reserva::create($reservaData);
