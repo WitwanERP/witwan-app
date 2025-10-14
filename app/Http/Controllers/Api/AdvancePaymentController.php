@@ -214,6 +214,7 @@ class AdvancePaymentController extends Controller
             'fk_ciudad_id' => 0,
             'vigencia_ini' => $fechaServicio,
             'vigencia_fin' => $fechaServicio,
+            'inicio' => $fechaServicio,
             'adultos' => 1,
             'menores' => 0,
             'juniors' => 0,
