@@ -179,7 +179,18 @@ class AdvancePaymentController extends Controller
             'ajuste' => 0,
             'extra1' => 0,
             'extra2' => 0,
-            'extra3' => 0
+            'extra3' => 0,
+            'extra4' => 0,
+            'moneda_factura' => $data['moneda'],
+            'fk_negocio_id' => null,
+            'promotor' => null,
+            'promotoraereo' => null,
+            'vencimiento_senia' => $fechaVencimiento,
+            'areaanalitica' => '',
+            'escotizacion' => 0,
+            'codigo_externo' => '',
+            'mostrarreprogramados' => 0,
+            'operativo' => 0
         ];
 
         return Reserva::create($reservaData);
