@@ -52,7 +52,7 @@ class AdvancePaymentController extends Controller
             $cuentaFormaPago = Plancuenta::findOrFail($validatedData['forma_pago_id']);
 
             // 0. Crear asiento contable
-            $asientoContable = Asientocontable::create([]);
+            $asientoContable = Asientocontable::create(['asientocontable_fecha' => now(), 'debe' => 0, 'haber' => 0]);
 
             // 1. Crear la reserva
             $reserva = $this->createReserva($cliente, $validatedData, $cotizacion);
