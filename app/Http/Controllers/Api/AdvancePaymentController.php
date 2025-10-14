@@ -147,7 +147,7 @@ class AdvancePaymentController extends Controller
             'fk_sistemaaplicacion_id' => 2,
             'fk_usuario_id' => $userId,
             'agente' => $userId,
-            'fk_filestatus_id' => 'ACT', // Activo
+            'fk_filestatus_id' => 'CO', // los valores de este campo son CO, CL, CA, RQ, DE, DV
             'fecha_alta' => $fechaAlta,
             'fecha_vencimiento' => $fechaVencimiento,
             'regdate' => $fechaAlta,
@@ -203,7 +203,7 @@ class AdvancePaymentController extends Controller
             'fk_ciudad_id' => null,
             'vigencia_ini' => $fechaServicio,
             'vigencia_fin' => $fechaServicio,
-            'adultos' => 0,
+            'adultos' => 1,
             'menores' => 0,
             'juniors' => 0,
             'infante' => 0,
@@ -211,7 +211,7 @@ class AdvancePaymentController extends Controller
             'fk_tarifacategoria_id' => null,
             'fk_regimen_id' => null,
             'fk_base_id' => null,
-            'status' => 'OK',
+            'status' => 'CO', // los valores de este campo son CO, CL, CA, RQ, DE, DV
             'moneda_costo' => $data['moneda'],
             'cotcosto' => $cotizacion,
             'cotventa' => $cotizacion,
