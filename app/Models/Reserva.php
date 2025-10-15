@@ -225,6 +225,41 @@ class Reserva extends Model
         'inicio'
     ];
 
+    protected $attributes = [
+        'vendedor_mayorista' => 0,
+        'markup_mayorista' => 0,
+        'auditado' => 0,
+        'reserva_mayorista' => 0,
+        'reservaid_mayorista' => 0,
+        'cerrada' => 0,
+        'autorizado' => 0,
+        'escotizacion' => 0,
+        'mostrarreprogramados' => 0,
+        'operativo' => 0,
+        'fk_negocio_id' => 0,
+        'promotor' => 0,
+        'promotoraereo' => 0,
+        'fk_agrupado_id' => 0,
+        'fk_filepadre_id' => 0,
+        'fk_identidadfiscal_id' => 0,
+        'fk_guia_id' => 0,
+        'comision' => 0,
+        'impuestos' => 0,
+        'iva' => 0,
+        'gastos' => 0,
+        'rg_terrestre' => 0,
+        'rg_trasnporte' => 0,
+        'cobrado' => 0,
+        'renta' => 0,
+        'costo' => 0,
+        'ivacosto' => 0,
+        'ajuste' => 0,
+        'extra1' => 0,
+        'extra2' => 0,
+        'extra3' => 0,
+        'extra4' => 0
+    ];
+
     public function cliente()
     {
         return $this->belongsTo(Cliente::class, 'facturar_a');
