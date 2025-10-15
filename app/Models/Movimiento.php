@@ -51,7 +51,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $afecta_cobranza
  * @property int $fk_itemgasto_id
  * @property int $statusdocumento
- * @property string $relaciones
  * @property int $filtro_cliente
  * @property int $filtro_proveedor
  * @property string $filtro_documento
@@ -79,167 +78,166 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Movimiento extends Model
 {
-	protected $table = 'movimiento';
-	protected $primaryKey = 'movimiento_id';
-	public $timestamps = false;
+    protected $table = 'movimiento';
+    protected $primaryKey = 'movimiento_id';
+    public $timestamps = false;
 
-	protected $casts = [
-		'fk_asientocontable_id' => 'int',
-		'fk_file_id' => 'int',
-		'fk_plancuenta_id' => 'int',
-		'cuenta_debito' => 'int',
-		'cuenta_credito' => 'int',
-		'cotizacion_moneda' => 'float',
-		'monto' => 'float',
-		'montofinal' => 'float',
-		'fecha' => 'datetime',
-		'fecha_acreditacion' => 'datetime',
-		'regdate' => 'datetime',
-		'fk_usuario_id' => 'int',
-		'fk_cliente_id' => 'int',
-		'fk_proveedor_id' => 'int',
-		'fk_factura_id' => 'int',
-		'fk_notacredito_id' => 'int',
-		'fk_notadebito_id' => 'int',
-		'fk_ordenadmin_id' => 'int',
-		'fk_facturaproveedor_id' => 'int',
-		'fk_recibo_id' => 'int',
-		'porcentajeadministracion' => 'float',
-		'porcentajereceptivo' => 'float',
-		'porcentajemayorista' => 'float',
-		'porcentajeminorista' => 'float',
-		'porcentajeconsolidador' => 'float',
-		'fk_movimiento_id' => 'int',
-		'utilizado' => 'int',
-		'afecta_cobranza' => 'int',
-		'fk_itemgasto_id' => 'int',
-		'statusdocumento' => 'int',
-		'filtro_cliente' => 'int',
-		'filtro_proveedor' => 'int',
-		'filtro_file' => 'int',
-		'filtro_servicio' => 'int',
-		'auxiliar' => 'int'
-	];
+    protected $casts = [
+        'fk_asientocontable_id' => 'int',
+        'fk_file_id' => 'int',
+        'fk_plancuenta_id' => 'int',
+        'cuenta_debito' => 'int',
+        'cuenta_credito' => 'int',
+        'cotizacion_moneda' => 'float',
+        'monto' => 'float',
+        'montofinal' => 'float',
+        'fecha' => 'datetime',
+        'fecha_acreditacion' => 'datetime',
+        'regdate' => 'datetime',
+        'fk_usuario_id' => 'int',
+        'fk_cliente_id' => 'int',
+        'fk_proveedor_id' => 'int',
+        'fk_factura_id' => 'int',
+        'fk_notacredito_id' => 'int',
+        'fk_notadebito_id' => 'int',
+        'fk_ordenadmin_id' => 'int',
+        'fk_facturaproveedor_id' => 'int',
+        'fk_recibo_id' => 'int',
+        'porcentajeadministracion' => 'float',
+        'porcentajereceptivo' => 'float',
+        'porcentajemayorista' => 'float',
+        'porcentajeminorista' => 'float',
+        'porcentajeconsolidador' => 'float',
+        'fk_movimiento_id' => 'int',
+        'utilizado' => 'int',
+        'afecta_cobranza' => 'int',
+        'fk_itemgasto_id' => 'int',
+        'statusdocumento' => 'int',
+        'filtro_cliente' => 'int',
+        'filtro_proveedor' => 'int',
+        'filtro_file' => 'int',
+        'filtro_servicio' => 'int',
+        'auxiliar' => 'int'
+    ];
 
-	protected $fillable = [
-		'fk_asientocontable_id',
-		'statusmovimiento',
-		'fk_file_id',
-		'fk_plancuenta_id',
-		'fk_moneda_id',
-		'cuenta_debito',
-		'cuenta_credito',
-		'cotizacion_moneda',
-		'monto',
-		'montofinal',
-		'tipo',
-		'fecha',
-		'fecha_acreditacion',
-		'regdate',
-		'fk_usuario_id',
-		'fk_cliente_id',
-		'fk_proveedor_id',
-		'fk_factura_id',
-		'fk_notacredito_id',
-		'fk_notadebito_id',
-		'fk_ordenadmin_id',
-		'fk_facturaproveedor_id',
-		'descripcion',
-		'banco',
-		'nrodocumento',
-		'operacion',
-		'fk_recibo_id',
-		'porcentajeadministracion',
-		'porcentajereceptivo',
-		'porcentajemayorista',
-		'porcentajeminorista',
-		'porcentajeconsolidador',
-		'fk_movimiento_id',
-		'utilizado',
-		'afecta_cobranza',
-		'fk_itemgasto_id',
-		'statusdocumento',
-		'relaciones',
-		'filtro_cliente',
-		'filtro_proveedor',
-		'filtro_documento',
-		'filtro_file',
-		'filtro_servicio',
-		'auxiliar'
-	];
+    protected $fillable = [
+        'fk_asientocontable_id',
+        'statusmovimiento',
+        'fk_file_id',
+        'fk_plancuenta_id',
+        'fk_moneda_id',
+        'cuenta_debito',
+        'cuenta_credito',
+        'cotizacion_moneda',
+        'monto',
+        'montofinal',
+        'tipo',
+        'fecha',
+        'fecha_acreditacion',
+        'regdate',
+        'fk_usuario_id',
+        'fk_cliente_id',
+        'fk_proveedor_id',
+        'fk_factura_id',
+        'fk_notacredito_id',
+        'fk_notadebito_id',
+        'fk_ordenadmin_id',
+        'fk_facturaproveedor_id',
+        'descripcion',
+        'banco',
+        'nrodocumento',
+        'operacion',
+        'fk_recibo_id',
+        'porcentajeadministracion',
+        'porcentajereceptivo',
+        'porcentajemayorista',
+        'porcentajeminorista',
+        'porcentajeconsolidador',
+        'fk_movimiento_id',
+        'utilizado',
+        'afecta_cobranza',
+        'fk_itemgasto_id',
+        'statusdocumento',
+        'filtro_cliente',
+        'filtro_proveedor',
+        'filtro_documento',
+        'filtro_file',
+        'filtro_servicio',
+        'auxiliar'
+    ];
 
-	public function asientocontable()
-	{
-		return $this->belongsTo(Asientocontable::class, 'fk_asientocontable_id');
-	}
+    public function asientocontable()
+    {
+        return $this->belongsTo(Asientocontable::class, 'fk_asientocontable_id');
+    }
 
-	public function cliente()
-	{
-		return $this->belongsTo(Cliente::class, 'fk_cliente_id');
-	}
+    public function cliente()
+    {
+        return $this->belongsTo(Cliente::class, 'fk_cliente_id');
+    }
 
-	public function factura()
-	{
-		return $this->belongsTo(Factura::class, 'fk_factura_id');
-	}
+    public function factura()
+    {
+        return $this->belongsTo(Factura::class, 'fk_factura_id');
+    }
 
-	public function facturaproveedor()
-	{
-		return $this->belongsTo(Facturaproveedor::class, 'fk_facturaproveedor_id');
-	}
+    public function facturaproveedor()
+    {
+        return $this->belongsTo(Facturaproveedor::class, 'fk_facturaproveedor_id');
+    }
 
-	public function moneda()
-	{
-		return $this->belongsTo(Moneda::class, 'fk_moneda_id', 'moneda_id');
-	}
+    public function moneda()
+    {
+        return $this->belongsTo(Moneda::class, 'fk_moneda_id', 'moneda_id');
+    }
 
-	public function movimiento()
-	{
-		return $this->belongsTo(Movimiento::class, 'fk_movimiento_id');
-	}
+    public function movimiento()
+    {
+        return $this->belongsTo(Movimiento::class, 'fk_movimiento_id');
+    }
 
-	public function notacredito()
-	{
-		return $this->belongsTo(Notacredito::class, 'fk_notacredito_id');
-	}
+    public function notacredito()
+    {
+        return $this->belongsTo(Notacredito::class, 'fk_notacredito_id');
+    }
 
-	public function notadebito()
-	{
-		return $this->belongsTo(Notadebito::class, 'fk_notadebito_id');
-	}
+    public function notadebito()
+    {
+        return $this->belongsTo(Notadebito::class, 'fk_notadebito_id');
+    }
 
-	public function ordenadmin()
-	{
-		return $this->belongsTo(Ordenadmin::class, 'fk_ordenadmin_id');
-	}
+    public function ordenadmin()
+    {
+        return $this->belongsTo(Ordenadmin::class, 'fk_ordenadmin_id');
+    }
 
-	public function plancuenta()
-	{
-		return $this->belongsTo(Plancuenta::class, 'fk_plancuenta_id');
-	}
+    public function plancuenta()
+    {
+        return $this->belongsTo(Plancuenta::class, 'fk_plancuenta_id');
+    }
 
-	public function proveedor()
-	{
-		return $this->belongsTo(Proveedor::class, 'fk_proveedor_id');
-	}
+    public function proveedor()
+    {
+        return $this->belongsTo(Proveedor::class, 'fk_proveedor_id');
+    }
 
-	public function recibo()
-	{
-		return $this->belongsTo(Recibo::class, 'fk_recibo_id');
-	}
+    public function recibo()
+    {
+        return $this->belongsTo(Recibo::class, 'fk_recibo_id');
+    }
 
-	public function reserva()
-	{
-		return $this->belongsTo(Reserva::class, 'fk_file_id');
-	}
+    public function reserva()
+    {
+        return $this->belongsTo(Reserva::class, 'fk_file_id');
+    }
 
-	public function usuario()
-	{
-		return $this->belongsTo(Usuario::class, 'fk_usuario_id');
-	}
+    public function usuario()
+    {
+        return $this->belongsTo(Usuario::class, 'fk_usuario_id');
+    }
 
-	public function movimientos()
-	{
-		return $this->hasMany(Movimiento::class, 'fk_movimiento_id');
-	}
+    public function movimientos()
+    {
+        return $this->hasMany(Movimiento::class, 'fk_movimiento_id');
+    }
 }

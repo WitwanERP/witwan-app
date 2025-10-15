@@ -289,7 +289,6 @@ class AdvancePaymentController extends Controller
             'afecta_cobranza' => 1,
             'fk_itemgasto_id' => null,
             'statusdocumento' => 1,
-            'relaciones' => '',
             'filtro_cliente' => $recibo->fk_cliente_id,
             'filtro_proveedor' => 0,
             'filtro_documento' => $recibo->recibo_id,
