@@ -218,14 +218,14 @@ class AdvancePaymentController extends Controller
             'extra4' => 0,
             'paxes' => '',
             'info' => 'Anticipo de ' . $data['monto'] . ' ' . $data['moneda'],
-            'vencimiento_proveedor' => null,
+            'vencimiento_proveedor' => now()->addDays(15),
             'nro_confirmacion' => '',
             'mail_proveedor' => '',
             'comentarios' => $data['observaciones'] ?? '',
             'retira_voucher' => '',
             'autoriza_evoucher' => '',
             'texto_voucher' => '',
-            'prev_file_id' => null,
+            'prev_file_id' => 0,
             'regdate' => $fechaServicio
         ];
 
