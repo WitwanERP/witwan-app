@@ -201,7 +201,7 @@ class AdvancePaymentController extends Controller
             'retira_voucher' => '',
             'autoriza_evoucher' => '',
             'texto_voucher' => '',
-            'regdate' => $fechaServicio
+            'regdate' => now()
         ];
 
         return Servicio::create($servicioData);

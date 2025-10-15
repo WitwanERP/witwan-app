@@ -325,8 +325,7 @@ class Servicio extends Model
         'montovencimiento1' => 0,
         'montovencimiento2' => 0,
         'montovencimiento3' => 0,
-        'cancelled_at' => '0000-00-00 00:00:00',
-        'regdate' => now()
+        'cancelled_at' => '0000-00-00 00:00:00'
     ];
 
     public function ciudad()
