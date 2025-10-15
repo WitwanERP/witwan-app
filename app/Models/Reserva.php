@@ -264,7 +264,8 @@ class Reserva extends Model
         'status_factura' => 'PE',
         'areaanalitica' => '',
         'codigo_externo' => '',
-        'tipocodigo' => ''
+        'tipocodigo' => '',
+        'externalid' => ''
     ];
 
     public function cliente()
