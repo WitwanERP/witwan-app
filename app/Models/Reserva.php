@@ -257,7 +257,11 @@ class Reserva extends Model
         'extra1' => 0,
         'extra2' => 0,
         'extra3' => 0,
-        'extra4' => 0
+        'extra4' => 0,
+        'observaciones' => '',
+        'observaciones_publicas' => '',
+        'info_extra' => '',
+        'status_factura' => 'PE'
     ];
 
     public function cliente()
