@@ -262,7 +262,9 @@ class Reserva extends Model
         'observaciones_publicas' => '',
         'info_extra' => '',
         'status_factura' => 'PE',
-        'areaanalitica' => ''
+        'areaanalitica' => '',
+        'codigo_externo' => '',
+        'tipocodigo' => ''
     ];
 
     public function cliente()
