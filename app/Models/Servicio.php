@@ -311,6 +311,16 @@ class Servicio extends Model
         'item' => 1,
         'nro_confirmacion' => '',
         'mail_proveedor' => '',
+        'iva' => 0,
+        'origen' => 'WIT',
+        'externalid' => '',
+        'markupinterno' => 0,
+        'serviciorelacionado' => 0,
+        'aboletear' => 0,
+        'nombre_regimen' => '',
+        'nombre_habitacion' => '',
+        'json_extra' => ''
+
     ];
 
     public function ciudad()
