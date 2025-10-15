@@ -319,8 +319,14 @@ class Servicio extends Model
         'aboletear' => 0,
         'nombre_regimen' => '',
         'nombre_habitacion' => '',
-        'json_extra' => ''
-
+        'json_extra' => '',
+        'vencimiento2' => '0000-00-00 00:00:00',
+        'vencimiento3' => '0000-00-00 00:00:00',
+        'montovencimiento1' => 0,
+        'montovencimiento2' => 0,
+        'montovencimiento3' => 0,
+        'cancelled_at' => '0000-00-00 00:00:00',
+        'regdate' => now()
     ];
 
     public function ciudad()
