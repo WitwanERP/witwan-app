@@ -13,7 +13,7 @@ namespace App\OpenApi;
  *     @OA\RequestBody(
  *         required=true,
  *         @OA\JsonContent(
- *             required={"cliente_id", "monto", "moneda"},
+ *             required={"cliente_id", "monto", "moneda", "forma_pago_id"},
  *             @OA\Property(
  *                 property="cliente_id",
  *                 type="integer",
@@ -32,6 +32,24 @@ namespace App\OpenApi;
  *                 type="string",
  *                 description="Código de moneda (USD, EUR, etc.)",
  *                 example="USD"
+ *             ),
+ *             @OA\Property(
+ *                 property="forma_pago_id",
+ *                 type="integer",
+ *                 description="ID de la forma de pago (plancuenta)",
+ *                 example=5
+ *             ),
+ *             @OA\Property(
+ *                 property="observaciones",
+ *                 type="string",
+ *                 description="Observaciones opcionales",
+ *                 example="Anticipo para reserva futura"
+ *             ),
+ *             @OA\Property(
+ *                 property="nro_documento",
+ *                 type="string",
+ *                 description="Número de documento opcional",
+ *                 example="REC-2025-001"
  *             )
  *         )
  *     ),
@@ -60,17 +78,18 @@ namespace App\OpenApi;
  *                     @OA\Property(property="monto", type="number", example=500.00),
  *                     @OA\Property(property="moneda", type="string", example="USD"),
  *                     @OA\Property(property="fecha", type="string", format="date", example="2025-01-15"),
- *                     @OA\Property(property="forma_pago", type="string", example="Efectivo")
+ *                     @OA\Property(property="cotizacion", type="number", example=1.0),
+ *                     @OA\Property(property="asiento_contable_id", type="integer", example=1001)
  *                 )
  *             )
  *         )
  *     ),
  *     @OA\Response(
- *         response=422,
- *         description="Error de validación",
+ *         response=400,
+ *         description="Error en la validación de datos",
  *         @OA\JsonContent(
  *             @OA\Property(property="success", type="boolean", example=false),
- *             @OA\Property(property="message", type="string", example="Error de validación"),
+ *             @OA\Property(property="message", type="string", example="Error en la validación de datos"),
  *             @OA\Property(
  *                 property="errors",
  *                 type="object",
@@ -85,6 +104,18 @@ namespace App\OpenApi;
  *                     type="array",
  *                     @OA\Items(type="string"),
  *                     example={"El monto debe ser mayor a 0"}
+ *                 ),
+ *                 @OA\Property(
+ *                     property="moneda",
+ *                     type="array",
+ *                     @OA\Items(type="string"),
+ *                     example={"El campo moneda es obligatorio"}
+ *                 ),
+ *                 @OA\Property(
+ *                     property="forma_pago_id",
+ *                     type="array",
+ *                     @OA\Items(type="string"),
+ *                     example={"El campo forma_pago_id es obligatorio"}
  *                 )
  *             )
  *         )
@@ -102,7 +133,7 @@ namespace App\OpenApi;
  *         description="Error interno del servidor",
  *         @OA\JsonContent(
  *             @OA\Property(property="success", type="boolean", example=false),
- *             @OA\Property(property="message", type="string", example="Error interno del servidor"),
+ *             @OA\Property(property="message", type="string", example="Error interno al procesar el anticipo"),
  *             @OA\Property(property="error", type="string", example="Descripción del error técnico")
  *         )
  *     )

@@ -27,7 +27,8 @@
                                 "required": [
                                     "cliente_id",
                                     "monto",
-                                    "moneda"
+                                    "moneda",
+                                    "forma_pago_id"
                                 ],
                                 "properties": {
                                     "cliente_id": {
@@ -45,6 +46,21 @@
                                         "description": "Código de moneda (USD, EUR, etc.)",
                                         "type": "string",
                                         "example": "USD"
+                                    },
+                                    "forma_pago_id": {
+                                        "description": "ID de la forma de pago (plancuenta)",
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "observaciones": {
+                                        "description": "Observaciones opcionales",
+                                        "type": "string",
+                                        "example": "Anticipo para reserva futura"
+                                    },
+                                    "nro_documento": {
+                                        "description": "Número de documento opcional",
+                                        "type": "string",
+                                        "example": "REC-2025-001"
                                     }
                                 },
                                 "type": "object"
@@ -110,9 +126,13 @@
                                                             "format": "date",
                                                             "example": "2025-01-15"
                                                         },
-                                                        "forma_pago": {
-                                                            "type": "string",
-                                                            "example": "Efectivo"
+                                                        "cotizacion": {
+                                                            "type": "number",
+                                                            "example": 1
+                                                        },
+                                                        "asiento_contable_id": {
+                                                            "type": "integer",
+                                                            "example": 1001
                                                         }
                                                     },
                                                     "type": "object"
@@ -126,8 +146,8 @@
                             }
                         }
                     },
-                    "422": {
-                        "description": "Error de validación",
+                    "400": {
+                        "description": "Error en la validación de datos",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -138,7 +158,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Error de validación"
+                                            "example": "Error en la validación de datos"
                                         },
                                         "errors": {
                                             "properties": {
@@ -158,6 +178,24 @@
                                                     },
                                                     "example": [
                                                         "El monto debe ser mayor a 0"
+                                                    ]
+                                                },
+                                                "moneda": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    },
+                                                    "example": [
+                                                        "El campo moneda es obligatorio"
+                                                    ]
+                                                },
+                                                "forma_pago_id": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    },
+                                                    "example": [
+                                                        "El campo forma_pago_id es obligatorio"
                                                     ]
                                                 }
                                             },
@@ -201,7 +239,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Error interno del servidor"
+                                            "example": "Error interno al procesar el anticipo"
                                         },
                                         "error": {
                                             "type": "string",
