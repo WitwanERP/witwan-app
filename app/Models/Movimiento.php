@@ -166,6 +166,46 @@ class Movimiento extends Model
         'auxiliar'
     ];
 
+    protected $attributes = [
+        'utilizado' => 0,
+        'afecta_cobranza' => 1,
+        'statusdocumento' => 1,
+        'auxiliar' => 0,
+        'fk_file_id' => 0,
+        'fk_plancuenta_id' => 0,
+        'cuenta_debito' => 0,
+        'cuenta_credito' => 0,
+        'cotizacion_moneda' => 1,
+        'monto' => 0,
+        'montofinal' => 0,
+        'tipo' => 'E',
+        'fk_usuario_id' => 0,
+        'fk_cliente_id' => 0,
+        'fk_proveedor_id' => 0,
+        'fk_factura_id' => 0,
+        'fk_notacredito_id' => 0,
+        'fk_notadebito_id' => 0,
+        'fk_ordenadmin_id' => 0,
+        'fk_facturaproveedor_id' => 0,
+        'descripcion' => '',
+        'banco' => '',
+        'nrodocumento' => '',
+        'operacion' => '',
+        'fk_recibo_id' => 0,
+        'porcentajeadministracion' => 0,
+        'porcentajereceptivo' => 0,
+        'porcentajemayorista' => 0,
+        'porcentajeminorista' => 0,
+        'porcentajeconsolidador' => 0,
+        'fk_movimiento_id' => 0,
+        'fk_itemgasto_id' => 0,
+        'filtro_cliente' => 0,
+        'filtro_proveedor' => 0,
+        'filtro_documento' => '',
+        'filtro_file' => 0,
+        'filtro_servicio' => 0
+    ];
+
     public function asientocontable()
     {
         return $this->belongsTo(Asientocontable::class, 'fk_asientocontable_id');
