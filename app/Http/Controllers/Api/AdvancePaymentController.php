@@ -70,7 +70,8 @@ class AdvancePaymentController extends Controller
                 $cuentaRecibos,
                 $cuentaFormaPago,
                 $validatedData,
-                $cotizacion
+                $cotizacion,
+                $reserva
             );
 
             // Crear relación en rel_filerecibo
@@ -243,7 +244,8 @@ class AdvancePaymentController extends Controller
         Plancuenta $cuentaRecibos,
         Plancuenta $cuentaFormaPago,
         array $data,
-        float $cotizacion
+        float $cotizacion,
+        Reserva $reserva
     ): array {
         $userId = Auth::id() ?? 1;
         $fecha = now();
@@ -280,7 +282,8 @@ class AdvancePaymentController extends Controller
             'filtro_documento' => $recibo->recibo_id,
             'filtro_file' => 0,
             'filtro_servicio' => 0,
-            'auxiliar' => 0
+            'auxiliar' => 0,
+            'fk_file_id' => $reserva->reserva_id,
         ];
 
         $movimiento1 = Movimiento::create($movimiento1Data);
@@ -313,6 +316,7 @@ class AdvancePaymentController extends Controller
             'filtro_cliente' => $recibo->fk_cliente_id,
             'filtro_proveedor' => 0,
             'filtro_documento' => $recibo->recibo_id,
+            'fk_file_id' => $reserva->reserva_id,
         ];
 
         $movimiento2 = Movimiento::create($movimiento2Data);
