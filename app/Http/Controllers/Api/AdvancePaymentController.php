@@ -166,6 +166,7 @@ class AdvancePaymentController extends Controller
             'fk_moneda_id' => $data['moneda'],
             'total' => 0,
             'totalservicios' => 0,
+            'cobrado' => $data['monto'],
             'moneda_factura' => $data['moneda'],
             'vencimiento_senia' => $fechaVencimiento
         ];
