@@ -112,6 +112,22 @@ return [
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
+        'license' => [
+            'driver' => env('LICENSE_DB_DRIVER', 'mysql'),
+            'host' => env('LICENSE_DB_HOST', '127.0.0.1'),
+            'port' => env('LICENSE_DB_PORT', '3306'),
+            'database' => env('LICENSE_DB_DATABASE', 'licenses'),
+            'username' => env('LICENSE_DB_USERNAME', 'root'),
+            'password' => env('LICENSE_DB_PASSWORD', ''),
+            'unix_socket' => env('LICENSE_DB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+        ],
+
     ],
 
     /*

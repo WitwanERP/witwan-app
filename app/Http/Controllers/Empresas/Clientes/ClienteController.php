@@ -391,7 +391,7 @@ class ClienteController extends Controller
 
             // Calculate used credit
             $creditoUtilizado = $this->calculateUsedCredit($clientId);
-            $creditoDisponible = $creditoAutorizado - $creditoUtilizado;
+            $creditoDisponible = max(0, $creditoAutorizado - $creditoUtilizado);
 
             return response()->json([
                 'cliente_id' => $clientId,
@@ -402,7 +402,7 @@ class ClienteController extends Controller
                 'credito_autorizado' => $creditoAutorizado,
                 'credito_utilizado' => $creditoUtilizado,
                 'credito_disponible' => $creditoDisponible,
-                'porcentaje_utilizado' => $creditoAutorizado > 0 ? round(($creditoUtilizado / $creditoAutorizado) * 100, 2) : 0,
+                'porcentaje_disponible' => $creditoAutorizado > 0 ? round(($creditoDisponible / $creditoAutorizado) * 100, 2) : 0,
                 'mensaje' => $creditoDisponible > 0 ? 'Crédito disponible' : 'Sin crédito disponible'
             ]);
 

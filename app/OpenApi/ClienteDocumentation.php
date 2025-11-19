@@ -263,8 +263,8 @@ namespace App\OpenApi;
  *             @OA\Property(property="credito_extra", type="number", format="float", example=5000.00),
  *             @OA\Property(property="credito_autorizado", type="number", format="float", example=55000.00),
  *             @OA\Property(property="credito_utilizado", type="number", format="float", example=25000.00),
- *             @OA\Property(property="credito_disponible", type="number", format="float", example=30000.00),
- *             @OA\Property(property="porcentaje_utilizado", type="number", format="float", example=45.45),
+ *             @OA\Property(property="credito_disponible", type="number", format="float", example=30000.00, description="Crédito disponible (siempre >= 0)"),
+ *             @OA\Property(property="porcentaje_disponible", type="number", format="float", example=54.55, description="Porcentaje de crédito disponible (0-100)"),
  *             @OA\Property(property="mensaje", type="string", example="Crédito disponible")
  *         )
  *     ),
