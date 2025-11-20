@@ -305,7 +305,6 @@ class ClienteController extends Controller
                 'credito_utilizado' => $creditoUtilizadoTotal,
                 'credito_disponible' => $creditoAutorizado - $creditoUtilizadoTotal
             ]);
-
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'CodeClientBackOffice' => $clientId,
@@ -393,6 +392,8 @@ class ClienteController extends Controller
             $creditoUtilizado = $this->calculateUsedCredit($clientId);
             $creditoDisponible = max(0, $creditoAutorizado - $creditoUtilizado);
 
+            $creditoUtilizadoDisplay = max(0, $creditoUtilizado);
+
             return response()->json([
                 'cliente_id' => $clientId,
                 'cliente_nombre' => $cliente->cliente_nombre,
@@ -401,11 +402,10 @@ class ClienteController extends Controller
                 'credito_extra' => $extraCredit,
                 'credito_autorizado' => $creditoAutorizado,
                 'credito_utilizado' => $creditoUtilizado,
-                'credito_disponible' => $creditoDisponible,
-                'porcentaje_disponible' => $creditoAutorizado > 0 ? round(($creditoDisponible / $creditoAutorizado) * 100, 2) : 0,
+                'credito_disponible' => $creditoUtilizadoDisplay,
+                'porcentaje_disponible' => $creditoAutorizado > 0 ? round(($creditoUtilizadoDisplay / $creditoAutorizado) * 100, 2) : 0,
                 'mensaje' => $creditoDisponible > 0 ? 'Crédito disponible' : 'Sin crédito disponible'
             ]);
-
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'error' => 'Cliente no encontrado',
