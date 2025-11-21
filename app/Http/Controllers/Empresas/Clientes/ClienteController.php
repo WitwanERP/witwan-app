@@ -392,7 +392,7 @@ class ClienteController extends Controller
             $creditoUtilizado = $this->calculateUsedCredit($clientId);
             $creditoDisponible = max(0, $creditoAutorizado - $creditoUtilizado);
 
-            $creditoUtilizadoDisplay = max(0, $creditoUtilizado);
+            $creditoUtilizadoDisplay = min(0, $creditoUtilizado);
 
             return response()->json([
                 'cliente_id' => $clientId,
@@ -401,9 +401,9 @@ class ClienteController extends Controller
                 'limite_credito' => $cliente->limite_credito,
                 'credito_extra' => $extraCredit,
                 'credito_autorizado' => $creditoAutorizado,
-                'credito_utilizado' => $creditoUtilizado,
-                'credito_disponible' => $creditoUtilizadoDisplay,
-                'porcentaje_disponible' => $creditoAutorizado > 0 ? round(($creditoUtilizadoDisplay / $creditoAutorizado) * 100, 2) : 0,
+                'credito_utilizado' => $creditoUtilizadoDisplay,
+                'credito_disponible' => $creditoDisponible,
+                'porcentaje_disponible' => $creditoAutorizado > 0 ? round(($creditoDisponible / $creditoAutorizado) * 100, 2) : 0,
                 'mensaje' => $creditoDisponible > 0 ? 'Crédito disponible' : 'Sin crédito disponible'
             ]);
         } catch (ModelNotFoundException $e) {
