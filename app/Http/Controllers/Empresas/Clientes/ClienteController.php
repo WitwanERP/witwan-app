@@ -392,7 +392,7 @@ class ClienteController extends Controller
             $creditoUtilizado = $this->calculateUsedCredit($clientId);
             $creditoDisponible = max(0, $creditoAutorizado - $creditoUtilizado);
 
-            $creditoUtilizadoDisplay = min(0, $creditoUtilizado);
+            $creditoUtilizadoDisplay = max(0, $creditoUtilizado);
 
             return response()->json([
                 'cliente_id' => $clientId,
