@@ -17,17 +17,33 @@ class CodeIgniterBridge
      */
     public function handle(Request $request, Closure $next)
     {
-        // Verificar si la petición viene desde CodeIgniter
-        if ($request->has('from_codeigniter') && $request->header('X-Bridge-Key')) {
+        // Solo procesar si es una petición de bridge
+        if ($request->has('from_codeigniter')) {
+
+            // DEBE tener X-Bridge-Key
+            if (!$request->header('X-Bridge-Key')) {
+                Log::warning('Missing X-Bridge-Key header from CodeIgniter bridge request', [
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent()
+                ]);
+                return response()->json(['error' => 'Missing X-Bridge-Key header'], 401);
+            }
 
             // Verificar la clave de bridge
-            $expected_key = hash('sha256', $request->input('ci_user_data.licencia', '') . '_bridge_' . date('Y-m-d'));
+            $licencia = $request->input('ci_user_data.licencia', '');
+            $expected_key = hash('sha256', $licencia . '_bridge_' . date('Y-m-d'));
             $provided_key = $request->header('X-Bridge-Key');
+
+            Log::debug('Bridge key validation', [
+                'licencia' => $licencia,
+                'expected' => $expected_key,
+                'provided' => $provided_key
+            ]);
 
             if (!hash_equals($expected_key, $provided_key)) {
                 Log::warning('Invalid bridge key from CodeIgniter', [
                     'ip' => $request->ip(),
-                    'user_agent' => $request->userAgent(),
+                    'licencia' => $licencia,
                     'expected' => substr($expected_key, 0, 10) . '...',
                     'provided' => substr($provided_key, 0, 10) . '...'
                 ]);
@@ -42,7 +58,7 @@ class CodeIgniterBridge
             ]);
 
             Log::info('CodeIgniter bridge request verified', [
-                'licencia' => $request->input('ci_user_data.licencia'),
+                'licencia' => $licencia,
                 'user_id' => $request->input('ci_user_data.usuario_id'),
                 'user_email' => $request->input('ci_user_data.usuario_mail')
             ]);
