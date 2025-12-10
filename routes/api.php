@@ -428,7 +428,7 @@ Route::group(['middleware' => 'jwt.auth'], function () {
     |--------------------------------------------------------------------------
     */
     Route::group(['prefix' => 'reservas'], function () {
-        Route::apiResource('cotizaciones', CtzController::class);
+        Route::apiResource('cotizaciones', CtzController::class)->names('reservas.cotizaciones');
         Route::apiResource('archivos', FilearchivoController::class);
         Route::apiResource('comentarios', FilecomentarioController::class);
         Route::apiResource('mails', FilemailController::class);
