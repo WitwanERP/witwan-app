@@ -37,6 +37,7 @@ class Colaevento extends Model
 		'regdate',
 		'tipo_evento',
 		'estado',
+		'frecuencia',
 		'modelo',
 		'id_relacionado',
 		'datos'

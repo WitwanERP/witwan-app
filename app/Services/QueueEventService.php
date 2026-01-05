@@ -20,9 +20,10 @@ class QueueEventService
      * Procesa eventos pendientes en la cola
      *
      * @param int $limit Número máximo de eventos a procesar
+     * @param string $frecuencia Tipo de frecuencia: minuto, horario, nocturno
      * @return array Estadísticas del procesamiento
      */
-    public function processPendingEvents(int $limit = 1): array
+    public function processPendingEvents(int $limit = 1, string $frecuencia = 'minuto'): array
     {
         $stats = [
             'processed' => 0,
@@ -31,6 +32,7 @@ class QueueEventService
         ];
 
         $eventos = Colaevento::where('estado', 'pendiente')
+            //->where('frecuencia', $frecuencia)
             ->limit($limit)
             ->get();
 

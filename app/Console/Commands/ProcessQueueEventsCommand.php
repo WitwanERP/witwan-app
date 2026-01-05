@@ -12,7 +12,9 @@ class ProcessQueueEventsCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'queue:process-events {--limit=1 : Number of events to process}';
+    protected $signature = 'queue:process-events
+        {--limit=1 : Number of events to process}
+        {--tipo=minuto : Event frequency type (minuto, horario, nocturno)}';
 
     /**
      * The console command description.
@@ -35,10 +37,11 @@ class ProcessQueueEventsCommand extends Command
     public function handle(): int
     {
         $limit = (int) $this->option('limit');
+        $tipo = $this->option('tipo');
 
-        $this->info("Processing queue events (limit: {$limit})...");
+        $this->info("Processing queue events (limit: {$limit}, tipo: {$tipo})...");
 
-        $stats = $this->queueEventService->processPendingEvents($limit);
+        $stats = $this->queueEventService->processPendingEvents($limit, $tipo);
 
         $this->info("Processed: {$stats['processed']}");
 
