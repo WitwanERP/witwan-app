@@ -40,19 +40,64 @@ class ProcessQueueEventsCommand extends Command
         $tipo = $this->option('tipo');
 
         $this->info("Processing queue events (limit: {$limit}, tipo: {$tipo})...");
+        $this->newLine();
 
         $stats = $this->queueEventService->processPendingEvents($limit, $tipo);
 
-        $this->info("Processed: {$stats['processed']}");
+        // Mostrar eventos exitosos
+        if (!empty($stats['success'])) {
+            $this->info("EVENTOS PROCESADOS ({$stats['processed']}):");
+            foreach ($stats['success'] as $success) {
+                $this->line("  OK  [{$success['evento_id']}] {$success['tipo']}/{$success['modelo']} (ID: {$success['id_relacionado']})");
+            }
+            $this->newLine();
+        }
+
+        // Mostrar errores detallados
+        if (!empty($stats['errors'])) {
+            $this->error("ERRORES ({$stats['failed']}):");
+            $this->newLine();
+
+            foreach ($stats['errors'] as $i => $error) {
+                $this->line("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+                $this->error("Error #" . ($i + 1));
+                $this->line("Evento ID: {$error['evento_id']}");
+                $this->line("Tipo: {$error['tipo']} / Modelo: {$error['modelo']}");
+                $this->line("ID Relacionado: {$error['id_relacionado']}");
+                $this->newLine();
+                $this->error("Mensaje: {$error['error']}");
+                $this->line("Archivo: {$error['file']}");
+                $this->newLine();
+                $this->warn("Stack trace:");
+                $this->line($this->formatTrace($error['trace']));
+                $this->newLine();
+            }
+        }
+
+        // Resumen
+        $this->line("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        $this->info("RESUMEN:");
+        $this->info("  Processed: {$stats['processed']}");
 
         if ($stats['failed'] > 0) {
-            $this->error("Failed: {$stats['failed']}");
+            $this->error("  Failed: {$stats['failed']}");
+        } else {
+            $this->line("  Failed: 0");
         }
 
         if ($stats['skipped'] > 0) {
-            $this->warn("Skipped: {$stats['skipped']}");
+            $this->warn("  Skipped: {$stats['skipped']}");
         }
 
         return $stats['failed'] > 0 ? self::FAILURE : self::SUCCESS;
+    }
+
+    /**
+     * Formatea el trace con indentación
+     */
+    private function formatTrace(string $trace): string
+    {
+        $lines = explode("\n", $trace);
+        return implode("\n", array_map(fn($line) => "  │ {$line}", $lines));
     }
 }

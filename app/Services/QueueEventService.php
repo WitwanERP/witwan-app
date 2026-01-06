@@ -28,7 +28,9 @@ class QueueEventService
         $stats = [
             'processed' => 0,
             'failed' => 0,
-            'skipped' => 0
+            'skipped' => 0,
+            'errors' => [],
+            'success' => [],
         ];
 
         $eventos = Colaevento::where('estado', 'pendiente')
@@ -40,13 +42,37 @@ class QueueEventService
             try {
                 $this->processEvent($evento);
                 $stats['processed']++;
+                $stats['success'][] = [
+                    'evento_id' => $evento->colaevento_id,
+                    'tipo' => $evento->tipo_evento,
+                    'modelo' => $evento->modelo,
+                    'id_relacionado' => $evento->id_relacionado,
+                ];
             } catch (Exception $e) {
                 $this->markEventAsError($evento, $e);
                 $stats['failed']++;
+                $stats['errors'][] = [
+                    'evento_id' => $evento->colaevento_id,
+                    'tipo' => $evento->tipo_evento,
+                    'modelo' => $evento->modelo,
+                    'id_relacionado' => $evento->id_relacionado,
+                    'error' => $e->getMessage(),
+                    'file' => $e->getFile() . ':' . $e->getLine(),
+                    'trace' => $this->getShortTrace($e),
+                ];
             }
         }
 
         return $stats;
+    }
+
+    /**
+     * Obtiene un trace corto de la excepción (primeras 5 líneas)
+     */
+    protected function getShortTrace(Exception $e): string
+    {
+        $lines = explode("\n", $e->getTraceAsString());
+        return implode("\n", array_slice($lines, 0, 5));
     }
 
     /**
