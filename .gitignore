@@ -23,3 +23,4 @@ yarn-error.log
 CLAUDE.md
 *.sql
 *:Zone.Identifier
+composer.phar

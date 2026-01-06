@@ -114,11 +114,13 @@ class LicenseSyncService
 
             // Verificar HTTP status code
             if (!$response->successful()) {
+                $body = $response->body();
                 Log::error('HTTP Error en LicenseSyncService', [
+                    'url' => $url,
                     'status' => $response->status(),
-                    'body' => $response->body()
+                    'body' => $body
                 ]);
-                throw new Exception("HTTP Error: {$response->status()}");
+                throw new Exception("HTTP {$response->status()} en {$url} - Response: " . substr($body, 0, 500));
             }
 
             // Decodificar respuesta
