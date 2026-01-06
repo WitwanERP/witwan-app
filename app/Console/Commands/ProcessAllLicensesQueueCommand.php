@@ -33,14 +33,19 @@ class ProcessAllLicensesQueueCommand extends Command
         $tipo = $this->option('tipo');
 
         $this->info("Procesando {$licencias->count()} licencias (tipo: {$tipo})...");
+        $this->newLine();
 
         $failed = 0;
+        $results = [];
 
         foreach ($licencias as $licencia) {
             // Extraer subdominio: "app-rays.witwan.com" → "app-rays"
             $envName = explode('.', $licencia->app_url)[0];
 
-            $this->line("→ {$licencia->licencia_nombre} (APP_ENV={$envName})");
+            $this->line("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            $this->info("Licencia: {$licencia->licencia_nombre}");
+            $this->line("APP_ENV: {$envName}");
+            $this->line("URL: {$licencia->app_url}");
 
             // Ejecutar comando con el APP_ENV de la licencia
             $process = new Process([
@@ -50,19 +55,95 @@ class ProcessAllLicensesQueueCommand extends Command
             ]);
 
             $process->setTimeout(120);
-            $process->run();
 
-            if ($process->isSuccessful()) {
-                $this->info("  ✓ " . trim($process->getOutput()));
-            } else {
-                $this->error("  ✗ Error: " . trim($process->getErrorOutput()));
+            try {
+                $process->run();
+
+                $stdout = trim($process->getOutput());
+                $stderr = trim($process->getErrorOutput());
+                $exitCode = $process->getExitCode();
+
+                if ($process->isSuccessful()) {
+                    $this->info("Estado: OK (exit code: {$exitCode})");
+                    if ($stdout) {
+                        $this->line("Output: {$stdout}");
+                    }
+                    $results[] = [
+                        'licencia' => $licencia->licencia_nombre,
+                        'estado' => 'OK',
+                        'mensaje' => $stdout ?: 'Sin output',
+                    ];
+                } else {
+                    $failed++;
+                    $this->error("Estado: ERROR (exit code: {$exitCode})");
+
+                    if ($stdout) {
+                        $this->line("STDOUT:");
+                        $this->line($this->formatOutput($stdout));
+                    }
+
+                    if ($stderr) {
+                        $this->error("STDERR:");
+                        $this->line($this->formatOutput($stderr));
+                    }
+
+                    $results[] = [
+                        'licencia' => $licencia->licencia_nombre,
+                        'estado' => "ERROR ({$exitCode})",
+                        'mensaje' => $stderr ?: $stdout ?: 'Sin mensaje de error',
+                    ];
+                }
+            } catch (\Symfony\Component\Process\Exception\ProcessTimedOutException $e) {
                 $failed++;
+                $this->error("Estado: TIMEOUT (>120s)");
+                $results[] = [
+                    'licencia' => $licencia->licencia_nombre,
+                    'estado' => 'TIMEOUT',
+                    'mensaje' => 'El proceso excedió el tiempo límite de 120 segundos',
+                ];
+            } catch (\Exception $e) {
+                $failed++;
+                $this->error("Estado: EXCEPCIÓN");
+                $this->error("Tipo: " . get_class($e));
+                $this->error("Mensaje: {$e->getMessage()}");
+                $results[] = [
+                    'licencia' => $licencia->licencia_nombre,
+                    'estado' => 'EXCEPCIÓN',
+                    'mensaje' => get_class($e) . ': ' . $e->getMessage(),
+                ];
             }
+
+            $this->newLine();
         }
 
+        // Resumen final
+        $this->line("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        $this->info("RESUMEN");
+        $this->line("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+
+        $this->table(
+            ['Licencia', 'Estado', 'Mensaje'],
+            array_map(fn($r) => [
+                $r['licencia'],
+                $r['estado'],
+                \Illuminate\Support\Str::limit($r['mensaje'], 60),
+            ], $results)
+        );
+
         $this->newLine();
-        $this->info("Completado. Fallidos: {$failed}");
+        $total = count($licencias);
+        $exitosos = $total - $failed;
+        $this->info("Total: {$total} | Exitosos: {$exitosos} | Fallidos: {$failed}");
 
         return $failed > 0 ? self::FAILURE : self::SUCCESS;
+    }
+
+    /**
+     * Formatea el output agregando indentación para mejor legibilidad
+     */
+    private function formatOutput(string $output): string
+    {
+        $lines = explode("\n", $output);
+        return implode("\n", array_map(fn($line) => "  │ {$line}", $lines));
     }
 }
