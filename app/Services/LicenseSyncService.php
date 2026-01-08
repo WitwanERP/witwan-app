@@ -137,7 +137,9 @@ class LicenseSyncService
                 $errorMsg = $responseData['message'] ?? 'Error desconocido';
                 Log::error('Error al sincronizar con licencia', [
                     'url' => $url,
-                    'error' => $errorMsg
+                    'error' => $errorMsg,
+                    'response_body' => $response->body(),
+                    'response_data' => $responseData
                 ]);
                 throw new Exception("Error en respuesta: {$errorMsg}");
             }
