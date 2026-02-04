@@ -212,6 +212,13 @@ namespace App\OpenApi;
  *         required=false,
  *         @OA\Schema(type="number", format="float")
  *     ),
+ *     @OA\Parameter(
+ *         name="moneda",
+ *         in="query",
+ *         description="Código de moneda para expresar los valores (ej: USD, EUR). Si no se especifica, se devuelve en moneda base.",
+ *         required=false,
+ *         @OA\Schema(type="string", example="USD")
+ *     ),
  *     @OA\Response(
  *         response=200,
  *         description="Información del crédito del cliente",
@@ -222,7 +229,8 @@ namespace App\OpenApi;
  *             @OA\Property(property="Message", type="string", example="Autorizado."),
  *             @OA\Property(property="credito_autorizado", type="number", format="float", example=50000.00),
  *             @OA\Property(property="credito_utilizado", type="number", format="float", example=25000.00),
- *             @OA\Property(property="credito_disponible", type="number", format="float", example=25000.00)
+ *             @OA\Property(property="credito_disponible", type="number", format="float", example=25000.00),
+ *             @OA\Property(property="moneda", type="string", example="ARS", description="Moneda en la que se expresan los valores")
  *         )
  *     ),
  *     @OA\Response(

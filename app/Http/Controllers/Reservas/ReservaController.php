@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Reservas;
 
-use App\Models\Reserva;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Schema;
+use App\Models\Pnraereo;
+use App\Models\Reserva;
+use App\Models\Servicio;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Validator;
 
 class ReservaController extends Controller
 {
@@ -18,52 +21,223 @@ class ReservaController extends Controller
     {
         $startTime = microtime(true);
         $validatedParams = $this->validateParams($request);
-        //DB::enableQueryLog();
         $perPage = $request->get('per_page', 20);
 
-        $items = Reserva
-            ::where('fk_filestatus_id', '!=', 'AG')
+        $query = Reserva::query()
+            ->where('fk_filestatus_id', '!=', 'AG')
             ->where('reserva_id', '!=', 1);
 
-        if (isset($validatedParams['fecha_alta_desde']) && $validatedParams['fecha_alta_desde']) {
-            $items = $items->where('fecha_alta', '>=', $validatedParams['fecha_alta_desde']);
+        // Filtro por código (múltiple con asterisco: "123*456*789")
+        if (! empty($validatedParams['codigo'])) {
+            $codigos = array_map('trim', explode('*', $validatedParams['codigo']));
+            $query->whereIn('codigo', $codigos);
         }
-        if (isset($validatedParams['fecha_alta_hasta']) && $validatedParams['fecha_alta_hasta']) {
-            $items = $items->where('fecha_alta', '<=', $validatedParams['fecha_alta_hasta']);
+
+        // Filtro por tipocodigo (múltiples valores separados por coma)
+        if (! empty($validatedParams['tipocodigo'])) {
+            $tipos = array_map('trim', explode(',', $validatedParams['tipocodigo']));
+            $query->whereIn('tipocodigo', $tipos);
         }
-        if (isset($validatedParams['codigo']) && $validatedParams['codigo']) {
-            $items = $items->where('codigo', 'IN', $validatedParams['fecha_alta_hasta']);
+
+        // Filtro por fk_filestatus_id (múltiples valores separados por coma)
+        if (! empty($validatedParams['fk_filestatus_id'])) {
+            $statuses = array_map('trim', explode(',', $validatedParams['fk_filestatus_id']));
+            $query->whereIn('fk_filestatus_id', $statuses);
         }
-        if (isset($validatedParams['fk_cliente_id']) && $validatedParams['fk_cliente_id']) {
-            $items = $items->where('fk_cliente_id', '=', $validatedParams['fk_cliente_id']);
+
+        // Filtro por fk_cliente_id (múltiples valores separados por coma)
+        if (! empty($validatedParams['fk_cliente_id'])) {
+            $clientes = array_map('intval', explode(',', $validatedParams['fk_cliente_id']));
+            $query->whereIn('fk_cliente_id', $clientes);
         }
-        $withRelations = [];
-        if ($request->get('withRelations') && $request->get('withRelations') == 'true') {
-            $withRelations = [
-                'cliente' => function ($query) {
-                    $query->select('cliente_id', 'cliente_nombre', 'cuit'); // Selecciona solo los campos necesarios
-                },
-                'facturara' => function ($query) {
-                    $query->select('cliente_id', 'cliente_nombre', 'cuit'); // Selecciona solo los campos necesarios
-                },
-                'vendedor' => function ($query) {
-                    $query->select('usuario_id', 'usuario_nombre', 'usuario_apellido'); // Selecciona solo los campos necesarios
-                },
-                'servicios'
-            ];
-            $items = $items->with($withRelations);
+
+        // Filtro por agente (vendedor)
+        if (! empty($validatedParams['agente'])) {
+            $query->where('agente', $validatedParams['agente']);
         }
-        $items = $items
+
+        // Filtro por fk_usuario_id (creador)
+        if (! empty($validatedParams['fk_usuario_id'])) {
+            $query->where('fk_usuario_id', $validatedParams['fk_usuario_id']);
+        }
+
+        // Filtro por promotor
+        if (! empty($validatedParams['promotor'])) {
+            $query->where('promotor', $validatedParams['promotor']);
+        }
+
+        // Filtro por fk_proveedor_id del servicio (el que cobra) - usando subquery optimizada
+        if (! empty($validatedParams['fk_proveedor_id'])) {
+            $reservaIds = Servicio::where('fk_proveedor_id', $validatedParams['fk_proveedor_id'])
+                ->pluck('fk_reserva_id');
+            $query->whereIn('reserva_id', $reservaIds);
+        }
+
+        // Filtro por fk_prestador_id del servicio (el que presta) - usando subquery optimizada
+        if (! empty($validatedParams['fk_prestador_id'])) {
+            $reservaIds = Servicio::where('fk_prestador_id', $validatedParams['fk_prestador_id'])
+                ->pluck('fk_reserva_id');
+            $query->whereIn('reserva_id', $reservaIds);
+        }
+
+        // Filtro por fk_cadenahotelera_id del proveedor - usando JOIN optimizado
+        if (! empty($validatedParams['fk_cadenahotelera_id'])) {
+            $reservaIds = DB::table('servicio')
+                ->join('proveedor', 'servicio.fk_proveedor_id', '=', 'proveedor.proveedor_id')
+                ->where('proveedor.fk_cadenahotelera_id', $validatedParams['fk_cadenahotelera_id'])
+                ->pluck('servicio.fk_reserva_id');
+            $query->whereIn('reserva_id', $reservaIds);
+        }
+
+        // Filtro por titular (nombre + apellido en un solo campo)
+        if (! empty($validatedParams['titular'])) {
+            $titular = $validatedParams['titular'];
+            $query->where(function ($q) use ($titular) {
+                $q->whereRaw("CONCAT(titular_nombre, ' ', titular_apellido) LIKE ?", ["%{$titular}%"])
+                    ->orWhere('titular_nombre', 'LIKE', "%{$titular}%")
+                    ->orWhere('titular_apellido', 'LIKE', "%{$titular}%");
+            });
+        }
+
+        // Filtro por ticket (pnraereo_tkt) - búsqueda exacta
+        if (! empty($validatedParams['ticket'])) {
+            $reservaIds = DB::table('pnraereo')
+                ->join('servicio', 'pnraereo.fk_ocupacion_id', '=', 'servicio.servicio_id')
+                ->where('pnraereo.pnraereo_tkt', $validatedParams['ticket'])
+                ->pluck('servicio.fk_reserva_id');
+            $query->whereIn('reserva_id', $reservaIds);
+        }
+
+        // Filtro por codigo_recloc - búsqueda exacta
+        if (! empty($validatedParams['codigo_recloc'])) {
+            $reservaIds = DB::table('pnraereo')
+                ->join('servicio', 'pnraereo.fk_ocupacion_id', '=', 'servicio.servicio_id')
+                ->where('pnraereo.codigo_recloc', $validatedParams['codigo_recloc'])
+                ->pluck('servicio.fk_reserva_id');
+            $query->whereIn('reserva_id', $reservaIds);
+        }
+
+        // Filtro por nro_confirmacion del servicio - búsqueda exacta
+        if (! empty($validatedParams['nro_confirmacion'])) {
+            $reservaIds = Servicio::where('nro_confirmacion', $validatedParams['nro_confirmacion'])
+                ->pluck('fk_reserva_id');
+            $query->whereIn('reserva_id', $reservaIds);
+        }
+
+        // Filtro por rango de fechas dinámico
+        $this->applyDateFilters($query, $validatedParams);
+
+        // Filtro por fk_tipoproducto_id del servicio - usando subquery optimizada
+        if (! empty($validatedParams['fk_tipoproducto_id'])) {
+            $tipos = array_map('trim', explode(',', $validatedParams['fk_tipoproducto_id']));
+            $reservaIds = Servicio::whereIn('fk_tipoproducto_id', $tipos)
+                ->pluck('fk_reserva_id');
+            $query->whereIn('reserva_id', $reservaIds);
+        }
+
+        // Filtro por codigo_externo
+        if (! empty($validatedParams['codigo_externo'])) {
+            $query->where('codigo_externo', 'LIKE', "%{$validatedParams['codigo_externo']}%");
+        }
+
+        // Filtro por status_factura
+        if (! empty($validatedParams['status_factura'])) {
+            $query->where('status_factura', $validatedParams['status_factura']);
+        }
+
+        // Filtro por cobrado (0 = sin cobrar, 1 = con cobro)
+        if (isset($validatedParams['cobrado']) && $validatedParams['cobrado'] !== null && $validatedParams['cobrado'] !== '') {
+            if ($validatedParams['cobrado'] == '0') {
+                $query->where('cobrado', 0);
+            } else {
+                $query->where('cobrado', '!=', 0);
+            }
+        }
+
+        // Filtro por auditado
+        if (isset($validatedParams['auditado']) && $validatedParams['auditado'] !== null && $validatedParams['auditado'] !== '') {
+            $query->where('auditado', $validatedParams['auditado']);
+        }
+
+        // Cargar relaciones si se solicita
+        if ($request->get('withRelations') === 'true') {
+            $query->with([
+                'cliente' => fn ($q) => $q->select('cliente_id', 'cliente_nombre', 'cuit'),
+                'facturara' => fn ($q) => $q->select('cliente_id', 'cliente_nombre', 'cuit'),
+                'clienteOrigen' => fn ($q) => $q->select('cliente_id', 'cliente_nombre', 'cuit'),
+                'vendedor' => fn ($q) => $q->select('usuario_id', 'usuario_nombre', 'usuario_apellido'),
+                'servicios',
+            ]);
+        }
+
+        $items = $query
             ->orderByDesc('fecha_alta')
             ->paginate($perPage);
 
         $endTime = microtime(true);
-        $processingTime = $endTime - $startTime;
 
         return response()->json([
             'data' => $items,
-            'processing_time' => $processingTime
+            'processing_time' => $endTime - $startTime,
         ]);
+    }
+
+    /**
+     * Aplica filtros de fecha según el tipo seleccionado.
+     * fecha_tipo: fecha_alta, pnraereo_fechaemision, inicio, vencimiento
+     */
+    private function applyDateFilters($query, array $params): void
+    {
+        $fechaTipo = $params['fecha_tipo'] ?? null;
+        $fechaDesde = $params['fecha_desde'] ?? null;
+        $fechaHasta = $params['fecha_hasta'] ?? null;
+
+        if (! $fechaTipo || (! $fechaDesde && ! $fechaHasta)) {
+            return;
+        }
+
+        switch ($fechaTipo) {
+            case 'fecha_alta':
+                if ($fechaDesde) {
+                    $query->where('fecha_alta', '>=', $fechaDesde);
+                }
+                if ($fechaHasta) {
+                    $query->where('fecha_alta', '<=', $fechaHasta);
+                }
+                break;
+
+            case 'pnraereo_fechaemision':
+                // Optimizado con JOIN en lugar de whereHas anidado
+                $pnrQuery = DB::table('pnraereo')
+                    ->join('servicio', 'pnraereo.fk_ocupacion_id', '=', 'servicio.servicio_id');
+                if ($fechaDesde) {
+                    $pnrQuery->where('pnraereo.pnraereo_fechaemision', '>=', $fechaDesde);
+                }
+                if ($fechaHasta) {
+                    $pnrQuery->where('pnraereo.pnraereo_fechaemision', '<=', $fechaHasta);
+                }
+                $reservaIds = $pnrQuery->pluck('servicio.fk_reserva_id');
+                $query->whereIn('reserva_id', $reservaIds);
+                break;
+
+            case 'inicio':
+                if ($fechaDesde) {
+                    $query->where('inicio', '>=', $fechaDesde);
+                }
+                if ($fechaHasta) {
+                    $query->where('inicio', '<=', $fechaHasta);
+                }
+                break;
+
+            case 'vencimiento':
+                if ($fechaDesde) {
+                    $query->where('fecha_vencimiento', '>=', $fechaDesde);
+                }
+                if ($fechaHasta) {
+                    $query->where('fecha_vencimiento', '<=', $fechaHasta);
+                }
+                break;
+        }
     }
 
     /**
@@ -80,7 +254,7 @@ class ReservaController extends Controller
         }
 
         $data = $request->all();
-        $model = new Reserva();
+        $model = new Reserva;
         $tableColumns = collect(Schema::getColumnListing($model->getTable()));
 
         // Agregar campos automáticos si existen
@@ -95,6 +269,7 @@ class ReservaController extends Controller
         }
 
         $item = Reserva::create($data);
+
         return response()->json($item, 201);
     }
 
@@ -105,6 +280,7 @@ class ReservaController extends Controller
     {
         try {
             $item = Reserva::findOrFail($id);
+
             return response()->json($item);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Registro no encontrado'], 404);
@@ -139,6 +315,7 @@ class ReservaController extends Controller
             }
 
             $item->update($data);
+
             return response()->json($item);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Registro no encontrado'], 404);
@@ -153,6 +330,7 @@ class ReservaController extends Controller
         try {
             $item = Reserva::findOrFail($id);
             $item->delete();
+
             return response()->json(null, 204);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Registro no encontrado'], 404);
@@ -167,21 +345,48 @@ class ReservaController extends Controller
         $query = Reserva::query();
         $perPage = $request->get('per_page', 100);
 
-        if ($request->has('q') && !empty($request->q)) {
+        if ($request->has('q') && ! empty($request->q)) {
             $searchTerm = $request->q;
             // Implementar búsqueda en campos principales
         }
 
         return response()->json($query->paginate($perPage));
     }
+
     private function validateParams(Request $request)
     {
         return $request->validate([
             'per_page' => 'integer|min:1|max:100',
-            'fecha_alta_desde' => 'nullable|date',
-            'fecha_alta_hasta' => 'nullable|date|after_or_equal:fecha_alta_desde',
+
+            // Filtros de reserva
             'codigo' => 'nullable|string',
-            'fk_cliente_id' => 'nullable|integer|exists:cliente,cliente_id',
+            'tipocodigo' => 'nullable|string',
+            'fk_filestatus_id' => 'nullable|string',
+            'fk_cliente_id' => 'nullable|string',
+            'agente' => 'nullable|integer',
+            'fk_usuario_id' => 'nullable|integer',
+            'promotor' => 'nullable|integer',
+            'titular' => 'nullable|string|max:255',
+            'codigo_externo' => 'nullable|string|max:255',
+            'status_factura' => 'nullable|string|max:10|in:pendiente,facturado,parcial',
+            'cobrado' => 'nullable|in:0,1',
+            'auditado' => 'nullable|in:0,1',
+
+            // Filtros de servicio
+            'fk_proveedor_id' => 'nullable|integer',
+            'fk_prestador_id' => 'nullable|integer',
+            'fk_cadenahotelera_id' => 'nullable|integer',
+            'nro_confirmacion' => 'nullable|string|max:255',
+            'fk_tipoproducto_id' => 'nullable|string',
+
+            // Filtros de pnraereo
+            'ticket' => 'nullable|string|max:255',
+            'codigo_recloc' => 'nullable|string|max:255',
+
+            // Filtros de fecha dinámicos
+            'fecha_tipo' => 'nullable|in:fecha_alta,pnraereo_fechaemision,inicio,vencimiento',
+            'fecha_desde' => 'nullable|date',
+            'fecha_hasta' => 'nullable|date|after_or_equal:fecha_desde',
         ]);
     }
 

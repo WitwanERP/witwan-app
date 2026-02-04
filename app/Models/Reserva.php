@@ -76,7 +76,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $reservaid_mayorista
  * @property string $info_extra
  * @property string $status_factura
- *
  * @property Cliente $cliente
  * @property Identidadfiscal $identidadfiscal
  * @property Moneda $moneda
@@ -98,13 +97,13 @@ use Illuminate\Database\Eloquent\Model;
  * @property ReservaExtra|null $reserva_extra
  * @property Collection|Servicio[] $servicios
  * @property Collection|Usuariocomision[] $usuariocomisions
- *
- * @package App\Models
  */
 class Reserva extends Model
 {
     protected $table = 'reserva';
+
     protected $primaryKey = 'reserva_id';
+
     public $timestamps = false;
 
     protected $casts = [
@@ -156,7 +155,7 @@ class Reserva extends Model
         'markup_mayorista' => 'float',
         'auditado' => 'int',
         'reserva_mayorista' => 'int',
-        'reservaid_mayorista' => 'int'
+        'reservaid_mayorista' => 'int',
     ];
 
     protected $fillable = [
@@ -222,7 +221,7 @@ class Reserva extends Model
         'reservaid_mayorista',
         'info_extra',
         'status_factura',
-        'inicio'
+        'inicio',
     ];
 
     protected $attributes = [
@@ -265,12 +264,37 @@ class Reserva extends Model
         'areaanalitica' => '',
         'codigo_externo' => '',
         'tipocodigo' => '',
-        'externalid' => ''
+        'externalid' => '',
     ];
 
     public function cliente()
     {
         return $this->belongsTo(Cliente::class, 'facturar_a');
+    }
+
+    public function facturara()
+    {
+        return $this->belongsTo(Cliente::class, 'facturar_a');
+    }
+
+    public function clienteOrigen()
+    {
+        return $this->belongsTo(Cliente::class, 'fk_cliente_id');
+    }
+
+    public function vendedor()
+    {
+        return $this->belongsTo(Usuario::class, 'agente');
+    }
+
+    public function creador()
+    {
+        return $this->belongsTo(Usuario::class, 'fk_usuario_id');
+    }
+
+    public function usuarioPromotor()
+    {
+        return $this->belongsTo(Usuario::class, 'promotor');
     }
 
     public function identidadfiscal()

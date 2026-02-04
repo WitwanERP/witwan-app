@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Empresas\Clientes;
 use App\Models\Cliente;
 use App\Models\Creditoextra;
 use App\Models\Cotizacion;
+use App\Models\Moneda;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -297,13 +298,31 @@ class ClienteController extends Controller
             $status = $creditoUtilizadoTotal < $creditoAutorizado ? 'OK' : 'NO-OK';
             $message = $status === 'OK' ? 'Autorizado.' : 'Cliente sin crédito disponible. Favor contactar al administrador.';
 
+            // Convert to requested currency if provided
+            $monedaSolicitada = $request->input('moneda');
+            $monedaRespuesta = null;
+
+            if ($monedaSolicitada) {
+                $tcMoneda = $this->getCurrencyRate($monedaSolicitada);
+                if ($tcMoneda > 0 && $tcMoneda != 1) {
+                    $creditoAutorizado = $creditoAutorizado / $tcMoneda;
+                    $creditoUtilizadoTotal = $creditoUtilizadoTotal / $tcMoneda;
+                }
+                $monedaRespuesta = $monedaSolicitada;
+            } else {
+                // Get base currency
+                $monedaBase = Moneda::where('moneda_basica', 'S')->first();
+                $monedaRespuesta = $monedaBase ? $monedaBase->moneda_id : null;
+            }
+
             return response()->json([
                 'CodeClientBackOffice' => $clientId,
                 'status' => $status,
                 'Message' => $message,
-                'credito_autorizado' => $creditoAutorizado,
-                'credito_utilizado' => $creditoUtilizadoTotal,
-                'credito_disponible' => $creditoAutorizado - $creditoUtilizadoTotal
+                'credito_autorizado' => round($creditoAutorizado, 2),
+                'credito_utilizado' => round($creditoUtilizadoTotal, 2),
+                'credito_disponible' => round($creditoAutorizado - $creditoUtilizadoTotal, 2),
+                'moneda' => $monedaRespuesta
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([

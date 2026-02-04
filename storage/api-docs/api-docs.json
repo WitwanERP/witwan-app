@@ -1152,6 +1152,16 @@
                             "type": "number",
                             "format": "float"
                         }
+                    },
+                    {
+                        "name": "moneda",
+                        "in": "query",
+                        "description": "Código de moneda para expresar los valores (ej: USD, EUR). Si no se especifica, se devuelve en moneda base.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        }
                     }
                 ],
                 "responses": {
@@ -1191,6 +1201,11 @@
                                             "type": "number",
                                             "format": "float",
                                             "example": 25000
+                                        },
+                                        "moneda": {
+                                            "description": "Moneda en la que se expresan los valores",
+                                            "type": "string",
+                                            "example": "ARS"
                                         }
                                     },
                                     "type": "object"
@@ -1288,14 +1303,16 @@
                                             "example": 25000
                                         },
                                         "credito_disponible": {
+                                            "description": "Crédito disponible (siempre >= 0)",
                                             "type": "number",
                                             "format": "float",
                                             "example": 30000
                                         },
-                                        "porcentaje_utilizado": {
+                                        "porcentaje_disponible": {
+                                            "description": "Porcentaje de crédito disponible (0-100)",
                                             "type": "number",
                                             "format": "float",
-                                            "example": 45.45
+                                            "example": 54.55
                                         },
                                         "mensaje": {
                                             "type": "string",

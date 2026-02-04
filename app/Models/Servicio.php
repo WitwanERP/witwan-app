@@ -91,7 +91,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $cupo_reservado
  * @property Carbon|null $cancelled_at
  * @property int $servicio_mayorista_id
- *
  * @property Ciudad $ciudad
  * @property Moneda $moneda
  * @property Producto $producto
@@ -113,13 +112,13 @@ use Illuminate\Database\Eloquent\Model;
  * @property Collection|ServicioNomina[] $servicio_nominas
  * @property Collection|Serviciofactura[] $serviciofacturas
  * @property Collection|Usuariocomision[] $usuariocomisions
- *
- * @package App\Models
  */
 class Servicio extends Model
 {
     protected $table = 'servicio';
+
     protected $primaryKey = 'servicio_id';
+
     public $timestamps = false;
 
     protected $casts = [
@@ -180,7 +179,7 @@ class Servicio extends Model
         'item' => 'int',
         'cupo_reservado' => 'int',
         'cancelled_at' => 'datetime',
-        'servicio_mayorista_id' => 'int'
+        'servicio_mayorista_id' => 'int',
     ];
 
     protected $fillable = [
@@ -260,7 +259,7 @@ class Servicio extends Model
         'contable',
         'cupo_reservado',
         'cancelled_at',
-        'servicio_mayorista_id'
+        'servicio_mayorista_id',
     ];
 
     protected $attributes = [
@@ -341,6 +340,16 @@ class Servicio extends Model
     }
 
     public function proveedor()
+    {
+        return $this->belongsTo(Proveedor::class, 'fk_prestador_id');
+    }
+
+    public function proveedorCobra()
+    {
+        return $this->belongsTo(Proveedor::class, 'fk_proveedor_id');
+    }
+
+    public function prestador()
     {
         return $this->belongsTo(Proveedor::class, 'fk_prestador_id');
     }
