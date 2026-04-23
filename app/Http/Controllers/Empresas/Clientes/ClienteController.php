@@ -310,9 +310,26 @@ class ClienteController extends Controller
                 }
                 $monedaRespuesta = $monedaSolicitada;
             } else {
-                // Get base currency
-                $monedaBase = Moneda::where('moneda_basica', 'S')->first();
-                $monedaRespuesta = $monedaBase ? $monedaBase->moneda_id : null;
+                // Get base currency, except for special IPs
+                $ip = $request->ip();
+                $useUSD = false;
+                if ($ip === '137.116.211.8') {
+                    $useUSD = true;
+                } else {
+                    // Check if IP is in 20.101.238.16/28
+                    $ipLong = ip2long($ip);
+                    $rangeStart = ip2long('20.101.238.16');
+                    $rangeEnd = ip2long('20.101.238.31'); // /28 = 16 IPs, last is .31
+                    if ($ipLong !== false && $ipLong >= $rangeStart && $ipLong <= $rangeEnd) {
+                        $useUSD = true;
+                    }
+                }
+                if ($useUSD) {
+                    $monedaRespuesta = 'USD';
+                } else {
+                    $monedaBase = Moneda::where('moneda_basica', 'S')->first();
+                    $monedaRespuesta = $monedaBase ? $monedaBase->moneda_id : null;
+                }
             }
 
             return response()->json([
