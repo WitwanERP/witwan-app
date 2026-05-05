@@ -3,9 +3,32 @@
 namespace App\OpenApi;
 
 /**
+ * @OA\Schema(
+ *     schema="ClienteContacto",
+ *
+ *     @OA\Property(property="cliente_cont_nombre", type="string", example="Juan Pérez"),
+ *     @OA\Property(property="cliente_cont_cargo", type="string", example="Gerente Comercial"),
+ *     @OA\Property(property="cliente_email", type="string", example="juan@empresa.com"),
+ *     @OA\Property(property="cliente_tel_tipo", type="string", example="celular"),
+ *     @OA\Property(property="cliente_tel_codpais", type="string", example="54"),
+ *     @OA\Property(property="cliente_tel_codarea", type="string", example="11"),
+ *     @OA\Property(property="cliente_telefono", type="string", example="1234-5678"),
+ *     @OA\Property(property="cliente_cont_emailsend", type="integer", enum={0,1}, example=1)
+ * )
+ *
+ * @OA\Schema(
+ *     schema="ClienteTarjeta",
+ *
+ *     @OA\Property(property="cliente_tarjeta_num", type="string", example="4111111111111111"),
+ *     @OA\Property(property="cliente_tarjeta_banco", type="string", example="Banco Nación"),
+ *     @OA\Property(property="cliente_tarjeta_venc", type="string", example="12/25"),
+ *     @OA\Property(property="cliente_tarjeta_cs", type="string", example="123"),
+ *     @OA\Property(property="cliente_tarjeta_empresa", type="string", example="VISA")
+ * )
  *
  * @OA\Schema(
  *     schema="Cliente",
+ *
  *     @OA\Property(property="cliente_id", type="integer", example=1),
  *     @OA\Property(property="cliente_nombre", type="string", example="Empresa Ejemplo"),
  *     @OA\Property(property="cliente_razonsocial", type="string", example="Empresa Ejemplo S.A."),
@@ -17,6 +40,12 @@ namespace App\OpenApi;
  *     @OA\Property(property="fk_ciudad_id", type="integer", example=1),
  *     @OA\Property(property="cliente_direccionfiscal", type="string", example="Av. Corrientes 1234"),
  *     @OA\Property(property="cliente_email", type="string", example="contacto@empresa.com"),
+ *     @OA\Property(property="habilita", type="string", enum={"S","N"}, example="S"),
+ *     @OA\Property(property="fk_tarifario1_id", type="integer", example=5, description="Tarifario receptivo (sistema 1)"),
+ *     @OA\Property(property="fk_tarifario2_id", type="integer", example=0, description="Tarifario mayorista (sistema 2)"),
+ *     @OA\Property(property="fk_tarifario3_id", type="integer", example=0, description="Tarifario nacional (sistema 7)"),
+ *     @OA\Property(property="contactos", type="array", @OA\Items(ref="#/components/schemas/ClienteContacto")),
+ *     @OA\Property(property="tarjetas", type="array", @OA\Items(ref="#/components/schemas/ClienteTarjeta")),
  *     @OA\Property(property="fechacarga", type="string", format="date-time"),
  *     @OA\Property(property="um", type="string", format="date-time"),
  *     @OA\Property(property="fk_usuario_id", type="integer", example=1005)
@@ -30,25 +59,32 @@ namespace App\OpenApi;
  *     summary="Listar clientes",
  *     description="Obtiene una lista paginada de clientes",
  *     security={{"bearerAuth":{}}},
+ *
  *     @OA\Parameter(
  *         name="per_page",
  *         in="query",
  *         description="Cantidad de registros por página",
  *         required=false,
+ *
  *         @OA\Schema(type="integer", default=100)
  *     ),
+ *
  *     @OA\Parameter(
  *         name="search",
  *         in="query",
  *         description="Término de búsqueda",
  *         required=false,
+ *
  *         @OA\Schema(type="string")
  *     ),
+ *
  *     @OA\Response(
  *         response=200,
  *         description="Lista de clientes",
+ *
  *         @OA\JsonContent(
  *             type="object",
+ *
  *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Cliente")),
  *             @OA\Property(property="links", type="object"),
  *             @OA\Property(property="meta", type="object")
@@ -63,10 +99,13 @@ namespace App\OpenApi;
  *     summary="Crear cliente",
  *     description="Crea un nuevo cliente",
  *     security={{"bearerAuth":{}}},
+ *
  *     @OA\RequestBody(
  *         required=true,
+ *
  *         @OA\JsonContent(
  *             required={"cliente_nombre", "cliente_razonsocial", "cuit", "fk_tipoclavefiscal_id", "fk_tipofactura_id", "fk_condicioniva_id", "fk_pais_id", "fk_ciudad_id", "cliente_direccionfiscal", "cliente_email"},
+ *
  *             @OA\Property(property="cliente_nombre", type="string", example="Empresa Ejemplo"),
  *             @OA\Property(property="cliente_razonsocial", type="string", example="Empresa Ejemplo S.A."),
  *             @OA\Property(property="cuit", type="string", example="20272022500"),
@@ -76,18 +115,28 @@ namespace App\OpenApi;
  *             @OA\Property(property="fk_pais_id", type="integer", example="Tomar del endpoint de paises"),
  *             @OA\Property(property="fk_ciudad_id", type="integer", example="Tomar del endpoint de ciudades"),
  *             @OA\Property(property="cliente_direccionfiscal", type="string", example="Av. Corrientes 1234"),
- *             @OA\Property(property="cliente_email", type="string", example="contacto@empresa.com")
+ *             @OA\Property(property="cliente_email", type="string", example="contacto@empresa.com"),
+ *             @OA\Property(property="fk_tarifario1_id", type="integer", example=5, description="Tarifario receptivo. Sincroniza rel_clientesistema con fk_sistema_id=1"),
+ *             @OA\Property(property="fk_tarifario2_id", type="integer", example=0, description="Tarifario mayorista. Sincroniza rel_clientesistema con fk_sistema_id=2"),
+ *             @OA\Property(property="fk_tarifario3_id", type="integer", example=0, description="Tarifario nacional. Sincroniza rel_clientesistema con fk_sistema_id=7"),
+ *             @OA\Property(property="contactos", type="array", description="Lista de contactos. Se persiste como JSON en cliente_extra (extra_nombre='contactos').", @OA\Items(ref="#/components/schemas/ClienteContacto")),
+ *             @OA\Property(property="tarjetas", type="array", description="Lista de tarjetas. Se persiste como JSON en cliente_extra (extra_nombre='tarjetas').", @OA\Items(ref="#/components/schemas/ClienteTarjeta"))
  *         )
  *     ),
+ *
  *     @OA\Response(
  *         response=201,
  *         description="Cliente creado exitosamente",
+ *
  *         @OA\JsonContent(ref="#/components/schemas/Cliente")
  *     ),
+ *
  *     @OA\Response(
  *         response=422,
  *         description="Error de validación",
+ *
  *         @OA\JsonContent(
+ *
  *             @OA\Property(property="errors", type="object")
  *         )
  *     )
@@ -100,22 +149,29 @@ namespace App\OpenApi;
  *     summary="Mostrar cliente",
  *     description="Obtiene los datos de un cliente por ID",
  *     security={{"bearerAuth":{}}},
+ *
  *     @OA\Parameter(
  *         name="id",
  *         in="path",
  *         description="ID del cliente",
  *         required=true,
+ *
  *         @OA\Schema(type="integer")
  *     ),
+ *
  *     @OA\Response(
  *         response=200,
  *         description="Datos del cliente",
+ *
  *         @OA\JsonContent(ref="#/components/schemas/Cliente")
  *     ),
+ *
  *     @OA\Response(
  *         response=404,
  *         description="Cliente no encontrado",
+ *
  *         @OA\JsonContent(
+ *
  *             @OA\Property(property="message", type="string", example="Registro no encontrado")
  *         )
  *     )
@@ -128,37 +184,53 @@ namespace App\OpenApi;
  *     summary="Actualizar cliente",
  *     description="Actualiza los datos de un cliente existente",
  *     security={{"bearerAuth":{}}},
+ *
  *     @OA\Parameter(
  *         name="id",
  *         in="path",
  *         description="ID del cliente",
  *         required=true,
+ *
  *         @OA\Schema(type="integer")
  *     ),
+ *
  *     @OA\RequestBody(
+ *
  *         @OA\JsonContent(
+ *
  *             @OA\Property(property="cliente_nombre", type="string", example="Empresa Ejemplo Actualizada"),
  *             @OA\Property(property="cliente_razonsocial", type="string", example="Empresa Ejemplo S.A. Actualizada"),
  *             @OA\Property(property="cuit", type="string", example="20272022500"),
- *             @OA\Property(property="cliente_email", type="string", example="nuevo@empresa.com")
+ *             @OA\Property(property="cliente_email", type="string", example="nuevo@empresa.com"),
+ *             @OA\Property(property="fk_tarifario1_id", type="integer", example=5),
+ *             @OA\Property(property="contactos", type="array", description="Si la clave está presente, reemplaza la lista actual (replace-on-write). Omitir la clave preserva los datos existentes.", @OA\Items(ref="#/components/schemas/ClienteContacto")),
+ *             @OA\Property(property="tarjetas", type="array", description="Si la clave está presente, reemplaza la lista actual (replace-on-write). Omitir la clave preserva los datos existentes.", @OA\Items(ref="#/components/schemas/ClienteTarjeta"))
  *         )
  *     ),
+ *
  *     @OA\Response(
  *         response=200,
  *         description="Cliente actualizado",
+ *
  *         @OA\JsonContent(ref="#/components/schemas/Cliente")
  *     ),
+ *
  *     @OA\Response(
  *         response=404,
  *         description="Cliente no encontrado",
+ *
  *         @OA\JsonContent(
+ *
  *             @OA\Property(property="message", type="string", example="Registro no encontrado")
  *         )
  *     ),
+ *
  *     @OA\Response(
  *         response=422,
  *         description="Error de validación",
+ *
  *         @OA\JsonContent(
+ *
  *             @OA\Property(property="errors", type="object")
  *         )
  *     )
@@ -169,24 +241,84 @@ namespace App\OpenApi;
  *     operationId="clienteDestroy",
  *     tags={"Clientes"},
  *     summary="Eliminar cliente",
- *     description="Elimina un cliente por ID",
+ *     description="Soft-disable: setea habilita='N'. Falla si el cliente tiene reservas asociadas.",
  *     security={{"bearerAuth":{}}},
+ *
  *     @OA\Parameter(
  *         name="id",
  *         in="path",
  *         description="ID del cliente",
  *         required=true,
+ *
  *         @OA\Schema(type="integer")
  *     ),
+ *
  *     @OA\Response(
  *         response=204,
- *         description="Cliente eliminado exitosamente"
+ *         description="Cliente deshabilitado exitosamente"
  *     ),
  *     @OA\Response(
  *         response=404,
  *         description="Cliente no encontrado",
+ *
  *         @OA\JsonContent(
+ *
  *             @OA\Property(property="message", type="string", example="Registro no encontrado")
+ *         )
+ *     ),
+ *
+ *     @OA\Response(
+ *         response=422,
+ *         description="Cliente con dependencias",
+ *
+ *         @OA\JsonContent(
+ *
+ *             @OA\Property(property="error", type="string", example="No se puede eliminar: cliente con reservas asociadas"),
+ *             @OA\Property(property="reservas", type="integer", example=3)
+ *         )
+ *     )
+ * )
+ *
+ * @OA\Get(
+ *     path="/clientes/clientes/search",
+ *     operationId="clienteSearch",
+ *     tags={"Clientes"},
+ *     summary="Buscar clientes",
+ *     description="Busca clientes activos por nombre, razón social o CUIT. Mínimo 2 caracteres.",
+ *     security={{"bearerAuth":{}}},
+ *
+ *     @OA\Parameter(
+ *         name="q",
+ *         in="query",
+ *         description="Término de búsqueda (mínimo 2 caracteres)",
+ *         required=true,
+ *
+ *         @OA\Schema(type="string", example="ace")
+ *     ),
+ *
+ *     @OA\Parameter(
+ *         name="limit",
+ *         in="query",
+ *         description="Cantidad máxima de resultados (1-50)",
+ *         required=false,
+ *
+ *         @OA\Schema(type="integer", default=10, minimum=1, maximum=50)
+ *     ),
+ *
+ *     @OA\Response(
+ *         response=200,
+ *         description="Lista de coincidencias",
+ *
+ *         @OA\JsonContent(
+ *             type="array",
+ *
+ *             @OA\Items(
+ *                 type="object",
+ *
+ *                 @OA\Property(property="id", type="integer", example=123),
+ *                 @OA\Property(property="nombre", type="string", example="Empresa Ejemplo S.A."),
+ *                 @OA\Property(property="cuit", type="string", example="20272022500")
+ *             )
  *         )
  *     )
  * )
@@ -198,32 +330,41 @@ namespace App\OpenApi;
  *     summary="Consultar límite de crédito",
  *     description="Obtiene información sobre el límite de crédito disponible de un cliente",
  *     security={{"bearerAuth":{}}},
+ *
  *     @OA\Parameter(
  *         name="clientId",
  *         in="path",
  *         description="ID del cliente",
  *         required=true,
+ *
  *         @OA\Schema(type="integer")
  *     ),
+ *
  *     @OA\Parameter(
  *         name="value",
  *         in="query",
  *         description="Monto a verificar si está disponible en el crédito",
  *         required=false,
+ *
  *         @OA\Schema(type="number", format="float")
  *     ),
+ *
  *     @OA\Parameter(
  *         name="moneda",
  *         in="query",
  *         description="Código de moneda para expresar los valores (ej: USD, EUR). Si no se especifica, se devuelve en moneda base.",
  *         required=false,
+ *
  *         @OA\Schema(type="string", example="USD")
  *     ),
+ *
  *     @OA\Response(
  *         response=200,
  *         description="Información del crédito del cliente",
+ *
  *         @OA\JsonContent(
  *             type="object",
+ *
  *             @OA\Property(property="CodeClientBackOffice", type="integer", example=123),
  *             @OA\Property(property="status", type="string", enum={"OK", "NO-OK"}, example="OK"),
  *             @OA\Property(property="Message", type="string", example="Autorizado."),
@@ -233,11 +374,14 @@ namespace App\OpenApi;
  *             @OA\Property(property="moneda", type="string", example="ARS", description="Moneda en la que se expresan los valores")
  *         )
  *     ),
+ *
  *     @OA\Response(
  *         response=404,
  *         description="Cliente no encontrado",
+ *
  *         @OA\JsonContent(
  *             type="object",
+ *
  *             @OA\Property(property="CodeClientBackOffice", type="integer"),
  *             @OA\Property(property="status", type="string", example="NO-OK"),
  *             @OA\Property(property="Message", type="string", example="Cliente no encontrado.")
@@ -252,18 +396,23 @@ namespace App\OpenApi;
  *     summary="Consultar crédito disponible",
  *     description="Obtiene información detallada sobre el crédito disponible de un cliente",
  *     security={{"bearerAuth":{}}},
+ *
  *     @OA\Parameter(
  *         name="clientId",
  *         in="path",
  *         description="ID del cliente",
  *         required=true,
+ *
  *         @OA\Schema(type="integer")
  *     ),
+ *
  *     @OA\Response(
  *         response=200,
  *         description="Información detallada del crédito disponible",
+ *
  *         @OA\JsonContent(
  *             type="object",
+ *
  *             @OA\Property(property="cliente_id", type="integer", example=123),
  *             @OA\Property(property="cliente_nombre", type="string", example="Empresa Ejemplo S.A."),
  *             @OA\Property(property="credito_habilitado", type="boolean", example=true),
@@ -276,11 +425,14 @@ namespace App\OpenApi;
  *             @OA\Property(property="mensaje", type="string", example="Crédito disponible")
  *         )
  *     ),
+ *
  *     @OA\Response(
  *         response=404,
  *         description="Cliente no encontrado",
+ *
  *         @OA\JsonContent(
  *             type="object",
+ *
  *             @OA\Property(property="error", type="string", example="Cliente no encontrado"),
  *             @OA\Property(property="cliente_id", type="integer", example=123)
  *         )

@@ -2,18 +2,20 @@
 
 namespace App\Http\Controllers\Empresas\Clientes;
 
-use App\Models\Cliente;
-use App\Models\Creditoextra;
-use App\Models\Cotizacion;
-use App\Models\Moneda;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Helpers\PermisoHelper;
 use App\Helpers\SysconfigHelper;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\ClienteRequest;
+use App\Models\Cliente;
+use App\Models\ClienteExtra;
+use App\Models\Cotizacion;
+use App\Models\Creditoextra;
+use App\Models\Moneda;
+use App\Models\Reserva;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class ClienteController extends Controller
 {
@@ -26,7 +28,7 @@ class ClienteController extends Controller
         $query = Cliente::query();
 
         // Agregar filtros básicos aquí
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('cliente_nombre', 'LIKE', "%{$searchTerm}%")
@@ -41,151 +43,88 @@ class ClienteController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(ClienteRequest $request)
     {
-        if (!PermisoHelper::tienePermiso($this->sectionId, 'alta')) {
+        if (! PermisoHelper::tienePermiso($this->sectionId, 'alta')) {
             return response()->json(['error' => 'Permiso denegado'], 403);
         }
 
-        $validator = Validator::make($request->all(), [
-            'cliente_nombre' => 'required|string|max:250',
-            'cliente_razonsocial' => 'required|string|max:250',
-            'cuit' => 'required|string|max:20',
-            'fk_tipoclavefiscal_id' => 'required|integer|exists:tipoclavefiscal,tipoclavefiscal_id',
-            'fk_tipofactura_id' => 'required|integer|exists:tipofactura,tipofactura_id',
-            'fk_condicioniva_id' => 'required|integer|exists:condicioniva,condicioniva_id',
-            'fk_pais_id' => 'required|integer|exists:pais,pais_id',
-            'fk_ciudad_id' => 'required|integer|exists:ciudad,ciudad_id',
-            'cliente_direccionfiscal' => 'required|string|max:250',
-            'cliente_email' => 'required|string|email|max:250',
-            // ...otras reglas si las necesitas
-        ], [
-            'cliente_nombre.required' => 'El nombre del cliente es obligatorio.',
-            'cliente_razonsocial.required' => 'La razón social es obligatoria.',
-            'cuit.required' => 'El CUIT es obligatorio.',
-            'fk_tipofactura_id.required' => 'El tipo de factura es obligatorio.',
-            'fk_tipofactura_id.integer' => 'El tipo de factura debe ser un número entero.',
-            'fk_tipofactura_id.exists' => 'El tipo de factura seleccionado no es válido.',
-            'fk_condicioniva_id.required' => 'La condición de IVA es obligatoria.',
-            'fk_condicioniva_id.integer' => 'La condición de IVA debe ser un número entero.',
-            'fk_condicioniva_id.exists' => 'La condición de IVA seleccionada no es válida.',
-            'fk_pais_id.required' => 'El país es obligatorio.',
-            'fk_pais_id.integer' => 'El país debe ser un número entero.',
-            'fk_pais_id.exists' => 'El país seleccionado no es válido.',
-            'fk_ciudad_id.required' => 'La ciudad es obligatoria.',
-            'fk_ciudad_id.integer' => 'La ciudad debe ser un número entero.',
-            'fk_ciudad_id.exists' => 'La ciudad seleccionada no es válida.',
-            'fk_tipoclavefiscal_id.required' => 'El tipo de clave fiscal es obligatorio.',
-            'fk_tipoclavefiscal_id.integer' => 'El tipo de clave fiscal debe ser un número entero.',
-            'fk_tipoclavefiscal_id.exists' => 'El tipo de clave fiscal seleccionado no es válido.',
-            'cliente_direccionfiscal.required' => 'La dirección fiscal es obligatoria.',
-            'cliente_email.required' => 'El email es obligatorio.',
-            'cliente_email.email' => 'El email debe ser una dirección de correo válida.',
-        ]);
+        $validated = $request->validated();
+        $contactos = $request->input('contactos');
+        $tarjetas = $request->input('tarjetas');
+        unset($validated['contactos'], $validated['tarjetas']);
 
+        return DB::transaction(function () use ($validated, $contactos, $tarjetas) {
+            $model = new Cliente;
+            $tableColumns = collect(Schema::getColumnListing($model->getTable()));
+            $data = $validated;
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        $data = $request->all();
-        $model = new Cliente();
-        $tableColumns = collect(Schema::getColumnListing($model->getTable()));
-
-        if (isset($data['cuit'])) {
-            $data['cuit'] = str_replace(['-', '.'], '', $data['cuit']);
-            // Controlar que el CUIT no exista en la base
-            if (Cliente::where('cuit', $data['cuit'])->exists()) {
-                return response()->json(['errors' => ['cuit' => ['Ya existe un cliente con este CUIT.']]], 422);
+            if (! isset($data['fk_idioma_id'])) {
+                $data['fk_idioma_id'] = 'es';
             }
-        }
-        if (!isset($data['fk_idioma_id'])) {
-            $data['fk_idioma_id'] = 'es';
-        }
 
-        $defaultVacio = [
-            'cliente_telefono',
-            'cliente_legajo',
-            'cliente_fax',
-            'cliente_email2',
-            'cliente_emailadmin',
-            'cliente_ciudad',
-            'cliente_provincia',
-            'cliente_codigopostal',
-            'iata',
-            'cliente_logo',
-            'gastos_fijo_moneda',
-            'fk_moneda_id',
-            'comentarios',
-            'nombre_representante',
-            'cuit_internacional'
-        ];
-        foreach ($defaultVacio as $field) {
-            if (!isset($data[$field])) {
-                $data[$field] = '';
+            $defaultVacio = [
+                'cliente_telefono', 'cliente_legajo', 'cliente_fax',
+                'cliente_email2', 'cliente_emailadmin', 'cliente_ciudad',
+                'cliente_provincia', 'cliente_codigopostal', 'iata',
+                'cliente_logo', 'gastos_fijo_moneda', 'fk_moneda_id',
+                'comentarios', 'nombre_representante', 'cuit_internacional',
+            ];
+            foreach ($defaultVacio as $field) {
+                if (! isset($data[$field])) {
+                    $data[$field] = '';
+                }
             }
-        }
 
-        if (!isset($data['credito_habilitado'])) {
-            $data['credito_habilitado'] = 0;
-        }
-        if (!isset($data['nro_clavefiscal'])) {
-            $data['nro_clavefiscal'] = $data['cuit'];
-        }
-
-        $defaultEnCero = [
-            'fk_tarifario1_id',
-            'fk_tarifario2_id',
-            'fk_tarifario3_id',
-            'limite_credito',
-            'credito_utilizado',
-            'gastos_porcentaje_1',
-            'gastos_porcentaje_2',
-            'gastos_porcentaje_3',
-            'gastos_fijo_1',
-            'gastos_fijo_2',
-            'gastos_fijo_3',
-            'gastos_iva',
-            'plazo_pago',
-            'idnemo',
-            'idtravelc',
-            'licencia_id',
-            'facturacion_periodo',
-            'fk_usuario_promotor1',
-            'fk_usuario_promotor2',
-            'fk_usuario_promotor3',
-            'fk_usuario_promotor4',
-            'fk_usuario_vendedor',
-            'cliente_promo',
-            'cliente_web',
-            'cliente_pasajerodirecto',
-            'fk_cadenacliente_id',
-            'plazo_pago',
-            'idnemo',
-            'idtravelc',
-            'factura_automatica',
-            'tipofacturacion'
-
-        ];
-        foreach ($defaultEnCero as $field) {
-            if (!isset($data[$field]) && $tableColumns->contains($field)) {
-                $data[$field] = 0;
+            if (! isset($data['credito_habilitado'])) {
+                $data['credito_habilitado'] = 0;
             }
-        }
+            if (! isset($data['nro_clavefiscal'])) {
+                $data['nro_clavefiscal'] = $data['cuit'];
+            }
 
-        // Agregar campos automáticos si existen
-        if ($tableColumns->contains('fechacarga')) {
-            $data['fechacarga'] = now();
-        }
-        if ($tableColumns->contains('um')) {
-            $data['um'] = now();
-        }
-        if ($tableColumns->contains('fk_usuario_id')) {
-            $data['fk_usuario_id'] = auth()->id();
-        }
+            $defaultEnCero = [
+                'fk_tarifario1_id', 'fk_tarifario2_id', 'fk_tarifario3_id',
+                'limite_credito', 'credito_utilizado',
+                'gastos_porcentaje_1', 'gastos_porcentaje_2', 'gastos_porcentaje_3',
+                'gastos_fijo_1', 'gastos_fijo_2', 'gastos_fijo_3', 'gastos_iva',
+                'plazo_pago', 'idnemo', 'idtravelc', 'licencia_id',
+                'facturacion_periodo',
+                'fk_usuario_promotor1', 'fk_usuario_promotor2',
+                'fk_usuario_promotor3', 'fk_usuario_promotor4',
+                'fk_usuario_vendedor',
+                'cliente_promo', 'cliente_web', 'cliente_pasajerodirecto',
+                'fk_cadenacliente_id',
+                'factura_automatica', 'tipofacturacion',
+            ];
+            foreach ($defaultEnCero as $field) {
+                if (! isset($data[$field]) && $tableColumns->contains($field)) {
+                    $data[$field] = 0;
+                }
+            }
 
-        $item = Cliente::create($data);
-        return response()->json($item, 201);
+            if ($tableColumns->contains('fechacarga')) {
+                $data['fechacarga'] = now();
+            }
+            if ($tableColumns->contains('um')) {
+                $data['um'] = now();
+            }
+            if ($tableColumns->contains('fk_usuario_id')) {
+                $data['fk_usuario_id'] = auth()->id();
+            }
+
+            $item = Cliente::create($data);
+
+            $this->saveExtra($item->cliente_id, 'contactos', $contactos);
+            $this->saveExtra($item->cliente_id, 'tarjetas', $tarjetas);
+            $this->syncTarifarios($item);
+
+            $payload = $item->toArray();
+            $payload['contactos'] = $this->loadExtra($item->cliente_id, 'contactos');
+            $payload['tarjetas'] = $this->loadExtra($item->cliente_id, 'tarjetas');
+
+            return response()->json($payload, 201);
+        });
     }
 
     /**
@@ -194,8 +133,12 @@ class ClienteController extends Controller
     public function show($id)
     {
         try {
-            $item = Cliente::findOrFail($id);
-            return response()->json($item);
+            $item = Cliente::with(['ciudad', 'pai', 'condicioniva'])->findOrFail($id);
+            $payload = $item->toArray();
+            $payload['contactos'] = $this->loadExtra((int) $id, 'contactos');
+            $payload['tarjetas'] = $this->loadExtra((int) $id, 'tarjetas');
+
+            return response()->json($payload);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Registro no encontrado'], 404);
         }
@@ -204,23 +147,29 @@ class ClienteController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+    public function update(ClienteRequest $request, $id)
     {
+        if (! PermisoHelper::tienePermiso($this->sectionId, 'modificar')) {
+            return response()->json(['error' => 'Permiso denegado'], 403);
+        }
+
         try {
             $item = Cliente::findOrFail($id);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Registro no encontrado'], 404);
+        }
 
-            $validator = Validator::make($request->all(), [
-                // Agregar reglas de validación aquí
-            ]);
+        $validated = $request->validated();
+        $hasContactos = $request->has('contactos');
+        $hasTarjetas = $request->has('tarjetas');
+        $contactos = $request->input('contactos');
+        $tarjetas = $request->input('tarjetas');
+        unset($validated['contactos'], $validated['tarjetas']);
 
-            if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()], 422);
-            }
-
-            $data = $request->all();
+        return DB::transaction(function () use ($item, $validated, $hasContactos, $hasTarjetas, $contactos, $tarjetas) {
             $tableColumns = collect(Schema::getColumnListing($item->getTable()));
+            $data = $validated;
 
-            // Actualizar campos automáticos
             if ($tableColumns->contains('um')) {
                 $data['um'] = now();
             }
@@ -229,10 +178,28 @@ class ClienteController extends Controller
             }
 
             $item->update($data);
-            return response()->json($item);
-        } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Registro no encontrado'], 404);
-        }
+
+            if ($hasContactos) {
+                $this->saveExtra($item->cliente_id, 'contactos', $contactos);
+            }
+            if ($hasTarjetas) {
+                $this->saveExtra($item->cliente_id, 'tarjetas', $tarjetas);
+            }
+
+            $touchedTarifarios = array_intersect_key(
+                $data,
+                array_flip(['fk_tarifario1_id', 'fk_tarifario2_id', 'fk_tarifario3_id'])
+            );
+            if (! empty($touchedTarifarios)) {
+                $this->syncTarifarios($item->fresh());
+            }
+
+            $payload = $item->fresh()->toArray();
+            $payload['contactos'] = $this->loadExtra($item->cliente_id, 'contactos');
+            $payload['tarjetas'] = $this->loadExtra($item->cliente_id, 'tarjetas');
+
+            return response()->json($payload);
+        });
     }
 
     /**
@@ -240,12 +207,133 @@ class ClienteController extends Controller
      */
     public function destroy($id)
     {
+        if (! PermisoHelper::tienePermiso($this->sectionId, 'baja')) {
+            return response()->json(['error' => 'Permiso denegado'], 403);
+        }
+
         try {
             $item = Cliente::findOrFail($id);
-            $item->delete();
-            return response()->json(null, 204);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Registro no encontrado'], 404);
+        }
+
+        $reservas = Reserva::where('facturar_a', $id)->count();
+        if ($reservas > 0) {
+            return response()->json([
+                'error' => 'No se puede eliminar: cliente con reservas asociadas',
+                'reservas' => $reservas,
+            ], 422);
+        }
+
+        $item->habilita = 'N';
+        $tableColumns = collect(Schema::getColumnListing($item->getTable()));
+        if ($tableColumns->contains('um')) {
+            $item->um = now();
+        }
+        if ($tableColumns->contains('fk_usuario_id')) {
+            $item->fk_usuario_id = auth()->id();
+        }
+        $item->save();
+
+        return response()->json(null, 204);
+    }
+
+    /**
+     * Search clientes by nombre, razón social o CUIT.
+     */
+    public function search(Request $request)
+    {
+        $q = trim((string) $request->get('q', ''));
+        if (mb_strlen($q) < 2) {
+            return response()->json([]);
+        }
+
+        $limit = (int) $request->get('limit', 10);
+        $limit = max(1, min($limit, 50));
+
+        $rows = Cliente::where('habilita', 'S')
+            ->where(function ($w) use ($q) {
+                $w->where('cliente_nombre', 'LIKE', "%{$q}%")
+                    ->orWhere('cliente_razonsocial', 'LIKE', "%{$q}%")
+                    ->orWhere('cuit', 'LIKE', "%{$q}%");
+            })
+            ->orderBy('cliente_nombre')
+            ->limit($limit)
+            ->get(['cliente_id as id', 'cliente_nombre as nombre', 'cuit']);
+
+        return response()->json($rows);
+    }
+
+    /**
+     * Persist a JSON-encoded extra row in cliente_extra (replace-on-write).
+     * $items === null  → key not present in payload, do not touch existing data.
+     * $items === []    → explicit empty array, delete existing row.
+     * $items non-empty → replace existing row with the new array.
+     */
+    private function saveExtra(int $clienteId, string $nombre, ?array $items): void
+    {
+        if ($items === null) {
+            return;
+        }
+
+        ClienteExtra::where('fk_cliente_id', $clienteId)
+            ->where('extra_nombre', $nombre)
+            ->delete();
+
+        if (empty($items)) {
+            return;
+        }
+
+        ClienteExtra::create([
+            'fk_cliente_id' => $clienteId,
+            'extra_nombre' => $nombre,
+            'extra_valor' => json_encode(array_values($items), JSON_UNESCAPED_UNICODE),
+            'regdate' => now(),
+        ]);
+    }
+
+    /**
+     * Load and decode an extra JSON row from cliente_extra.
+     */
+    private function loadExtra(int $clienteId, string $nombre): array
+    {
+        $row = ClienteExtra::where('fk_cliente_id', $clienteId)
+            ->where('extra_nombre', $nombre)
+            ->first();
+
+        if (! $row) {
+            return [];
+        }
+
+        $decoded = json_decode($row->extra_valor, true);
+
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    /**
+     * Sync rel_clientesistema rows from fk_tarifarioN_id fields.
+     * Mapping: tarifario1 → sistema 1, tarifario2 → sistema 2, tarifario3 → sistema 7.
+     */
+    private function syncTarifarios(Cliente $cliente): void
+    {
+        $map = [
+            1 => (int) $cliente->fk_tarifario1_id,
+            2 => (int) $cliente->fk_tarifario2_id,
+            7 => (int) $cliente->fk_tarifario3_id,
+        ];
+
+        DB::table('rel_clientesistema')
+            ->where('fk_cliente_id', $cliente->cliente_id)
+            ->delete();
+
+        foreach ($map as $sistemaId => $tarifarioId) {
+            if ($tarifarioId > 0) {
+                DB::table('rel_clientesistema')->insert([
+                    'fk_cliente_id' => $cliente->cliente_id,
+                    'fk_sistema_id' => $sistemaId,
+                    'fk_tarifario_id' => $tarifarioId,
+                ]);
+            }
         }
     }
 
@@ -260,7 +348,7 @@ class ClienteController extends Controller
             return response()->json([
                 'CodeClientBackOffice' => $clientId,
                 'status' => 'NO-OK',
-                'Message' => 'Sistema no disponible'
+                'Message' => 'Sistema no disponible',
             ], 401);
         }
 
@@ -275,7 +363,7 @@ class ClienteController extends Controller
                     'Message' => 'Cliente sin crédito disponible. Favor contactar al administrador.',
                     'credito_autorizado' => 0,
                     'credito_utilizado' => 0,
-                    'credito_disponible' => 0
+                    'credito_disponible' => 0,
                 ]);
             }
 
@@ -339,13 +427,13 @@ class ClienteController extends Controller
                 'credito_autorizado' => round($creditoAutorizado, 2),
                 'credito_utilizado' => round($creditoUtilizadoTotal, 2),
                 'credito_disponible' => round($creditoAutorizado - $creditoUtilizadoTotal, 2),
-                'moneda' => $monedaRespuesta
+                'moneda' => $monedaRespuesta,
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'CodeClientBackOffice' => $clientId,
                 'status' => 'NO-OK',
-                'Message' => 'Cliente no encontrado.'
+                'Message' => 'Cliente no encontrado.',
             ], 404);
         }
     }
@@ -411,7 +499,7 @@ class ClienteController extends Controller
                     'credito_autorizado' => 0,
                     'credito_utilizado' => 0,
                     'credito_disponible' => 0,
-                    'mensaje' => 'Cliente sin crédito habilitado'
+                    'mensaje' => 'Cliente sin crédito habilitado',
                 ]);
             }
 
@@ -444,12 +532,12 @@ class ClienteController extends Controller
                 'credito_utilizado' => $creditoUtilizadoDisplay,
                 'credito_disponible' => $creditoDisponible,
                 'porcentaje_disponible' => $porcentajeDisponible,
-                'mensaje' => $creditoDisponible > 0 ? 'Crédito disponible' : 'Sin crédito disponible'
+                'mensaje' => $creditoDisponible > 0 ? 'Crédito disponible' : 'Sin crédito disponible',
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'error' => 'Cliente no encontrado',
-                'cliente_id' => $clientId
+                'cliente_id' => $clientId,
             ], 404);
         }
     }
@@ -459,7 +547,7 @@ class ClienteController extends Controller
      */
     private function getCurrencyRate($currencyId, $date = null)
     {
-        if (!$date) {
+        if (! $date) {
             $date = date('Y-m-d');
         }
 

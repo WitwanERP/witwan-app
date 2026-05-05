@@ -1,229 +1,213 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Admin\BSP\ReportebspController;
+use App\Http\Controllers\Admin\BSP\ReportebsptktController;
 // Controllers
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\AssistantController;
+use App\Http\Controllers\Admin\Caja\ConciliabancoController;
+use App\Http\Controllers\Admin\Caja\ConciliacionController;
+use App\Http\Controllers\Admin\Caja\OrdenadminController;
+use App\Http\Controllers\Admin\Caja\ReciboController;
+use App\Http\Controllers\Admin\Clientes\CreditoextraController;
+// Admin Controllers
+use App\Http\Controllers\Admin\Contabilidad\AsientocontableController;
+use App\Http\Controllers\Admin\Contabilidad\CanjeController;
+use App\Http\Controllers\Admin\Contabilidad\CentrocostoController;
+use App\Http\Controllers\Admin\Contabilidad\CierrearqueoController;
+use App\Http\Controllers\Admin\Contabilidad\CierrecajaController;
+use App\Http\Controllers\Admin\Contabilidad\CondicionivaController;
+use App\Http\Controllers\Admin\Contabilidad\CtaaplicadaController;
+use App\Http\Controllers\Admin\Contabilidad\MovimientoController;
+use App\Http\Controllers\Admin\Contabilidad\NubeanaliticoController;
+use App\Http\Controllers\Admin\Contabilidad\PlancuentaController;
+use App\Http\Controllers\Admin\Documentos\FacturaaerolineaController;
+use App\Http\Controllers\Admin\Documentos\FacturaboletumController;
+use App\Http\Controllers\Admin\Documentos\FacturaclienteController;
+use App\Http\Controllers\Admin\Documentos\FacturaController;
+use App\Http\Controllers\Admin\Documentos\FacturaEnvioController;
+use App\Http\Controllers\Admin\Documentos\FacturaproveedorController;
+use App\Http\Controllers\Admin\Documentos\NotacreditoController;
+use App\Http\Controllers\Admin\Documentos\NotadebitoController;
+use App\Http\Controllers\Admin\General\CrmbancoController;
+use App\Http\Controllers\Admin\General\FormapagoController;
+use App\Http\Controllers\Admin\General\GrupocomsionController;
+use App\Http\Controllers\Admin\General\ImputacionController;
+use App\Http\Controllers\Admin\General\ItemgastoController;
+use App\Http\Controllers\Admin\General\IvaController;
+use App\Http\Controllers\Admin\General\IvatipoController;
+use App\Http\Controllers\Admin\General\LotedocumentoController;
+use App\Http\Controllers\Admin\General\ModelocomisionController;
+use App\Http\Controllers\Admin\General\ModelofeeController;
+use App\Http\Controllers\Admin\General\ModoivaventumController;
+use App\Http\Controllers\Admin\General\PayrollController;
+use App\Http\Controllers\Admin\General\PrecompraController;
+use App\Http\Controllers\Admin\General\PreventumController;
+use App\Http\Controllers\Admin\General\TarjetacreditoController;
+use App\Http\Controllers\Admin\Monedas\CotizacionController;
+use App\Http\Controllers\Admin\Monedas\MonedaController;
+use App\Http\Controllers\Api\AdvancePaymentController;
 use App\Http\Controllers\Api\TariffController;
 use App\Http\Controllers\Api\TestPricingController;
-use App\Http\Controllers\Api\AdvancePaymentController;
-
-// Admin Controllers
-use App\Http\Controllers\Admin\BSP\{ReportebspController, ReportebsptktController};
-use App\Http\Controllers\Admin\Caja\{ConciliabancoController, ConciliacionController, OrdenadminController, ReciboController};
-use App\Http\Controllers\Admin\Clientes\CreditoextraController;
-use App\Http\Controllers\Admin\Contabilidad\{
-    AsientocontableController,
-    CanjeController,
-    CentrocostoController,
-    CierrearqueoController,
-    CierrecajaController,
-    CondicionivaController,
-    CtaaplicadaController,
-    MovimientoController,
-    NubeanaliticoController,
-    PlancuentaController
-};
-use App\Http\Controllers\Admin\Documentos\{
-    FacturaController,
-    FacturaEnvioController,
-    FacturaaerolineaController,
-    FacturaboletumController,
-    FacturaclienteController,
-    FacturaproveedorController,
-    NotacreditoController,
-    NotadebitoController
-};
-use App\Http\Controllers\Admin\General\{
-    CrmbancoController,
-    FormapagoController,
-    GrupocomsionController,
-    ImputacionController,
-    ItemgastoController,
-    IvaController,
-    IvatipoController,
-    LotedocumentoController,
-    ModelocomisionController,
-    ModelofeeController,
-    ModoivaventumController,
-    PayrollController,
-    PrecompraController,
-    PreventumController,
-    TarjetacreditoController
-};
-use App\Http\Controllers\Admin\Monedas\{CotizacionController, MonedaController};
-
-// Business Controllers
-use App\Http\Controllers\Empresas\Clientes\{
-    CadenaclienteController,
-    ClienteController,
-    ClienteExtraController,
-    TagController
-};
-use App\Http\Controllers\Empresas\Pasajeros\PasajeroController;
-use App\Http\Controllers\Empresas\Proveedores\{
-    CadenahoteleraController,
-    ConvenioController,
-    ProveedorController
-};
-
-// Geo Controllers
-use App\Http\Controllers\Geo\{
-    CiudadController,
-    CiudadtouricoController,
-    CiudadxmlController,
-    GrupopaiController,
-    PaisController,
-    RegionController
-};
-
-// Product Controllers
-use App\Http\Controllers\Productos\{
-    AlojamientoController,
-    AlojamientofacilidadController,
-    AlojamientohabitacionController,
-    AlojamientotipoController,
-    AsvController,
-    CupoController,
-    CupoaereoController,
-    CupohistorialController,
-    CuposborradoController,
-    CupotktController,
-    DataoffController,
-    DestacadoController,
-    DiumController,
-    ExcursionController,
-    GdController,
-    GuiumController,
-    HotelcategoriumController,
-    InterfaseController,
-    InterfasedatumController,
-    PkdController,
-    PkdgaleriumController,
-    PkdinamicoController,
-    PkditemController,
-    PkdproductoController,
-    PnraereoController,
-    PnrremarkController,
-    PnrremarksconfigController,
-    PnrsegmentController,
-    ProductoController,
-    ProductoExtraController,
-    ProductogaleriumController,
-    ProductogrupoController,
-    RegimanController,
-    SoldoutController,
-    SubmoduloController,
-    TarifaController,
-    TarifacategoriumController,
-    TarifarioController,
-    TarifarioarchivoController,
-    TarifariocomisionController
-};
-
-// Reservation Controllers
-use App\Http\Controllers\Reservas\{
-    CtzController,
-    FilearchivoController,
-    FilecomentarioController,
-    FilemailController,
-    FilenotificacionController,
-    FilestatusController,
-    IdentidadfiscalController,
-    MailController,
-    NegocioController,
-    ReservaController,
-    ReservaExtraController,
-    ReservainController,
-    ServicioController,
-    ServicioExtraController,
-    ServicioNominaController,
-    ServicioasociadoController,
-    ServiciocontableController,
-    ServicioctzController,
-    ServiciofacturaController
-};
-
-// System Controllers
-use App\Http\Controllers\Sistema\{CiSessionController, HistorialController, HistorialfileController, HistorialsqlController};
-use App\Http\Controllers\Users\{PermisoController, PermisogrupoController, PersonalAccessTokenController};
-use App\Http\Controllers\General\{
-    AereoController,
-    AerolineaController,
-    AeropuertoController,
-    AeropuertociudadController,
-    AgenteemisorController,
-    AutorizacionpnrController,
-    CiudadauxiliarController,
-    DiccionarioController,
-    FeriadoController,
-    IdiomaController,
-    LoginterfaseController,
-    MtUsuarioemailController,
-    NoturmtController,
-    PasajeroExtraController,
-    PluginController,
-    ProgramafidelidadController,
-    ProyectoController,
-    RelClientesistemaController,
-    RelClientetagController,
-    RelEerrController,
-    RelFacturaproveedorocupacionController,
-    RelFacturareciboController,
-    RelFacturareportebspController,
-    RelFilefacturaController,
-    RelFilereciboController,
-    RelGrupopaispaiController,
-    RelGuiaidiomaController,
-    RelOcupacionprecompraController,
-    RelOcupacionvigenciumController,
-    RelOrdenadminocupacionController,
-    RelPasajerotagController,
-    RelProductoalojamientofacilidadController,
-    RelProductobaseController,
-    RelProductociudadController,
-    RelProveedorsistemaController,
-    RelServicioController,
-    RelServiciofacturaController,
-    RelUsuariomodelocomisionController,
-    RelUsuariotipousuarioController,
-    RelUsuariousuarioController,
-    RelVigenciadiumController,
-    RelacionsigavController,
-    SessionController,
-    SistemaController,
-    SolicitudController,
-    SyscategoryController,
-    SysconfigController,
-    SysloginController,
-    SysmenuController,
-    SysmoduleController,
-    SysnotificationController,
-    SyspermController,
-    SysroleController,
-    SysuserController,
-    SysuserpermController,
-    TipoboletoController,
-    TipocambioController,
-    TipoclavefiscalController,
-    TipofacturaController,
-    TiposervicioController,
-    TipousuarioController,
-    TrasladoController,
-    UsuarioController,
-    UsuariocomisionController,
-    VigenciaalojamientoController,
-    VigenciumController,
-    XmlinController
-};
-
-// Other Controllers
+use App\Http\Controllers\AssistantController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Banner\BannerController;
 use App\Http\Controllers\Base\BaseController;
+// Business Controllers
+use App\Http\Controllers\Empresas\Clientes\CadenaclienteController;
+use App\Http\Controllers\Empresas\Clientes\ClienteController;
+use App\Http\Controllers\Empresas\Clientes\ClienteExtraController;
+use App\Http\Controllers\Empresas\Clientes\TagController;
+use App\Http\Controllers\Empresas\Pasajeros\PasajeroController;
+use App\Http\Controllers\Empresas\Proveedores\CadenahoteleraController;
+use App\Http\Controllers\Empresas\Proveedores\ConvenioController;
+use App\Http\Controllers\Empresas\Proveedores\ProveedorController;
+// Geo Controllers
 use App\Http\Controllers\Eventos\ColaeventoController;
+use App\Http\Controllers\General\AereoController;
+use App\Http\Controllers\General\AerolineaController;
+use App\Http\Controllers\General\AeropuertociudadController;
+use App\Http\Controllers\General\AeropuertoController;
+use App\Http\Controllers\General\AgenteemisorController;
+// Product Controllers
+use App\Http\Controllers\General\AutorizacionpnrController;
+use App\Http\Controllers\General\CiudadauxiliarController;
+use App\Http\Controllers\General\DiccionarioController;
+use App\Http\Controllers\General\FeriadoController;
+use App\Http\Controllers\General\IdiomaController;
+use App\Http\Controllers\General\LoginterfaseController;
+use App\Http\Controllers\General\MtUsuarioemailController;
+use App\Http\Controllers\General\NoturmtController;
+use App\Http\Controllers\General\PasajeroExtraController;
+use App\Http\Controllers\General\PluginController;
+use App\Http\Controllers\General\ProgramafidelidadController;
+use App\Http\Controllers\General\ProyectoController;
+use App\Http\Controllers\General\RelacionsigavController;
+use App\Http\Controllers\General\RelClientesistemaController;
+use App\Http\Controllers\General\RelClientetagController;
+use App\Http\Controllers\General\RelEerrController;
+use App\Http\Controllers\General\RelFacturaproveedorocupacionController;
+use App\Http\Controllers\General\RelFacturareciboController;
+use App\Http\Controllers\General\RelFacturareportebspController;
+use App\Http\Controllers\General\RelFilefacturaController;
+use App\Http\Controllers\General\RelFilereciboController;
+use App\Http\Controllers\General\RelGrupopaispaiController;
+use App\Http\Controllers\General\RelGuiaidiomaController;
+use App\Http\Controllers\General\RelOcupacionprecompraController;
+use App\Http\Controllers\General\RelOcupacionvigenciumController;
+use App\Http\Controllers\General\RelOrdenadminocupacionController;
+use App\Http\Controllers\General\RelPasajerotagController;
+use App\Http\Controllers\General\RelProductoalojamientofacilidadController;
+use App\Http\Controllers\General\RelProductobaseController;
+use App\Http\Controllers\General\RelProductociudadController;
+use App\Http\Controllers\General\RelProveedorsistemaController;
+use App\Http\Controllers\General\RelServicioController;
+use App\Http\Controllers\General\RelServiciofacturaController;
+use App\Http\Controllers\General\RelUsuariomodelocomisionController;
+use App\Http\Controllers\General\RelUsuariotipousuarioController;
+use App\Http\Controllers\General\RelUsuariousuarioController;
+use App\Http\Controllers\General\RelVigenciadiumController;
+use App\Http\Controllers\General\SessionController;
+use App\Http\Controllers\General\SistemaController;
+use App\Http\Controllers\General\SolicitudController;
+// Reservation Controllers
+use App\Http\Controllers\General\SyscategoryController;
+use App\Http\Controllers\General\SysconfigController;
+use App\Http\Controllers\General\SysloginController;
+use App\Http\Controllers\General\SysmenuController;
+use App\Http\Controllers\General\SysmoduleController;
+use App\Http\Controllers\General\SysnotificationController;
+use App\Http\Controllers\General\SyspermController;
+use App\Http\Controllers\General\SysroleController;
+use App\Http\Controllers\General\SysuserController;
+use App\Http\Controllers\General\SysuserpermController;
+use App\Http\Controllers\General\TipoboletoController;
+use App\Http\Controllers\General\TipocambioController;
+use App\Http\Controllers\General\TipoclavefiscalController;
+use App\Http\Controllers\General\TipofacturaController;
+use App\Http\Controllers\General\TiposervicioController;
+use App\Http\Controllers\General\TipousuarioController;
+use App\Http\Controllers\General\TrasladoController;
+use App\Http\Controllers\General\UsuariocomisionController;
+use App\Http\Controllers\General\UsuarioController;
+// System Controllers
+use App\Http\Controllers\General\VigenciaalojamientoController;
+use App\Http\Controllers\General\VigenciumController;
+use App\Http\Controllers\General\XmlinController;
+use App\Http\Controllers\Geo\CiudadController;
+use App\Http\Controllers\Geo\CiudadtouricoController;
+use App\Http\Controllers\Geo\CiudadxmlController;
+use App\Http\Controllers\Geo\GrupopaiController;
+use App\Http\Controllers\Geo\PaisController;
+use App\Http\Controllers\Geo\RegionController;
+use App\Http\Controllers\Productos\AlojamientoController;
+use App\Http\Controllers\Productos\AlojamientofacilidadController;
+use App\Http\Controllers\Productos\AlojamientohabitacionController;
+use App\Http\Controllers\Productos\AlojamientotipoController;
+use App\Http\Controllers\Productos\AsvController;
+use App\Http\Controllers\Productos\CupoaereoController;
+use App\Http\Controllers\Productos\CupoController;
+use App\Http\Controllers\Productos\CupohistorialController;
+use App\Http\Controllers\Productos\CuposborradoController;
+use App\Http\Controllers\Productos\CupotktController;
+use App\Http\Controllers\Productos\DataoffController;
+use App\Http\Controllers\Productos\DestacadoController;
+use App\Http\Controllers\Productos\DiumController;
+use App\Http\Controllers\Productos\ExcursionController;
+use App\Http\Controllers\Productos\GdController;
+use App\Http\Controllers\Productos\GuiumController;
+use App\Http\Controllers\Productos\HotelcategoriumController;
+use App\Http\Controllers\Productos\InterfaseController;
+use App\Http\Controllers\Productos\InterfasedatumController;
+use App\Http\Controllers\Productos\PkdController;
+use App\Http\Controllers\Productos\PkdgaleriumController;
+use App\Http\Controllers\Productos\PkdinamicoController;
+use App\Http\Controllers\Productos\PkditemController;
+use App\Http\Controllers\Productos\PkdproductoController;
+use App\Http\Controllers\Productos\PnraereoController;
+use App\Http\Controllers\Productos\PnrremarkController;
+use App\Http\Controllers\Productos\PnrremarksconfigController;
+use App\Http\Controllers\Productos\PnrsegmentController;
+use App\Http\Controllers\Productos\ProductoController;
+use App\Http\Controllers\Productos\ProductoExtraController;
+use App\Http\Controllers\Productos\ProductogaleriumController;
+use App\Http\Controllers\Productos\ProductogrupoController;
+use App\Http\Controllers\Productos\RegimanController;
+use App\Http\Controllers\Productos\SoldoutController;
+use App\Http\Controllers\Productos\SubmoduloController;
+use App\Http\Controllers\Productos\TarifacategoriumController;
+use App\Http\Controllers\Productos\TarifaController;
+use App\Http\Controllers\Productos\TarifarioarchivoController;
+use App\Http\Controllers\Productos\TarifariocomisionController;
+use App\Http\Controllers\Productos\TarifarioController;
+use App\Http\Controllers\Reservas\CtzController;
+use App\Http\Controllers\Reservas\FilearchivoController;
+use App\Http\Controllers\Reservas\FilecomentarioController;
+use App\Http\Controllers\Reservas\FilemailController;
+use App\Http\Controllers\Reservas\FilenotificacionController;
+use App\Http\Controllers\Reservas\FilestatusController;
+use App\Http\Controllers\Reservas\IdentidadfiscalController;
+use App\Http\Controllers\Reservas\MailController;
+use App\Http\Controllers\Reservas\NegocioController;
+use App\Http\Controllers\Reservas\ReservaController;
+use App\Http\Controllers\Reservas\ReservaExtraController;
+use App\Http\Controllers\Reservas\ReservainController;
 use App\Http\Controllers\Reservas\ReservaServicioController;
+use App\Http\Controllers\Reservas\ServicioasociadoController;
+use App\Http\Controllers\Reservas\ServiciocontableController;
+use App\Http\Controllers\Reservas\ServicioController;
+use App\Http\Controllers\Reservas\ServicioctzController;
+use App\Http\Controllers\Reservas\ServicioExtraController;
+use App\Http\Controllers\Reservas\ServiciofacturaController;
+use App\Http\Controllers\Reservas\ServicioNominaController;
+use App\Http\Controllers\Sistema\CiSessionController;
+use App\Http\Controllers\Sistema\HistorialController;
+use App\Http\Controllers\Sistema\HistorialfileController;
+use App\Http\Controllers\Sistema\HistorialsqlController;
+use App\Http\Controllers\Users\PermisoController;
+// Other Controllers
+use App\Http\Controllers\Users\PermisogrupoController;
+use App\Http\Controllers\Users\PersonalAccessTokenController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -333,17 +317,18 @@ Route::group(['middleware' => 'jwt.auth'], function () {
 
     // Client Management
     Route::group(['prefix' => 'clientes'], function () {
+        // Specific routes must be declared BEFORE apiResource so they don't get
+        // matched by the {cliente} show route.
+        Route::get('clientes/search', [ClienteController::class, 'search']);
+        Route::get('clientes/{clientId}/credit-limit', [ClienteController::class, 'creditLimit']);
+        Route::get('clientes/{clientId}/remaining-credit', [ClienteController::class, 'remainingCredit']);
+        Route::get('pasajeros/search', [PasajeroController::class, 'search']);
+
         Route::apiResource('cadenas', CadenaclienteController::class);
         Route::apiResource('clientes', ClienteController::class);
         Route::apiResource('clientes-extra', ClienteExtraController::class);
         Route::apiResource('pasajeros', PasajeroController::class);
         Route::apiResource('tags', TagController::class);
-
-        // Client search routes
-        Route::get('clientes/search', [ClienteController::class, 'search']);
-        Route::get('clientes/{clientId}/credit-limit', [ClienteController::class, 'creditLimit']);
-        Route::get('clientes/{clientId}/remaining-credit', [ClienteController::class, 'remainingCredit']);
-        Route::get('pasajeros/search', [PasajeroController::class, 'search']);
     });
 
     // Provider Management
