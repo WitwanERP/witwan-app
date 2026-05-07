@@ -6,14 +6,24 @@ use App\Helpers\PermisoHelper;
 use App\Helpers\SysconfigHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ClienteRequest;
+use App\Models\Cadenacliente;
+use App\Models\Ciudad;
 use App\Models\Cliente;
 use App\Models\ClienteExtra;
+use App\Models\Condicioniva;
 use App\Models\Cotizacion;
 use App\Models\Creditoextra;
+use App\Models\Idioma;
 use App\Models\Moneda;
+use App\Models\Pais;
 use App\Models\Reserva;
+use App\Models\Tarifario;
+use App\Models\Tipoclavefiscal;
+use App\Models\Tipofactura;
+use App\Models\Usuario;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -262,6 +272,67 @@ class ClienteController extends Controller
             ->get(['cliente_id as id', 'cliente_nombre as nombre', 'cuit']);
 
         return response()->json($rows);
+    }
+
+    /**
+     * Aggregated catalogs needed by the cliente form.
+     * Cached for 10 minutes — these change rarely.
+     */
+    public function options()
+    {
+        $data = Cache::remember('cliente_options', 600, function () {
+            return [
+                'paises' => Pais::orderBy('pais_nombre')
+                    ->get(['pais_id as id', 'pais_nombre as nombre', 'pais_codigo as codigo']),
+
+                'ciudades' => Ciudad::where('ciudad_activo', 1)
+                    ->orderBy('ciudad_nombre')
+                    ->get(['ciudad_id as id', 'ciudad_nombre as nombre', 'fk_pais_id', 'ciudad_codigo as codigo']),
+
+                'condiciones_iva' => Condicioniva::orderBy('condicioniva_nombre')
+                    ->get(['condicioniva_id as id', 'condicioniva_nombre as nombre', 'fk_tipofactura_id', 'porcentaje', 'incluido']),
+
+                'tipos_factura' => Tipofactura::orderBy('tipofactura_nombre')
+                    ->get(['tipofactura_id as id', 'tipofactura_nombre as nombre']),
+
+                'tipos_clave_fiscal' => Tipoclavefiscal::orderBy('tipoclavefiscal_nombre')
+                    ->get(['tipoclavefiscal_id as id', 'tipoclavefiscal_nombre as nombre']),
+
+                'idiomas' => Idioma::orderBy('orden')
+                    ->get(['idioma_id as id', 'idioma_nombre as nombre']),
+
+                'tarifarios' => [
+                    'receptivo' => Tarifario::where('fk_sistema_id', 1)
+                        ->orderBy('orden')
+                        ->get(['tarifario_id as id', 'tarifario_nombre as nombre', 'fk_moneda_id']),
+                    'mayorista' => Tarifario::where('fk_sistema_id', 2)
+                        ->orderBy('orden')
+                        ->get(['tarifario_id as id', 'tarifario_nombre as nombre', 'fk_moneda_id']),
+                    'nacional' => Tarifario::where('fk_sistema_id', 7)
+                        ->orderBy('orden')
+                        ->get(['tarifario_id as id', 'tarifario_nombre as nombre', 'fk_moneda_id']),
+                ],
+
+                'vendedores' => Usuario::where('usuario_interno', 'Y')
+                    ->orderByRaw('TRIM(usuario_apellido)')
+                    ->get([
+                        'usuario_id as id',
+                        DB::raw("CONCAT(usuario_apellido, ' ', usuario_nombre) AS nombre"),
+                    ]),
+
+                'cadenas' => Cadenacliente::orderBy('cadenacliente_nombre')
+                    ->get(['cadenacliente_id as id', 'cadenacliente_nombre as nombre']),
+
+                'monedas' => Moneda::orderBy('orden')
+                    ->get(['moneda_id as id', 'moneda_nombre as nombre', 'iso_code', 'moneda_basica']),
+
+                'representantes' => Cliente::whereIn('representante_geografico', ['Y', '1'])
+                    ->orderByRaw('TRIM(cliente_nombre)')
+                    ->get(['cliente_id as id', 'cliente_nombre as nombre']),
+            ];
+        });
+
+        return response()->json(['data' => $data]);
     }
 
     /**

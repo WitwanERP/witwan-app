@@ -319,6 +319,7 @@ Route::group(['middleware' => 'jwt.auth'], function () {
     Route::group(['prefix' => 'clientes'], function () {
         // Specific routes must be declared BEFORE apiResource so they don't get
         // matched by the {cliente} show route.
+        Route::get('clientes/options', [ClienteController::class, 'options']);
         Route::get('clientes/search', [ClienteController::class, 'search']);
         Route::get('clientes/{clientId}/credit-limit', [ClienteController::class, 'creditLimit']);
         Route::get('clientes/{clientId}/remaining-credit', [ClienteController::class, 'remainingCredit']);
