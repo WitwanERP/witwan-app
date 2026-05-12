@@ -14,6 +14,7 @@ use App\Models\Condicioniva;
 use App\Models\Cotizacion;
 use App\Models\Creditoextra;
 use App\Models\Idioma;
+use App\Models\Loginterfase;
 use App\Models\Moneda;
 use App\Models\Pais;
 use App\Models\Reserva;
@@ -413,9 +414,15 @@ class ClienteController extends Controller
      */
     public function creditLimit($clientId, Request $request)
     {
+        $valorSolicitado = $request->input('value', 0);
+        $monedaSolicitada = $request->input('moneda');
+        $ip = $request->ip();
+
         // Check if credit system is blocked
         $bloquearCredito = SysconfigHelper::get('bloquearCredito', '0');
         if ($bloquearCredito === '1') {
+            $this->logCreditLimit($clientId, $valorSolicitado, $monedaSolicitada, $ip, 'NO-OK', 'Sistema no disponible');
+
             return response()->json([
                 'CodeClientBackOffice' => $clientId,
                 'status' => 'NO-OK',
@@ -428,6 +435,8 @@ class ClienteController extends Controller
 
             // Check if credit is enabled for this client
             if ($cliente->credito_habilitado == 0) {
+                $this->logCreditLimit($clientId, $valorSolicitado, $monedaSolicitada, $ip, 'NO-OK', 'Crédito no habilitado');
+
                 return response()->json([
                     'CodeClientBackOffice' => $clientId,
                     'status' => 'NO-OK',
@@ -451,14 +460,12 @@ class ClienteController extends Controller
             $creditoUtilizado = $this->calculateUsedCredit($clientId);
 
             // Add requested amount if provided
-            $valorSolicitado = $request->input('value', 0);
             $creditoUtilizadoTotal = $creditoUtilizado + floatval($valorSolicitado);
 
             $status = $creditoUtilizadoTotal < $creditoAutorizado ? 'OK' : 'NO-OK';
             $message = $status === 'OK' ? 'Autorizado.' : 'Cliente sin crédito disponible. Favor contactar al administrador.';
 
             // Convert to requested currency if provided
-            $monedaSolicitada = $request->input('moneda');
             $monedaRespuesta = null;
 
             if ($monedaSolicitada) {
@@ -470,7 +477,6 @@ class ClienteController extends Controller
                 $monedaRespuesta = $monedaSolicitada;
             } else {
                 // Get base currency, except for special IPs
-                $ip = $request->ip();
                 $useUSD = false;
                 if ($ip === '137.116.211.8') {
                     $useUSD = true;
@@ -491,6 +497,17 @@ class ClienteController extends Controller
                 }
             }
 
+            $this->logCreditLimit(
+                $clientId,
+                $valorSolicitado,
+                $monedaRespuesta,
+                $ip,
+                $status,
+                $message,
+                round($creditoAutorizado, 2),
+                round($creditoUtilizadoTotal, 2)
+            );
+
             return response()->json([
                 'CodeClientBackOffice' => $clientId,
                 'status' => $status,
@@ -501,11 +518,52 @@ class ClienteController extends Controller
                 'moneda' => $monedaRespuesta,
             ]);
         } catch (ModelNotFoundException $e) {
+            $this->logCreditLimit($clientId, $valorSolicitado, $monedaSolicitada, $ip, 'NO-OK', 'Cliente no encontrado');
+
             return response()->json([
                 'CodeClientBackOffice' => $clientId,
                 'status' => 'NO-OK',
                 'Message' => 'Cliente no encontrado.',
             ], 404);
+        }
+    }
+
+    /**
+     * Log a credit limit check to loginterfase.
+     */
+    private function logCreditLimit(
+        $clientId,
+        $valorSolicitado,
+        $monedaSolicitada,
+        $ip,
+        $status,
+        $message,
+        $creditoAutorizado = null,
+        $creditoUtilizado = null
+    ) {
+        try {
+            $payload = [
+                'cliente_id' => $clientId,
+                'value' => $valorSolicitado,
+                'moneda' => $monedaSolicitada,
+                'ip' => $ip,
+                'status' => $status,
+                'message' => $message,
+            ];
+            if ($creditoAutorizado !== null) {
+                $payload['credito_autorizado'] = $creditoAutorizado;
+            }
+            if ($creditoUtilizado !== null) {
+                $payload['credito_utilizado'] = $creditoUtilizado;
+            }
+
+            Loginterfase::create([
+                'loginterfase_fecha' => now(),
+                'loginterfase_tipo' => 'control_credito',
+                'loginterfase_texto' => json_encode($payload, JSON_UNESCAPED_UNICODE),
+            ]);
+        } catch (\Throwable $e) {
+            // No bloquear el flujo de control de crédito si falla el log
         }
     }
 
