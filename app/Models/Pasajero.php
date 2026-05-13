@@ -6,6 +6,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\AlcanceCliente;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -62,6 +63,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Pasajero extends Model
 {
+	use AlcanceCliente;
+
 	protected $table = 'pasajero';
 	protected $primaryKey = 'pasajero_id';
 	public $timestamps = false;

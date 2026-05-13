@@ -6,6 +6,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\AlcanceCliente;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -100,11 +101,15 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Reserva extends Model
 {
+    use AlcanceCliente;
+
     protected $table = 'reserva';
 
     protected $primaryKey = 'reserva_id';
 
     public $timestamps = false;
+
+    protected string $alcanceClienteColumn = 'facturar_a';
 
     protected $casts = [
         'fk_cliente_id' => 'int',

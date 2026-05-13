@@ -6,6 +6,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\AlcanceCliente;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
@@ -38,6 +39,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Cupo extends Model
 {
+	use AlcanceCliente;
+
 	protected $table = 'cupo';
 	protected $primaryKey = 'cupo_id';
 	public $timestamps = false;

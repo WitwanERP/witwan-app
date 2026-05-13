@@ -6,6 +6,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\AlcanceCliente;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -55,6 +56,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Notadebito extends Model
 {
+	use AlcanceCliente;
+
 	protected $table = 'notadebito';
 	protected $primaryKey = 'notadebito_id';
 	public $timestamps = false;

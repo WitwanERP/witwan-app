@@ -6,6 +6,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\AlcanceCliente;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
@@ -26,6 +27,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Creditoextra extends Model
 {
+	use AlcanceCliente;
+
 	protected $table = 'creditoextra';
 	protected $primaryKey = 'creditoextra_id';
 	public $timestamps = false;

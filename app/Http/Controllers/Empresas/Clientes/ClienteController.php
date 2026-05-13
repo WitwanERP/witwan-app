@@ -36,7 +36,7 @@ class ClienteController extends Controller
     {
 
         $perPage = $request->get('per_page', 100);
-        $query = Cliente::query();
+        $query = Cliente::visiblesAlUsuario();
 
         // Agregar filtros básicos aquí
         if ($request->has('search') && ! empty($request->search)) {
@@ -144,7 +144,9 @@ class ClienteController extends Controller
     public function show($id)
     {
         try {
-            $item = Cliente::with(['ciudad', 'pai', 'condicioniva'])->findOrFail($id);
+            $item = Cliente::visiblesAlUsuario()
+                ->with(['ciudad', 'pais', 'condicioniva'])
+                ->findOrFail($id);
             $payload = $item->toArray();
             $payload['contactos'] = $this->loadExtra((int) $id, 'contactos');
             $payload['tarjetas'] = $this->loadExtra((int) $id, 'tarjetas');
@@ -165,7 +167,7 @@ class ClienteController extends Controller
         }
 
         try {
-            $item = Cliente::findOrFail($id);
+            $item = Cliente::visiblesAlUsuario()->findOrFail($id);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Registro no encontrado'], 404);
         }
@@ -223,7 +225,7 @@ class ClienteController extends Controller
         }
 
         try {
-            $item = Cliente::findOrFail($id);
+            $item = Cliente::visiblesAlUsuario()->findOrFail($id);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Registro no encontrado'], 404);
         }
@@ -262,7 +264,8 @@ class ClienteController extends Controller
         $limit = (int) $request->get('limit', 10);
         $limit = max(1, min($limit, 50));
 
-        $rows = Cliente::where('habilita', 'S')
+        $rows = Cliente::visiblesAlUsuario()
+            ->where('habilita', 'S')
             ->where(function ($w) use ($q) {
                 $w->where('cliente_nombre', 'LIKE', "%{$q}%")
                     ->orWhere('cliente_razonsocial', 'LIKE', "%{$q}%")
@@ -431,7 +434,7 @@ class ClienteController extends Controller
         }
 
         try {
-            $cliente = Cliente::findOrFail($clientId);
+            $cliente = Cliente::visiblesAlUsuario()->findOrFail($clientId);
 
             // Check if credit is enabled for this client
             if ($cliente->credito_habilitado == 0) {
@@ -615,7 +618,7 @@ class ClienteController extends Controller
     public function remainingCredit($clientId)
     {
         try {
-            $cliente = Cliente::findOrFail($clientId);
+            $cliente = Cliente::visiblesAlUsuario()->findOrFail($clientId);
 
             // Check if credit is enabled for this client
             if ($cliente->credito_habilitado == 0) {

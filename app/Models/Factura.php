@@ -6,6 +6,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\AlcanceCliente;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -65,6 +66,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Factura extends Model
 {
+	use AlcanceCliente;
+
 	protected $table = 'factura';
 	protected $primaryKey = 'factura_id';
 	public $timestamps = false;

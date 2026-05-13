@@ -86,7 +86,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property Condicioniva $condicioniva
  * @property Idioma $idioma
  * @property Moneda $moneda
- * @property Pai $pai
+ * @property Pais $pais
  * @property Usuario $usuario
  * @property Collection|Aerolinea[] $aerolineas
  * @property Collection|Creditoextra[] $creditoextras
@@ -244,9 +244,9 @@ class Cliente extends Model
 		return $this->belongsTo(Moneda::class, 'fk_moneda_id', 'moneda_id');
 	}
 
-	public function pai()
+	public function pais()
 	{
-		return $this->belongsTo(Pai::class, 'fk_pais_id');
+		return $this->belongsTo(Pais::class, 'fk_pais_id');
 	}
 
 	public function usuario()
@@ -333,5 +333,20 @@ class Cliente extends Model
 	public function usuarios()
 	{
 		return $this->hasMany(Usuario::class, 'fk_cliente_id');
+	}
+
+	/**
+	 * Limita los clientes visibles según el alcance del usuario logueado
+	 * (POW / interno: todos; cadena: clientes de la cadena; cliente: sólo el suyo).
+	 */
+	public function scopeVisiblesAlUsuario($query)
+	{
+		$alcance = \App\Helpers\PermisoHelper::alcanceCliente();
+
+		return match ($alcance['tipo']) {
+			\App\Helpers\PermisoHelper::ALCANCE_CADENA => $query->where('fk_cadenacliente_id', $alcance['id']),
+			\App\Helpers\PermisoHelper::ALCANCE_CLIENTE => $query->where('cliente_id', $alcance['id']),
+			default => $query,
+		};
 	}
 }
