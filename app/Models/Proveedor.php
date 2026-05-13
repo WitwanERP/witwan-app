@@ -66,7 +66,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property Ciudad $ciudad
  * @property Cliente $cliente
  * @property Condicioniva $condicioniva
- * @property Pai $pai
+ * @property Pais $pais
  * @property Usuario $usuario
  * @property Collection|Aerolinea[] $aerolineas
  * @property Collection|Canje[] $canjes
@@ -180,9 +180,9 @@ class Proveedor extends Model
 		return $this->belongsTo(Condicioniva::class, 'fk_condicioniva_id');
 	}
 
-	public function pai()
+	public function pais()
 	{
-		return $this->belongsTo(Pai::class, 'fk_pais_id');
+		return $this->belongsTo(Pais::class, 'fk_pais_id');
 	}
 
 	public function usuario()

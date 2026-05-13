@@ -34,7 +34,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property Ciudad $ciudad
  * @property Cliente $cliente
  * @property Moneda $moneda
- * @property Pai $pai
+ * @property Pais $pais
  * @property Region $region
  * @property Submodulo $submodulo
  *
@@ -98,9 +98,9 @@ class Modelofee extends Model
 		return $this->belongsTo(Moneda::class, 'fk_moneda_id', 'moneda_id');
 	}
 
-	public function pai()
+	public function pais()
 	{
-		return $this->belongsTo(Pai::class, 'fk_pais_id');
+		return $this->belongsTo(Pais::class, 'fk_pais_id');
 	}
 
 	public function region()

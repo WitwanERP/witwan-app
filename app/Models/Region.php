@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $nombre_pg
  * 
  * @property Collection|Modelofee[] $modelofees
- * @property Collection|Pai[] $pais
+ * @property Collection|Pais[] $pais
  *
  * @package App\Models
  */
@@ -41,6 +41,6 @@ class Region extends Model
 
 	public function pais()
 	{
-		return $this->hasMany(Pai::class, 'fk_region_id');
+		return $this->hasMany(Pais::class, 'fk_region_id');
 	}
 }

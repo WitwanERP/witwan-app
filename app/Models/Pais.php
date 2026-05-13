@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Class Pai
+ * Class Pais
  *
  * @property int $pais_id
  * @property string $pais_nombre

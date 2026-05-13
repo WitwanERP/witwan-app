@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Model;
  * 
  * @property Ciudad $ciudad
  * @property Modoivaventum $modoivaventum
- * @property Pai $pai
+ * @property Pais $pais
  * @property Producto $producto
  * @property Sistema $sistema
  * @property Submodulo $submodulo
@@ -67,9 +67,9 @@ class Iva extends Model
 		return $this->belongsTo(Modoivaventum::class, 'fk_modoivaventa_id');
 	}
 
-	public function pai()
+	public function pais()
 	{
-		return $this->belongsTo(Pai::class, 'fk_pais_id');
+		return $this->belongsTo(Pais::class, 'fk_pais_id');
 	}
 
 	public function producto()

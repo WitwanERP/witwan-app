@@ -33,7 +33,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property float $longitud
  * 
  * @property Ciudad $ciudad
- * @property Pai $pai
+ * @property Pais $pais
  * @property Alojamiento|null $alojamiento
  * @property Collection|Canje[] $canjes
  * @property Collection|Ciudad[] $ciudads
@@ -96,9 +96,9 @@ class Ciudad extends Model
 		return $this->belongsTo(Ciudad::class, 'fk_ciudad_id');
 	}
 
-	public function pai()
+	public function pais()
 	{
-		return $this->belongsTo(Pai::class, 'fk_pais_id');
+		return $this->belongsTo(Pais::class, 'fk_pais_id');
 	}
 
 	public function alojamiento()

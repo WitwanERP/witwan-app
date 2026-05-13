@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $origen
  * 
  * @property Ciudad $ciudad
- * @property Pai $pai
+ * @property Pais $pais
  * @property Producto $producto
  * @property Submodulo $submodulo
  * @property Tarifario $tarifario
@@ -71,9 +71,9 @@ class Tarifariocomision extends Model
 		return $this->belongsTo(Ciudad::class, 'fk_ciudad_id');
 	}
 
-	public function pai()
+	public function pais()
 	{
-		return $this->belongsTo(Pai::class, 'fk_pais_id');
+		return $this->belongsTo(Pais::class, 'fk_pais_id');
 	}
 
 	public function producto()
