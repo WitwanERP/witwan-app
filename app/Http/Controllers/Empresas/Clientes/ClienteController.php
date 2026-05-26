@@ -423,14 +423,7 @@ class ClienteController extends Controller
         Loginterfase::create([
             'loginterfase_fecha' => now(),
             'loginterfase_tipo' => 'control_credito',
-            'loginterfase_texto' => json_encode([
-                'cliente_id' => $clientId,
-                'value' => $valorSolicitado,
-                'moneda' => $monedaSolicitada,
-                'ip' => $ip,
-                'status' => 'REQUEST',
-                'message' => 'Inicio de control de crédito',
-            ], JSON_UNESCAPED_UNICODE),
+            'loginterfase_texto' => $ip,
         ]);
         // Check if credit system is blocked
         $bloquearCredito = SysconfigHelper::get('bloquearCredito', '0');
