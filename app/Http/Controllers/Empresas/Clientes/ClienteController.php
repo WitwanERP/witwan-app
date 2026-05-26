@@ -493,6 +493,11 @@ class ClienteController extends Controller
                     }
                 }
                 if ($useUSD) {
+                    $tcMoneda = $this->getCurrencyRate('USD');
+                    if ($tcMoneda > 0 && $tcMoneda != 1) {
+                        $creditoAutorizado = $creditoAutorizado / $tcMoneda;
+                        $creditoUtilizadoTotal = $creditoUtilizadoTotal / $tcMoneda;
+                    }
                     $monedaRespuesta = 'USD';
                 } else {
                     $monedaBase = Moneda::where('moneda_basica', 'S')->first();
