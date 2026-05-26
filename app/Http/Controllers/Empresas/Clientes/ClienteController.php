@@ -562,7 +562,7 @@ class ClienteController extends Controller
 
             Loginterfase::create([
                 'loginterfase_fecha' => now(),
-                'loginterfase_tipo' => 'control_credito',
+                'loginterfase_tipo' => "control_credito",
                 'loginterfase_texto' => json_encode($payload, JSON_UNESCAPED_UNICODE),
             ]);
         } catch (\Throwable $e) {

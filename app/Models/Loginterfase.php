@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class Loginterfase
- * 
+ *
  * @property int $loginterfase_id
  * @property Carbon $loginterfase_fecha
  * @property string $loginterfase_tipo
@@ -26,7 +26,9 @@ class Loginterfase extends Model
 	public $timestamps = false;
 
 	protected $casts = [
-		'loginterfase_fecha' => 'datetime'
+		'loginterfase_fecha' => 'datetime',
+        'loginterfase_tipo' => 'string',
+        'loginterfase_texto' => 'string'
 	];
 
 	protected $fillable = [
