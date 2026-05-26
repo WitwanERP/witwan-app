@@ -420,7 +420,18 @@ class ClienteController extends Controller
         $valorSolicitado = $request->input('value', 0);
         $monedaSolicitada = $request->input('moneda');
         $ip = $request->ip();
-        $this->logCreditLimit($clientId, $valorSolicitado, $monedaSolicitada, $ip, 'CHECK', 'Inicio de verificación de crédito');
+        Loginterfase::create([
+            'loginterfase_fecha' => now(),
+            'loginterfase_tipo' => 'control_credito',
+            'loginterfase_texto' => json_encode([
+                'cliente_id' => $clientId,
+                'value' => $valorSolicitado,
+                'moneda' => $monedaSolicitada,
+                'ip' => $ip,
+                'status' => 'REQUEST',
+                'message' => 'Inicio de control de crédito',
+            ], JSON_UNESCAPED_UNICODE),
+        ]);
         // Check if credit system is blocked
         $bloquearCredito = SysconfigHelper::get('bloquearCredito', '0');
         if ($bloquearCredito === '1') {
