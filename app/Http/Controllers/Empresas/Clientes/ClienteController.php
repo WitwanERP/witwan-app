@@ -420,7 +420,7 @@ class ClienteController extends Controller
         $valorSolicitado = $request->input('value', 0);
         $monedaSolicitada = $request->input('moneda');
         $ip = $request->ip();
-
+        $this->logCreditLimit($clientId, $valorSolicitado, $monedaSolicitada, $ip, 'CHECK', 'Inicio de verificación de crédito');
         // Check if credit system is blocked
         $bloquearCredito = SysconfigHelper::get('bloquearCredito', '0');
         if ($bloquearCredito === '1') {
