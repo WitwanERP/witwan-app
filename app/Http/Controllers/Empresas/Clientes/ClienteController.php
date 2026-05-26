@@ -566,7 +566,7 @@ class ClienteController extends Controller
                 'loginterfase_texto' => json_encode($payload, JSON_UNESCAPED_UNICODE),
             ]);
         } catch (\Throwable $e) {
-            println("Error al loguear control de crédito: " . $e->getMessage());
+            print_r("Error al loguear control de crédito: " . $e->getMessage());
         }
     }
 
