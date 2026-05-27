@@ -457,29 +457,17 @@ class ClienteController extends Controller
                 ->first();
 
             $extraCredit = $creditoExtra ? $creditoExtra->creditoextra_monto : 0;
-            $creditoAutorizado = $cliente->limite_credito + $extraCredit;
 
-            // Calculate used credit
-            $creditoUtilizado = $this->calculateUsedCredit($clientId);
-
-            // Add requested amount if provided
-            $creditoUtilizadoTotal = $creditoUtilizado + floatval($valorSolicitado);
-
-            $status = $creditoUtilizadoTotal < $creditoAutorizado ? 'OK' : 'NO-OK';
-            $message = $status === 'OK' ? 'Autorizado.' : 'Cliente sin crédito disponible. Favor contactar al administrador.';
-
-            // Convert to requested currency if provided
+            // 1. Resolve the currency BEFORE any calculation.
+            //    All credit data is stored in the base currency; the requested
+            //    value comes already expressed in the resolved currency.
             $monedaRespuesta = null;
+            $tipoRespuesta = 'base';
 
             if ($monedaSolicitada) {
-                $tcMoneda = $this->getCurrencyRate($monedaSolicitada);
-                if ($tcMoneda > 0 && $tcMoneda != 1) {
-                    $creditoAutorizado = $creditoAutorizado / $tcMoneda;
-                    $creditoUtilizadoTotal = $creditoUtilizadoTotal / $tcMoneda;
-                }
                 $monedaRespuesta = $monedaSolicitada;
             } else {
-                // Get base currency, except for special IPs
+                // No currency provided: resolve from the requesting IP.
                 $useUSD = false;
                 if ($ip === '137.116.211.8') {
                     $useUSD = true;
@@ -493,16 +481,55 @@ class ClienteController extends Controller
                     }
                 }
                 if ($useUSD) {
-                    $tcMoneda = $this->getCurrencyRate('USD');
-                    if ($tcMoneda > 0 && $tcMoneda != 1) {
-                        $creditoAutorizado = $creditoAutorizado / $tcMoneda;
-                        $creditoUtilizadoTotal = $creditoUtilizadoTotal / $tcMoneda;
-                    }
                     $monedaRespuesta = 'USD';
+                    $tipoRespuesta = 'TC';
                 } else {
                     $monedaBase = Moneda::where('moneda_basica', 'S')->first();
                     $monedaRespuesta = $monedaBase ? $monedaBase->moneda_id : null;
                 }
+            }
+
+            // 2. Bring authorized and used credit into the resolved currency.
+            $creditoAutorizado = $cliente->limite_credito + $extraCredit; // base currency
+            $creditoUtilizado = $this->calculateUsedCredit($clientId);    // base currency
+
+            $tcMoneda = $monedaRespuesta ? $this->getCurrencyRate($monedaRespuesta) : 1.0;
+            if ($tcMoneda > 0 && $tcMoneda != 1) {
+                $creditoAutorizado = $creditoAutorizado / $tcMoneda;
+                $creditoUtilizado = $creditoUtilizado / $tcMoneda;
+            }
+
+            // 3. Now everything is in the same currency: compare.
+            $valor = floatval($valorSolicitado);
+            $creditoUtilizadoTotal = $creditoUtilizado + $valor;
+            $creditoDisponible = $creditoAutorizado - $creditoUtilizado;
+
+            $status = $creditoUtilizadoTotal < $creditoAutorizado ? 'OK' : 'NO-OK';
+            $message = $status === 'OK' ? 'Autorizado.' : 'Cliente sin crédito disponible. Favor contactar al administrador.';
+
+            // 4. Build the response according to its type.
+            if ($tipoRespuesta === 'TC') {
+                // TC responses only report the requested amount that gets
+                // authorized: the value itself when there is enough credit, 0 otherwise.
+                $creditoAutorizadoTC = $status === 'OK' ? $valor : 0;
+
+                $this->logCreditLimit(
+                    $clientId,
+                    $valorSolicitado,
+                    $monedaRespuesta,
+                    $ip,
+                    $status,
+                    $message,
+                    round($creditoAutorizadoTC, 2)
+                );
+
+                return response()->json([
+                    'CodeClientBackOffice' => $clientId,
+                    'status' => $status,
+                    'Message' => $message,
+                    'credito_autorizado' => round($creditoAutorizadoTC, 2),
+                    'moneda' => $monedaRespuesta,
+                ]);
             }
 
             $this->logCreditLimit(
@@ -522,7 +549,7 @@ class ClienteController extends Controller
                 'Message' => $message,
                 'credito_autorizado' => round($creditoAutorizado, 2),
                 'credito_utilizado' => round($creditoUtilizadoTotal, 2),
-                'credito_disponible' => round($creditoAutorizado - $creditoUtilizadoTotal, 2),
+                'credito_disponible' => round($creditoDisponible, 2),
                 'moneda' => $monedaRespuesta,
             ]);
         } catch (ModelNotFoundException $e) {
