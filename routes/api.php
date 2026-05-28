@@ -278,6 +278,9 @@ Route::group(['middleware' => 'jwt.auth'], function () {
             Route::apiResource('facturas-aerolinea', FacturaaerolineaController::class);
             Route::apiResource('facturas-boleta', FacturaboletumController::class);
             Route::apiResource('facturas-cliente', FacturaclienteController::class);
+            Route::get('facturas-proveedor/create', [FacturaproveedorController::class, 'create']);
+            Route::get('facturas-proveedor/control', [FacturaproveedorController::class, 'control']);
+            Route::get('facturas-proveedor/{id}/imprimir', [FacturaproveedorController::class, 'imprimir']);
             Route::apiResource('facturas-proveedor', FacturaproveedorController::class);
             Route::apiResource('notas-credito', NotacreditoController::class);
             Route::apiResource('notas-debito', NotadebitoController::class);
