@@ -891,6 +891,35 @@
                                     "cliente_email": {
                                         "type": "string",
                                         "example": "contacto@empresa.com"
+                                    },
+                                    "fk_tarifario1_id": {
+                                        "description": "Tarifario receptivo. Sincroniza rel_clientesistema con fk_sistema_id=1",
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "fk_tarifario2_id": {
+                                        "description": "Tarifario mayorista. Sincroniza rel_clientesistema con fk_sistema_id=2",
+                                        "type": "integer",
+                                        "example": 0
+                                    },
+                                    "fk_tarifario3_id": {
+                                        "description": "Tarifario nacional. Sincroniza rel_clientesistema con fk_sistema_id=7",
+                                        "type": "integer",
+                                        "example": 0
+                                    },
+                                    "contactos": {
+                                        "description": "Lista de contactos. Se persiste como JSON en cliente_extra (extra_nombre='contactos').",
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/components/schemas/ClienteContacto"
+                                        }
+                                    },
+                                    "tarjetas": {
+                                        "description": "Lista de tarjetas. Se persiste como JSON en cliente_extra (extra_nombre='tarjetas').",
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/components/schemas/ClienteTarjeta"
+                                        }
                                     }
                                 },
                                 "type": "object"
@@ -1023,6 +1052,24 @@
                                     "cliente_email": {
                                         "type": "string",
                                         "example": "nuevo@empresa.com"
+                                    },
+                                    "fk_tarifario1_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "contactos": {
+                                        "description": "Si la clave está presente, reemplaza la lista actual (replace-on-write). Omitir la clave preserva los datos existentes.",
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/components/schemas/ClienteContacto"
+                                        }
+                                    },
+                                    "tarjetas": {
+                                        "description": "Si la clave está presente, reemplaza la lista actual (replace-on-write). Omitir la clave preserva los datos existentes.",
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/components/schemas/ClienteTarjeta"
+                                        }
                                     }
                                 },
                                 "type": "object"
@@ -1084,7 +1131,7 @@
                     "Clientes"
                 ],
                 "summary": "Eliminar cliente",
-                "description": "Elimina un cliente por ID",
+                "description": "Soft-disable: setea habilita='N'. Falla si el cliente tiene reservas asociadas.",
                 "operationId": "clienteDestroy",
                 "parameters": [
                     {
@@ -1099,7 +1146,7 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": "Cliente eliminado exitosamente"
+                        "description": "Cliente deshabilitado exitosamente"
                     },
                     "404": {
                         "description": "Cliente no encontrado",
@@ -1113,6 +1160,94 @@
                                         }
                                     },
                                     "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Cliente con dependencias",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "No se puede eliminar: cliente con reservas asociadas"
+                                        },
+                                        "reservas": {
+                                            "type": "integer",
+                                            "example": 3
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/clientes/clientes/search": {
+            "get": {
+                "tags": [
+                    "Clientes"
+                ],
+                "summary": "Buscar clientes",
+                "description": "Busca clientes activos por nombre, razón social o CUIT. Mínimo 2 caracteres.",
+                "operationId": "clienteSearch",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Término de búsqueda (mínimo 2 caracteres)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "ace"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Cantidad máxima de resultados (1-50)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10,
+                            "maximum": 50,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de coincidencias",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 123
+                                            },
+                                            "nombre": {
+                                                "type": "string",
+                                                "example": "Empresa Ejemplo S.A."
+                                            },
+                                            "cuit": {
+                                                "type": "string",
+                                                "example": "20272022500"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
                                 }
                             }
                         }
@@ -1343,6 +1478,416 @@
                                 }
                             }
                         }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/documentos/facturas-proveedor": {
+            "get": {
+                "tags": [
+                    "Facturas de Proveedor"
+                ],
+                "summary": "Listar facturas de proveedor",
+                "description": "Listado con montos calculados (neto gravado, IVA por alícuota, total). Soporta filtros y paginación.",
+                "operationId": "facturaproveedorIndex",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 100
+                        }
+                    },
+                    {
+                        "name": "proveedor",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "numero",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "codigo",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "proyecto",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "fecha_desde",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "fecha_hasta",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "fechacontable_desde",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "fechacontable_hasta",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado paginado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Facturas de Proveedor"
+                ],
+                "summary": "Crear factura de proveedor",
+                "description": "Crea la factura, su servicio contable asociado, relaciones con ocupaciones y el asiento contable con sus movimientos débito/haber. Los totales se calculan en el servidor.",
+                "operationId": "facturaproveedorStore",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/FacturaproveedorInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Factura creada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Facturaproveedor"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso de alta"
+                    },
+                    "409": {
+                        "description": "Ya existe una factura con ese número, proveedor y tipo de documento"
+                    },
+                    "422": {
+                        "description": "Validación fallida: faltan campos, total en 0, o Gasto/Boleta con ocupaciones"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/documentos/facturas-proveedor/create": {
+            "get": {
+                "tags": [
+                    "Facturas de Proveedor"
+                ],
+                "summary": "Datos auxiliares para el alta",
+                "description": "Devuelve proveedores con CUIT, cuentas de gasto, proyectos y conceptos adicionales.",
+                "operationId": "facturaproveedorCreate",
+                "responses": {
+                    "200": {
+                        "description": "Datos auxiliares"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/documentos/facturas-proveedor/control": {
+            "get": {
+                "tags": [
+                    "Facturas de Proveedor"
+                ],
+                "summary": "Verificar duplicado",
+                "description": "Verifica que no exista una factura con la misma combinación de número, proveedor y tipo de documento.",
+                "operationId": "facturaproveedorControl",
+                "parameters": [
+                    {
+                        "name": "proveedor",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "nro",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "tipo",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Resultado del control",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "ok": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/documentos/facturas-proveedor/{id}": {
+            "get": {
+                "tags": [
+                    "Facturas de Proveedor"
+                ],
+                "summary": "Detalle de una factura",
+                "operationId": "facturaproveedorShow",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detalle",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Facturaproveedor"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Registro no encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Facturas de Proveedor"
+                ],
+                "summary": "Actualización limitada",
+                "description": "Permite editar cuenta contable, proyecto, item de gasto, imputación y número. No editable si la fecha contable cae en un período cerrado.",
+                "operationId": "facturaproveedorUpdate",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "fk_plancuenta_id": {
+                                        "type": "integer",
+                                        "example": 1101
+                                    },
+                                    "fk_proyecto_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "fk_itemgasto_id": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "areaimputacion": {
+                                        "type": "object"
+                                    },
+                                    "factura_numero": {
+                                        "type": "string",
+                                        "example": "0001-00012346"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Factura actualizada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Facturaproveedor"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin permiso de edición"
+                    },
+                    "404": {
+                        "description": "Registro no encontrado"
+                    },
+                    "422": {
+                        "description": "Fecha fuera del periodo contable abierto"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Facturas de Proveedor"
+                ],
+                "summary": "Eliminar factura",
+                "description": "Elimina validando período contable y que no esté pagada. Limpia relaciones y movimientos huérfanos.",
+                "operationId": "facturaproveedorDestroy",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Eliminada"
+                    },
+                    "403": {
+                        "description": "Sin permiso de baja"
+                    },
+                    "404": {
+                        "description": "Registro no encontrado"
+                    },
+                    "422": {
+                        "description": "Período cerrado o factura con pago realizado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/documentos/facturas-proveedor/{id}/imprimir": {
+            "get": {
+                "tags": [
+                    "Facturas de Proveedor"
+                ],
+                "summary": "Datos para impresión",
+                "description": "Devuelve la factura con su proveedor/plan de cuenta y los servicios asociados con su reserva.",
+                "operationId": "facturaproveedorImprimir",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Datos de impresión",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Facturaproveedor"
+                                        },
+                                        "datasvc": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Registro no encontrado"
                     }
                 },
                 "security": [
@@ -2900,6 +3445,72 @@
                 },
                 "type": "object"
             },
+            "ClienteContacto": {
+                "properties": {
+                    "cliente_cont_nombre": {
+                        "type": "string",
+                        "example": "Juan Pérez"
+                    },
+                    "cliente_cont_cargo": {
+                        "type": "string",
+                        "example": "Gerente Comercial"
+                    },
+                    "cliente_email": {
+                        "type": "string",
+                        "example": "juan@empresa.com"
+                    },
+                    "cliente_tel_tipo": {
+                        "type": "string",
+                        "example": "celular"
+                    },
+                    "cliente_tel_codpais": {
+                        "type": "string",
+                        "example": "54"
+                    },
+                    "cliente_tel_codarea": {
+                        "type": "string",
+                        "example": "11"
+                    },
+                    "cliente_telefono": {
+                        "type": "string",
+                        "example": "1234-5678"
+                    },
+                    "cliente_cont_emailsend": {
+                        "type": "integer",
+                        "enum": [
+                            0,
+                            1
+                        ],
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "ClienteTarjeta": {
+                "properties": {
+                    "cliente_tarjeta_num": {
+                        "type": "string",
+                        "example": "4111111111111111"
+                    },
+                    "cliente_tarjeta_banco": {
+                        "type": "string",
+                        "example": "Banco Nación"
+                    },
+                    "cliente_tarjeta_venc": {
+                        "type": "string",
+                        "example": "12/25"
+                    },
+                    "cliente_tarjeta_cs": {
+                        "type": "string",
+                        "example": "123"
+                    },
+                    "cliente_tarjeta_empresa": {
+                        "type": "string",
+                        "example": "VISA"
+                    }
+                },
+                "type": "object"
+            },
             "Cliente": {
                 "properties": {
                     "cliente_id": {
@@ -2946,6 +3557,41 @@
                         "type": "string",
                         "example": "contacto@empresa.com"
                     },
+                    "habilita": {
+                        "type": "string",
+                        "enum": [
+                            "S",
+                            "N"
+                        ],
+                        "example": "S"
+                    },
+                    "fk_tarifario1_id": {
+                        "description": "Tarifario receptivo (sistema 1)",
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "fk_tarifario2_id": {
+                        "description": "Tarifario mayorista (sistema 2)",
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "fk_tarifario3_id": {
+                        "description": "Tarifario nacional (sistema 7)",
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "contactos": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ClienteContacto"
+                        }
+                    },
+                    "tarjetas": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ClienteTarjeta"
+                        }
+                    },
                     "fechacarga": {
                         "type": "string",
                         "format": "date-time"
@@ -2957,6 +3603,265 @@
                     "fk_usuario_id": {
                         "type": "integer",
                         "example": 1005
+                    }
+                },
+                "type": "object"
+            },
+            "Facturaproveedor": {
+                "properties": {
+                    "facturaproveedor_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "facturaproveedor_nro": {
+                        "type": "string",
+                        "example": "0001-00012345"
+                    },
+                    "facturaproveedor_tipodocumento": {
+                        "type": "string",
+                        "enum": [
+                            "Factura",
+                            "Nota de Credito"
+                        ],
+                        "example": "Factura"
+                    },
+                    "facturaproveedor_tipofactura": {
+                        "type": "string",
+                        "example": "A"
+                    },
+                    "fk_proveedor_id": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "fk_proyecto_id": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "fk_moneda_id": {
+                        "type": "string",
+                        "example": "ARS"
+                    },
+                    "fecha": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2026-05-28"
+                    },
+                    "fechacontable": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2026-05-28"
+                    },
+                    "vencimiento": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2026-06-28"
+                    },
+                    "cotizacion": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 1
+                    },
+                    "tipomovimiento": {
+                        "type": "string",
+                        "enum": [
+                            "Servicio",
+                            "Gasto",
+                            "Boleta",
+                            "BSP"
+                        ],
+                        "example": "Servicio"
+                    },
+                    "montototal": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 121000
+                    },
+                    "descripcion": {
+                        "type": "string",
+                        "example": "Texto libre"
+                    }
+                },
+                "type": "object"
+            },
+            "FacturaproveedorInput": {
+                "required": [
+                    "facturaproveedor_nro",
+                    "facturaproveedor_tipodocumento",
+                    "fk_proveedor_id",
+                    "fk_moneda_id",
+                    "fecha",
+                    "tipomovimiento"
+                ],
+                "properties": {
+                    "facturaproveedor_nro": {
+                        "type": "string",
+                        "example": "0001-00012345"
+                    },
+                    "facturaproveedor_tipodocumento": {
+                        "type": "string",
+                        "enum": [
+                            "Factura",
+                            "Nota de Credito"
+                        ],
+                        "example": "Factura"
+                    },
+                    "facturaproveedor_tipofactura": {
+                        "type": "string",
+                        "example": "A"
+                    },
+                    "fk_proveedor_id": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "fk_moneda_id": {
+                        "type": "string",
+                        "example": "ARS"
+                    },
+                    "fecha": {
+                        "description": "dd/mm/YYYY o ISO",
+                        "type": "string",
+                        "example": "28/05/2026"
+                    },
+                    "fechacontable": {
+                        "description": "Opcional; default = fecha",
+                        "type": "string",
+                        "example": "28/05/2026"
+                    },
+                    "vencimiento": {
+                        "type": "string",
+                        "example": "28/06/2026"
+                    },
+                    "tipomovimiento": {
+                        "type": "string",
+                        "enum": [
+                            "Servicio",
+                            "Gasto",
+                            "Boleta",
+                            "BSP"
+                        ],
+                        "example": "Servicio"
+                    },
+                    "cotizacion": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 1
+                    },
+                    "nocomputable": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 0
+                    },
+                    "exento": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 0
+                    },
+                    "especial": {
+                        "description": "Neto gravado al 10.5%",
+                        "type": "number",
+                        "format": "float",
+                        "example": 0
+                    },
+                    "general": {
+                        "description": "Neto gravado a la alícuota general (21%)",
+                        "type": "number",
+                        "format": "float",
+                        "example": 100000
+                    },
+                    "monto27": {
+                        "description": "Neto gravado al 27%",
+                        "type": "number",
+                        "format": "float",
+                        "example": 0
+                    },
+                    "monto25": {
+                        "description": "Neto gravado al 2.5%",
+                        "type": "number",
+                        "format": "float",
+                        "example": 0
+                    },
+                    "ivatur": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 0
+                    },
+                    "ivatotal": {
+                        "description": "IVA total (usado en Chile)",
+                        "type": "number",
+                        "format": "float",
+                        "example": 0
+                    },
+                    "otrosimpuestos": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 0
+                    },
+                    "retencioniva": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 0
+                    },
+                    "retencioniibb": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 0
+                    },
+                    "percepcioniva": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 0
+                    },
+                    "percepcioniibb": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 0
+                    },
+                    "retencionganancias": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 0
+                    },
+                    "percepcionganancias": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 0
+                    },
+                    "fk_plancuenta_id": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "fk_proyecto_id": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "fk_itemgasto_id": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "observaciones": {
+                        "type": "string",
+                        "example": "Texto libre"
+                    },
+                    "ocupacion": {
+                        "description": "Servicios existentes a vincular. No permitido para tipomovimiento Gasto o Boleta.",
+                        "type": "array",
+                        "items": {
+                            "required": [
+                                "id"
+                            ],
+                            "properties": {
+                                "id": {
+                                    "type": "integer",
+                                    "example": 501
+                                },
+                                "monto": {
+                                    "type": "number",
+                                    "format": "float",
+                                    "example": 50000
+                                }
+                            },
+                            "type": "object"
+                        }
                     }
                 },
                 "type": "object"
@@ -3172,6 +4077,10 @@
         {
             "name": "Clientes",
             "description": "Clientes"
+        },
+        {
+            "name": "Facturas de Proveedor",
+            "description": "Facturas de Proveedor"
         },
         {
             "name": "Negocios",
