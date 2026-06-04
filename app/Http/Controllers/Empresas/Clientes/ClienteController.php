@@ -519,7 +519,15 @@ class ClienteController extends Controller
                     $monedaRespuesta,
                     $ip,
                     $status,
-                    $message,
+                    json_encode([
+                    'CodeClientBackOffice' => $clientId,
+                    'status' => $status,
+                    'Message' => $message,
+                    'credito_autorizado' => round($creditoAutorizadoTC, 2),
+                    'credito_utilizado' => round($creditoUtilizadoTotal, 2),
+                    'credito_disponible' => round($creditoDisponible, 2),
+                    'moneda' => $monedaRespuesta,
+                ], JSON_UNESCAPED_UNICODE),
                     round($creditoAutorizadoTC, 2)
                 );
 
@@ -540,9 +548,16 @@ class ClienteController extends Controller
                 $monedaRespuesta,
                 $ip,
                 $status,
-                $message,
-                round($creditoAutorizado, 2),
-                round($creditoUtilizadoTotal, 2)
+                json_encode([
+                    'CodeClientBackOffice' => $clientId,
+                    'status' => $status,
+                    'Message' => $message,
+                    'credito_autorizado' => round($creditoAutorizado, 2),
+                    'credito_utilizado' => round($creditoUtilizadoTotal, 2),
+                    'credito_disponible' => round($creditoDisponible, 2),
+                    'moneda' => $monedaRespuesta,
+                ], JSON_UNESCAPED_UNICODE),
+                round($creditoAutorizado, 2)
             );
 
             return response()->json([
