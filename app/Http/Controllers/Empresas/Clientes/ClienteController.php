@@ -528,6 +528,8 @@ class ClienteController extends Controller
                     'status' => $status,
                     'Message' => $message,
                     'credito_autorizado' => round($creditoAutorizadoTC, 2),
+                    'credito_utilizado' => round($creditoUtilizadoTotal, 2),
+                    'credito_disponible' => round($creditoDisponible, 2),
                     'moneda' => $monedaRespuesta,
                 ]);
             }
