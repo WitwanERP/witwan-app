@@ -525,7 +525,7 @@ class ClienteController extends Controller
                     'Message' => $message,
                     'credito_autorizado' => round($creditoAutorizadoTC, 2),
                     'credito_utilizado' => round($creditoUtilizadoTotal, 2),
-                    'credito_disponible' => round($creditoDisponible, 2),
+                    'credito_disponible' => round($creditoAutorizado, 2),
                     'moneda' => $monedaRespuesta,
                 ], JSON_UNESCAPED_UNICODE),
                     round($creditoAutorizadoTC, 2)
