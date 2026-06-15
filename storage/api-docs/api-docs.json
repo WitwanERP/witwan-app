@@ -3358,6 +3358,119 @@
                     }
                 ]
             }
+        },
+        "/webhooks/travelcompositor/{secret}": {
+            "post": {
+                "tags": [
+                    "Webhooks"
+                ],
+                "summary": "Webhook de Travelcompositor",
+                "description": "Recibe notificaciones de reservas de Travelcompositor (CREATED/MODIFIED/CANCELED) y las encola en colaevento para procesamiento asíncrono. Endpoint público: la autenticación se realiza mediante el secreto compartido en el segmento {secret} de la URL.",
+                "operationId": "travelcompositorWebhook",
+                "parameters": [
+                    {
+                        "name": "secret",
+                        "in": "path",
+                        "description": "Secreto compartido para validar el origen del webhook",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "timestamp",
+                                    "type",
+                                    "micrositeId",
+                                    "bookingReference"
+                                ],
+                                "properties": {
+                                    "timestamp": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2023-11-27T12:48:52"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "CREATED",
+                                            "MODIFIED",
+                                            "CANCELED"
+                                        ],
+                                        "example": "CREATED"
+                                    },
+                                    "micrositeId": {
+                                        "type": "string",
+                                        "example": "fake"
+                                    },
+                                    "bookingReference": {
+                                        "type": "string",
+                                        "example": "TEST-12345"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Evento encolado correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Secreto inválido",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Payload inválido",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -4097,6 +4210,10 @@
         {
             "name": "Recibos",
             "description": "Recibos"
+        },
+        {
+            "name": "Webhooks",
+            "description": "Webhooks"
         }
     ],
     "security": [

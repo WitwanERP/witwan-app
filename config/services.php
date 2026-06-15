@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'travelcompositor' => [
+        'webhook_secret' => env('TRAVELCOMPOSITOR_WEBHOOK_SECRET'),
+    ],
+
 ];

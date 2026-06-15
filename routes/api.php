@@ -218,6 +218,9 @@ use Illuminate\Support\Facades\Route;
 // Public routes (without authentication)
 Route::post('/asistente', [AssistantController::class, 'interpret']);
 
+// Webhook público de Travelcompositor (el secreto se valida como segmento de URL)
+Route::post('/webhooks/travelcompositor/{secret}', [\App\Http\Controllers\Webhooks\TravelcompositorWebhookController::class, 'handle']);
+
 // Authentication routes
 Route::group(['prefix' => 'auth'], function () {
     Route::post('/login', [AuthController::class, 'login'])->middleware('ci.bridge');
