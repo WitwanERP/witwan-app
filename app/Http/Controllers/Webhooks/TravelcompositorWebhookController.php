@@ -15,14 +15,27 @@ class TravelcompositorWebhookController extends Controller
      * Recibe las notificaciones de webhook de Travelcompositor y las encola
      * en colaevento para su procesamiento asíncrono por QueueEventService.
      *
-     * El secreto viaja como segmento de URL porque Travelcompositor solo
-     * permite configurar una URL (no headers personalizados).
+     * El secreto puede llegar como query (?token=), header (X-Webhook-Token) o
+     * como segmento de URL ({secret}), según lo que permita configurar TC.
      */
-    public function handle(Request $request, string $secret): JsonResponse
+    public function handle(Request $request, ?string $secret = null): JsonResponse
     {
-        $expectedSecret = config('services.travelcompositor.webhook_secret');
+        $provided = $secret
+            ?? $request->query('token')
+            ?? $request->header('X-Webhook-Token');
 
-        if (empty($expectedSecret) || ! hash_equals((string) $expectedSecret, $secret)) {
+        $expected = config('services.travelcompositor.webhook_secret');
+        $authorized = ! empty($expected) && is_string($provided) && hash_equals($expected, $provided);
+
+        // Travelcompositor valida el endpoint con un "test push" de cuerpo vacío.
+        // Respondemos 200 sin encolar (no se realiza ninguna acción ni se almacena
+        // nada) para que su plataforma permita guardar el webhook.
+        if (! $request->filled('bookingReference')) {
+            return response()->json(['success' => true, 'message' => 'test ok'], 200);
+        }
+
+        // Las notificaciones reales sí exigen un secreto válido.
+        if (! $authorized) {
             Log::warning('Webhook Travelcompositor rechazado: secreto inválido');
 
             return response()->json(['error' => 'Unauthorized'], 401);

@@ -4,16 +4,16 @@ namespace App\OpenApi;
 
 /**
  * @OA\Post(
- *     path="/webhooks/travelcompositor/{secret}",
+ *     path="/webhooks/travelcompositor",
  *     operationId="travelcompositorWebhook",
  *     tags={"Webhooks"},
  *     summary="Webhook de Travelcompositor",
- *     description="Recibe notificaciones de reservas de Travelcompositor (CREATED/MODIFIED/CANCELED) y las encola en colaevento para procesamiento asíncrono. Endpoint público: la autenticación se realiza mediante el secreto compartido en el segmento {secret} de la URL.",
+ *     description="Recibe notificaciones de reservas de Travelcompositor (CREATED/MODIFIED/CANCELED) y las encola en colaevento para procesamiento asíncrono. Endpoint público: el secreto compartido se envía como query (?token=), header (X-Webhook-Token) o segmento opcional de la URL. El 'test push' de cuerpo vacío que envía TC para validar el endpoint responde 200 sin encolar.",
  *
  *     @OA\Parameter(
- *         name="secret",
- *         in="path",
- *         required=true,
+ *         name="token",
+ *         in="query",
+ *         required=false,
  *         description="Secreto compartido para validar el origen del webhook",
  *
  *         @OA\Schema(type="string")
@@ -34,7 +34,7 @@ namespace App\OpenApi;
  *
  *     @OA\Response(
  *         response=200,
- *         description="Evento encolado correctamente",
+ *         description="Evento encolado correctamente (o test push validado)",
  *
  *         @OA\JsonContent(
  *             type="object",
