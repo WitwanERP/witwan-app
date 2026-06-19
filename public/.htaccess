@@ -13,6 +13,14 @@
     RewriteCond %{HTTP:x-xsrf-token} .
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
+    # WitWan: /app es una ruta de Laravel, pero existe la carpeta física
+    # public/app (assets de Vite en public/app/build). Mandamos el directorio
+    # /app al front controller; los assets bajo /app/build se sirven como archivo.
+    RewriteCond %{REQUEST_URI} !^/app/build/
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteCond %{REQUEST_URI} ^/app(/|$)
+    RewriteRule ^ index.php [L]
+
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
