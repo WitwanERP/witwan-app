@@ -57,6 +57,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'jwt.refresh' => \Tymon\JWTAuth\Http\Middleware\RefreshToken::class,
             'ci.bridge' => \App\Http\Middleware\CodeIgniterBridge::class,
         ]);
+
+        // Inertia: comparte auth/tenant/flash con todas las páginas (solo grupo web).
+        $middleware->web(append: [
+            \App\Http\Middleware\HandleInertiaRequests::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
