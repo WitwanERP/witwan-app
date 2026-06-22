@@ -47,8 +47,8 @@ class ClienteService
      * Listado paginado de clientes visibles para el usuario actual.
      *
      * @param  array<string,mixed>  $filtros  cliente_id, cliente_nombre, cliente_razonsocial,
-     *         cuit, cliente_ciudad, fk_pais_id, fk_usuario_vendedor, fk_cadenacliente_id,
-     *         fk_moneda_id, clienteminorista, sort, dir
+     *                                        cuit, cliente_ciudad, fk_pais_id, fk_usuario_vendedor, fk_cadenacliente_id,
+     *                                        fk_moneda_id, clienteminorista, sort, dir
      */
     public function listar(array $filtros = [], int $perPage = 80): LengthAwarePaginator
     {
