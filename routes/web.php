@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Web\ClienteController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -20,12 +21,15 @@ Route::prefix('app')->group(function () {
     // Dashboard (maqueta). Las stats reales saldrán de un Service más adelante.
     Route::get('/', fn () => Inertia::render('Dashboard', [
         'stats' => [
-            'reservasHoy'        => 0,
+            'reservasHoy' => 0,
             'reservasPendientes' => 0,
-            'facturacionMes'     => 0,
-            'clientesActivos'    => 0,
+            'facturacionMes' => 0,
+            'clientesActivos' => 0,
         ],
     ]))->name('dashboard');
+
+    // Clientes
+    Route::get('/clientes', [ClienteController::class, 'index'])->name('clientes.index');
 
     // Smoke test del proxy / tenant (se mantiene para diagnóstico).
     Route::get('/_probe', function (Request $request) {
@@ -40,22 +44,22 @@ Route::prefix('app')->group(function () {
         }
 
         return response()->json([
-            'ok'            => true,
-            'runtime'       => 'laravel',
-            'laravel'       => app()->version(),
-            'php'           => PHP_VERSION,
-            'app_env'       => app()->environment(),
+            'ok' => true,
+            'runtime' => 'laravel',
+            'laravel' => app()->version(),
+            'php' => PHP_VERSION,
+            'app_env' => app()->environment(),
             'host_resuelto' => $request->getHost(),
-            'host_header'   => $request->header('Host'),
-            'xf_host'       => $request->header('X-Forwarded-Host'),
-            'scheme'        => $request->getScheme(),
-            'is_secure'     => $request->isSecure(),
-            'client_ip'     => $request->ip(),
-            'full_url'      => $request->fullUrl(),
-            'path'          => $request->path(),
-            'tenant'        => $tenant,
-            'db_tenant'     => $dbTenant,
-            'server_time'   => now()->toDateTimeString(),
+            'host_header' => $request->header('Host'),
+            'xf_host' => $request->header('X-Forwarded-Host'),
+            'scheme' => $request->getScheme(),
+            'is_secure' => $request->isSecure(),
+            'client_ip' => $request->ip(),
+            'full_url' => $request->fullUrl(),
+            'path' => $request->path(),
+            'tenant' => $tenant,
+            'db_tenant' => $dbTenant,
+            'server_time' => now()->toDateTimeString(),
         ]);
     });
 });

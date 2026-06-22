@@ -22,6 +22,7 @@ use App\Models\Tarifario;
 use App\Models\Tipoclavefiscal;
 use App\Models\Tipofactura;
 use App\Models\Usuario;
+use App\Services\ClienteService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -32,23 +33,14 @@ class ClienteController extends Controller
 {
     private $sectionId = 112; // Asignar el ID de sección correspondiente
 
-    public function index(Request $request)
+    public function index(Request $request, ClienteService $clientes)
     {
+        $paginador = $clientes->listar(
+            $request->only(['search', 'estado', 'sort', 'dir']),
+            (int) $request->get('per_page', 100),
+        );
 
-        $perPage = $request->get('per_page', 100);
-        $query = Cliente::visiblesAlUsuario();
-
-        // Agregar filtros básicos aquí
-        if ($request->has('search') && ! empty($request->search)) {
-            $searchTerm = $request->search;
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('cliente_nombre', 'LIKE', "%{$searchTerm}%")
-                    ->orWhere('cliente_razonsocial', 'LIKE', "%{$searchTerm}%")
-                    ->orWhere('cuit', 'LIKE', "%{$searchTerm}%");
-            });
-        }
-
-        return response()->json($query->paginate($perPage));
+        return response()->json($paginador);
     }
 
     /**
@@ -520,14 +512,14 @@ class ClienteController extends Controller
                     $ip,
                     $status,
                     json_encode([
-                    'CodeClientBackOffice' => $clientId,
-                    'status' => $status,
-                    'Message' => $message,
-                    'credito_autorizado' => round($creditoAutorizadoTC, 2),
-                    'credito_utilizado' => round($creditoUtilizadoTotal, 2),
-                    'credito_disponible' => round($creditoAutorizado, 2),
-                    'moneda' => $monedaRespuesta,
-                ], JSON_UNESCAPED_UNICODE),
+                        'CodeClientBackOffice' => $clientId,
+                        'status' => $status,
+                        'Message' => $message,
+                        'credito_autorizado' => round($creditoAutorizadoTC, 2),
+                        'credito_utilizado' => round($creditoUtilizadoTotal, 2),
+                        'credito_disponible' => round($creditoAutorizado, 2),
+                        'moneda' => $monedaRespuesta,
+                    ], JSON_UNESCAPED_UNICODE),
                     round($creditoAutorizadoTC, 2)
                 );
 
@@ -611,11 +603,11 @@ class ClienteController extends Controller
 
             Loginterfase::create([
                 'loginterfase_fecha' => now(),
-                'loginterfase_tipo' => "control_credito",
+                'loginterfase_tipo' => 'control_credito',
                 'loginterfase_texto' => json_encode($payload, JSON_UNESCAPED_UNICODE),
             ]);
         } catch (\Throwable $e) {
-            //print_r("Error al loguear control de crédito: " . $e->getMessage());
+            // print_r("Error al loguear control de crédito: " . $e->getMessage());
         }
     }
 
