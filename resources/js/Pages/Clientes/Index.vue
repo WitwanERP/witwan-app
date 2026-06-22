@@ -1,6 +1,6 @@
 <script setup>
-import { reactive, watch } from 'vue'
-import { Link, router } from '@inertiajs/vue3'
+import { reactive, watch, computed } from 'vue'
+import { Link, router, usePage } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
 defineOptions({ layout: AppLayout })
@@ -8,32 +8,61 @@ defineOptions({ layout: AppLayout })
 const props = defineProps({
   // Paginador de Laravel: { data, links, from, to, total, ... }
   clientes: { type: Object, required: true },
-  filtros: { type: Object, default: () => ({ search: '', estado: '', sort: 'cliente_nombre', dir: 'asc' }) },
+  filtros: { type: Object, default: () => ({}) },
+  opciones: {
+    type: Object,
+    default: () => ({ paises: [], vendedores: [], cadenas: [], monedas: [] }),
+  },
 })
 
+const page = usePage()
+const pais = computed(() => page.props.tenant?.pais ?? 'AR')
+
+function formatCurrency(value) {
+  const p = pais.value
+  const locale = p === 'CL' ? 'es-CL' : p === 'DO' ? 'es-DO' : 'es-AR'
+  const currency = p === 'CL' ? 'CLP' : p === 'DO' ? 'DOP' : 'ARS'
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: p === 'CL' ? 0 : 2,
+  }).format(value ?? 0)
+}
+
+// Filtros fieles a CI (configuracion/ruc).
 const form = reactive({
-  search: props.filtros.search ?? '',
-  estado: props.filtros.estado ?? '',
+  cliente_nombre: props.filtros.cliente_nombre ?? '',
+  cliente_razonsocial: props.filtros.cliente_razonsocial ?? '',
+  cuit: props.filtros.cuit ?? '',
+  cliente_ciudad: props.filtros.cliente_ciudad ?? '',
+  cliente_id: props.filtros.cliente_id ?? '',
+  fk_pais_id: props.filtros.fk_pais_id ?? '',
+  fk_usuario_vendedor: props.filtros.fk_usuario_vendedor ?? '',
+  fk_cadenacliente_id: props.filtros.fk_cadenacliente_id ?? '',
+  fk_moneda_id: props.filtros.fk_moneda_id ?? '',
+  clienteminorista: props.filtros.clienteminorista ?? '',
 })
+
+const hayFiltros = computed(() => Object.values(form).some((v) => v !== '' && v !== null))
 
 let debounce = null
-watch(
-  form,
-  () => {
-    clearTimeout(debounce)
-    debounce = setTimeout(() => {
-      router.get('/app/clientes', { search: form.search || undefined, estado: form.estado || undefined }, {
-        preserveState: true,
-        preserveScroll: true,
-        replace: true,
-      })
-    }, 300)
-  },
-)
+watch(form, () => {
+  clearTimeout(debounce)
+  debounce = setTimeout(() => {
+    const params = {}
+    for (const [k, v] of Object.entries(form)) {
+      if (v !== '' && v !== null) params[k] = v
+    }
+    router.get('/app/clientes', params, {
+      preserveState: true,
+      preserveScroll: true,
+      replace: true,
+    })
+  }, 350)
+})
 
 function limpiar() {
-  form.search = ''
-  form.estado = ''
+  for (const k of Object.keys(form)) form[k] = ''
 }
 </script>
 
@@ -53,36 +82,72 @@ function limpiar() {
       </Link>
     </div>
 
-    <!-- Filtros -->
+    <!-- Filtros (fieles a CI) -->
     <div class="card mb-4">
-      <div class="card-body flex flex-col sm:flex-row gap-3">
-        <div class="relative flex-1">
-          <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            v-model="form.search"
-            type="text"
-            placeholder="Buscar por nombre, razón social o CUIT…"
-            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
+      <div class="card-body">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div>
+            <label class="form-label">Nombre</label>
+            <input v-model="form.cliente_nombre" type="text" class="form-input" placeholder="Nombre o apellido…" />
+          </div>
+          <div>
+            <label class="form-label">Razón Social</label>
+            <input v-model="form.cliente_razonsocial" type="text" class="form-input" placeholder="Razón social…" />
+          </div>
+          <div>
+            <label class="form-label">CUIT / Registro fiscal</label>
+            <input v-model="form.cuit" type="text" class="form-input" placeholder="CUIT…" />
+          </div>
+          <div>
+            <label class="form-label">Ciudad</label>
+            <input v-model="form.cliente_ciudad" type="text" class="form-input" placeholder="Ciudad…" />
+          </div>
+
+          <div>
+            <label class="form-label">País</label>
+            <select v-model="form.fk_pais_id" class="form-select">
+              <option value="">Todos</option>
+              <option v-for="p in opciones.paises" :key="p.pais_id" :value="p.pais_id">{{ p.pais_nombre }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Vendedor</label>
+            <select v-model="form.fk_usuario_vendedor" class="form-select">
+              <option value="">Todos</option>
+              <option v-for="v in opciones.vendedores" :key="v.usuario_id" :value="v.usuario_id">{{ v.nombre }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Cadena</label>
+            <select v-model="form.fk_cadenacliente_id" class="form-select">
+              <option value="">Todas</option>
+              <option v-for="c in opciones.cadenas" :key="c.cadenacliente_id" :value="c.cadenacliente_id">{{ c.cadenacliente_nombre }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Moneda</label>
+            <select v-model="form.fk_moneda_id" class="form-select">
+              <option value="">Todas</option>
+              <option v-for="m in opciones.monedas" :key="m.moneda_id" :value="m.moneda_id">{{ m.moneda_nombre }}</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="form-label">ID</label>
+            <input v-model="form.cliente_id" type="text" inputmode="numeric" class="form-input" placeholder="ID…" />
+          </div>
+          <div>
+            <label class="form-label">Cliente Minorista</label>
+            <select v-model="form.clienteminorista" class="form-select">
+              <option value="">Todos</option>
+              <option value="1">Sí</option>
+              <option value="0">No</option>
+            </select>
+          </div>
+          <div class="flex items-end">
+            <button v-if="hayFiltros" type="button" class="btn btn-secondary" @click="limpiar">Limpiar filtros</button>
+          </div>
         </div>
-        <select
-          v-model="form.estado"
-          class="py-2 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value="">Todos los estados</option>
-          <option value="S">Habilitados</option>
-          <option value="N">Deshabilitados</option>
-        </select>
-        <button
-          v-if="form.search || form.estado"
-          type="button"
-          class="btn btn-secondary"
-          @click="limpiar"
-        >
-          Limpiar
-        </button>
       </div>
     </div>
 
@@ -92,32 +157,21 @@ function limpiar() {
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Cliente</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">ID</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nombre</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Razón Social</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Límite de Crédito</th>
               <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">CUIT</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Contacto</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Ciudad</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Estado</th>
               <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200 bg-white">
             <tr v-for="c in clientes.data" :key="c.id" class="hover:bg-gray-50">
-              <td class="px-4 py-3">
-                <div class="font-medium text-gray-900">{{ c.nombre || '—' }}</div>
-                <div v-if="c.razonSocial && c.razonSocial !== c.nombre" class="text-sm text-gray-500">{{ c.razonSocial }}</div>
-              </td>
+              <td class="px-4 py-3 text-sm text-gray-500">{{ c.id }}</td>
+              <td class="px-4 py-3 font-medium text-gray-900">{{ c.nombre || '—' }}</td>
+              <td class="px-4 py-3 text-sm text-gray-700">{{ c.razonSocial || '—' }}</td>
+              <td class="px-4 py-3 text-sm text-gray-900 text-right tabular-nums">{{ formatCurrency(c.limiteCredito) }}</td>
               <td class="px-4 py-3 text-sm text-gray-700">{{ c.cuit || '—' }}</td>
-              <td class="px-4 py-3 text-sm">
-                <div v-if="c.email" class="text-gray-700">{{ c.email }}</div>
-                <div v-if="c.telefono" class="text-gray-500">{{ c.telefono }}</div>
-                <span v-if="!c.email && !c.telefono" class="text-gray-400">—</span>
-              </td>
-              <td class="px-4 py-3 text-sm text-gray-700">{{ c.ciudad || '—' }}</td>
-              <td class="px-4 py-3">
-                <span class="badge" :class="c.habilitado ? 'badge-success' : 'badge-gray'">
-                  {{ c.habilitado ? 'Habilitado' : 'Deshabilitado' }}
-                </span>
-              </td>
               <td class="px-4 py-3 text-right">
                 <Link :href="`/app/clientes/${c.id}`" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
                   Ver
