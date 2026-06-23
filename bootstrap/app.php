@@ -58,6 +58,15 @@ return Application::configure(basePath: dirname(__DIR__))
             'ci.bridge' => \App\Http\Middleware\CodeIgniterBridge::class,
         ]);
 
+        // ResolveTenant resuelve la licencia por el host y apunta la conexión por
+        // defecto a la BD del tenant. Va al inicio del stack (antes de StartSession).
+        $middleware->web(prepend: [
+            \App\Http\Middleware\ResolveTenant::class,
+        ]);
+        $middleware->api(prepend: [
+            \App\Http\Middleware\ResolveTenant::class,
+        ]);
+
         // Inertia: comparte auth/tenant/flash con todas las páginas (solo grupo web).
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,

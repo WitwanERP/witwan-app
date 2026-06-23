@@ -34,13 +34,18 @@ Route::prefix('app')->group(function () {
     // Smoke test del proxy / tenant (se mantiene para diagnóstico).
     Route::get('/_probe', function (Request $request) {
         $tenant = app()->bound('tenant')
-            ? ['licencia' => app('tenant')->licencia ?? null, 'pais' => app('tenant')->pais ?? null]
-            : 'sin resolver (ResolveTenant aún no corre)';
+            ? [
+                'licencia' => app('tenant')->licencia ?? null,
+                'pais'     => app('tenant')->pais ?? null,
+                'base'     => app('tenant')->base ?? null,
+            ]
+            : 'sin resolver';
 
+        // La conexión por defecto (mysql) apunta a la BD del tenant tras ResolveTenant.
         try {
-            $dbTenant = DB::connection('tenant')->getDatabaseName();
+            $dbTenant = DB::connection()->getDatabaseName();
         } catch (\Throwable $e) {
-            $dbTenant = 'conexión tenant no configurada todavía';
+            $dbTenant = 'error al resolver conexión: ' . $e->getMessage();
         }
 
         return response()->json([

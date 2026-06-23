@@ -51,16 +51,14 @@ class TravelcompositorWebhookController extends Controller
         try {
             // No seteamos 'frecuencia' a propósito: esa columna no existe en todos
             // los tenants (migración por-tenant). Si existe, la DB aplica su DEFAULT.
-            if($validated['type'] !== 'CREATED') {
-                Colaevento::create([
-                    'regdate' => now(),
-                    'tipo_evento' => 'create',          // siempre create; el type real va en datos
-                    'estado' => 'pendiente',
-                    'modelo' => 'travelcompositor',
-                    'id_relacionado' => 0,               // INT NOT NULL; aún no hay reserva_id interno
-                    'datos' => json_encode($validated),
-                ]);
-            }
+            Colaevento::create([
+                'regdate' => now(),
+                'tipo_evento' => 'create',          // siempre create; el type real va en datos
+                'estado' => 'pendiente',
+                'modelo' => 'travelcompositor',
+                'id_relacionado' => 0,               // INT NOT NULL; aún no hay reserva_id interno
+                'datos' => json_encode($validated),
+            ]);
         } catch (Throwable $e) {
             Log::error('Error al encolar webhook Travelcompositor: '.$e->getMessage(), [
                 'bookingReference' => $validated['bookingReference'],
