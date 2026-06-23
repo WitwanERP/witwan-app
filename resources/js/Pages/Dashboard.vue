@@ -14,7 +14,14 @@ const props = defineProps({
 })
 
 const page = usePage()
-const userName = computed(() => page.props.auth?.user?.usuario_nombre ?? 'Usuario')
+const user = computed(() => page.props.auth?.user ?? {})
+const userName = computed(() => user.value.usuario_nombre ?? 'Usuario')
+const fullName = computed(() =>
+  [user.value.usuario_nombre, user.value.usuario_apellido].filter(Boolean).join(' ') || 'Usuario'
+)
+const initials = computed(() =>
+  fullName.value.split(' ').filter(Boolean).map((s) => s.charAt(0)).slice(0, 2).join('').toUpperCase() || 'U'
+)
 const pais = computed(() => page.props.tenant?.pais ?? 'AR')
 
 function formatCurrency(value) {
@@ -35,6 +42,48 @@ function formatCurrency(value) {
     <div class="mb-6">
       <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
       <p class="text-gray-500">Bienvenido, {{ userName }}</p>
+    </div>
+
+    <!-- Información del usuario logueado -->
+    <div class="card mb-6">
+      <div class="card-body">
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 rounded-full bg-blue-500 text-white flex items-center justify-center text-xl font-semibold shrink-0">
+            {{ initials }}
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="text-lg font-bold text-gray-900">{{ fullName }}</h2>
+              <span
+                v-if="user.rol"
+                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+              >
+                {{ user.rol }}
+              </span>
+              <span
+                v-if="user.interno"
+                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
+              >
+                Interno
+              </span>
+            </div>
+            <dl class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-2 text-sm">
+              <div>
+                <dt class="text-gray-500">Email</dt>
+                <dd class="font-medium text-gray-900 truncate">{{ user.usuario_mail || '—' }}</dd>
+              </div>
+              <div>
+                <dt class="text-gray-500">Usuario</dt>
+                <dd class="font-medium text-gray-900 truncate">{{ user.usuario_login || '—' }}</dd>
+              </div>
+              <div>
+                <dt class="text-gray-500">ID</dt>
+                <dd class="font-medium text-gray-900">#{{ user.usuario_id ?? '—' }}</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Stats -->
