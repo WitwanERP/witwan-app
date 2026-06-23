@@ -2,18 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\CiUserResolver;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Str;
+use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
-use Tymon\JWTAuth\Exceptions\JWTException;
-use Illuminate\Support\Str;
-
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
@@ -41,7 +39,7 @@ class AuthController extends Controller
         // Usar los campos personalizados de tu tabla
         $credentials = [
             'usuario_mail' => $request->usuario_mail,
-            'password' => $request->password
+            'password' => $request->password,
         ];
 
         if (! $token = JWTAuth::attempt($credentials)) {
@@ -52,7 +50,7 @@ class AuthController extends Controller
         User::where('usuario_mail', $request->usuario_mail)
             ->update(['usuario_apikey' => $token_custom]); // Actualizar el último inicio de sesión
 
-        return $this->respondWithToken($token,$token_custom);
+        return $this->respondWithToken($token, $token_custom);
     }
 
     /**
@@ -62,22 +60,23 @@ class AuthController extends Controller
     {
         $ci_user_data = $request->input('ci_user_data');
 
-        if (!$ci_user_data || !isset($ci_user_data['usuario_mail'])) {
+        if (! $ci_user_data || ! isset($ci_user_data['usuario_mail'])) {
             return response()->json(['error' => 'Datos de usuario inválidos desde CodeIgniter'], 400);
         }
 
-        // Buscar o crear el usuario basado en los datos de CodeIgniter
-        $user = User::where('usuario_mail', $ci_user_data['usuario_mail'])->first();
+        // Buscar el usuario con la misma lógica que usa el pseudo-SSO del front
+        // (por usuario_id y, si no, por mail). Si no existe, se crea más abajo.
+        $user = app(CiUserResolver::class)->fromCiData($ci_user_data);
 
-        if (!$user) {
+        if (! $user) {
             // Si el usuario no existe, crearlo con los datos de CodeIgniter
             $user = User::create([
                 'usuario_mail' => $ci_user_data['usuario_mail'],
                 'usuario_nombre' => $ci_user_data['usuario_nombre'] ?? '',
-                'usuario_clave' => Hash::make('bridge_temp_' . Str::random(32)), // Password temporal
+                'usuario_clave' => Hash::make('bridge_temp_'.Str::random(32)), // Password temporal
                 'ci_user_id' => $ci_user_data['usuario_id'] ?? null,
                 'licencia_id' => $ci_user_data['cliente_id'] ?? null,
-                'licencia_base' => $ci_user_data['licencia'] ?? null
+                'licencia_base' => $ci_user_data['licencia'] ?? null,
             ]);
         } else {
             // Actualizar información del usuario desde CodeIgniter
@@ -85,7 +84,7 @@ class AuthController extends Controller
                 'usuario_nombre' => $ci_user_data['usuario_nombre'] ?? $user->usuario_nombre,
                 'ci_user_id' => $ci_user_data['usuario_id'] ?? $user->ci_user_id,
                 'licencia_id' => $ci_user_data['cliente_id'] ?? $user->licencia_id,
-                'licencia_base' => $ci_user_data['licencia'] ?? $user->licencia_base
+                'licencia_base' => $ci_user_data['licencia'] ?? $user->licencia_base,
             ]);
         }
 
@@ -104,7 +103,7 @@ class AuthController extends Controller
             'token_custom' => $token_custom,
             'expires_at' => now()->addMinutes(config('jwt.ttl', 60))->toISOString(),
             'user' => $user->makeHidden(['usuario_clave', 'usuario_password', 'password', 'usuario_apikey']),
-            'bridge_source' => 'codeigniter'
+            'bridge_source' => 'codeigniter',
         ]);
     }
 
@@ -113,26 +112,27 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function register(Request $request) {
+    public function register(Request $request)
+    {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|between:2,100',
             'usuario_mail' => 'required|string|email|max:100|unique:usuario,usuario_mail',
             'password' => 'required|string|confirmed|min:6',
         ]);
 
-        if($validator->fails()){
+        if ($validator->fails()) {
             return response()->json($validator->errors()->toJson(), 400);
         }
 
         $user = User::create([
             'name' => $request->name,
             'usuario_mail' => $request->usuario_mail,
-            'usuario_clave' => $request->password // El mutator se encargará del hash
+            'usuario_clave' => $request->password, // El mutator se encargará del hash
         ]);
 
         return response()->json([
             'message' => 'Usuario registrado exitosamente',
-            'user' => $user
+            'user' => $user,
         ], 201);
     }
 
@@ -167,6 +167,7 @@ class AuthController extends Controller
     {
         try {
             JWTAuth::invalidate(JWTAuth::getToken());
+
             return response()->json(['message' => 'Sesión cerrada exitosamente']);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Error al cerrar sesión'], 500);
@@ -182,6 +183,7 @@ class AuthController extends Controller
     {
         try {
             $token = JWTAuth::refresh(JWTAuth::getToken());
+
             return $this->respondWithToken($token);
         } catch (TokenExpiredException $e) {
             return response()->json(['error' => 'Token expirado'], 401);
@@ -195,11 +197,10 @@ class AuthController extends Controller
     /**
      * Get the token array structure.
      *
-     * @param  string $token
-     *
+     * @param  string  $token
      * @return \Illuminate\Http\JsonResponse
      */
-    protected function respondWithToken($token,$token_custom)
+    protected function respondWithToken($token, $token_custom)
     {
 
         return response()->json([
@@ -207,7 +208,7 @@ class AuthController extends Controller
             'token_type' => 'bearer',
             'expires_in' => config('jwt.ttl', 60) * 60,
             'sso_token' => $token_custom,
-            'user' => JWTAuth::user()->makeHidden(['usuario_clave', 'usuario_password','password','usuario_apikey'])
+            'user' => JWTAuth::user()->makeHidden(['usuario_clave', 'usuario_password', 'password', 'usuario_apikey']),
         ]);
     }
 }

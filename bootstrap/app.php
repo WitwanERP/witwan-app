@@ -58,6 +58,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'ci.bridge' => \App\Http\Middleware\CodeIgniterBridge::class,
         ]);
 
+        // La cookie de sesión del CI legacy no la cifra Laravel: hay que exceptuarla
+        // para que EncryptCookies no la descarte y AuthenticateFromCiSession pueda
+        // leerla cruda (pseudo-SSO del front /app).
+        $middleware->encryptCookies(except: [
+            env('CI_SESSION_COOKIE', 'ci_session'),
+        ]);
+
         // ResolveTenant resuelve la licencia por el host y apunta la conexión por
         // defecto a la BD del tenant. Va al inicio del stack (antes de StartSession).
         $middleware->web(prepend: [
@@ -67,8 +74,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\ResolveTenant::class,
         ]);
 
-        // Inertia: comparte auth/tenant/flash con todas las páginas (solo grupo web).
+        // Front Inertia (/app): primero el pseudo-SSO que comparte sesión con el CI
+        // legacy (deja autenticado al usuario), luego Inertia comparte auth/tenant/flash.
+        // AuthenticateFromCiSession corre tras ResolveTenant y StartSession.
         $middleware->web(append: [
+            \App\Http\Middleware\AuthenticateFromCiSession::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
     })
