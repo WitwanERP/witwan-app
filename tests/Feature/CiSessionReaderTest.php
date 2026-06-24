@@ -162,4 +162,10 @@ class CiSessionReaderTest extends TestCase
 
         $this->assertNull((new CiSessionReader)->detectHashScheme($cookie, 'otra-key'));
     }
+
+    public function test_id_keys_por_defecto_incluye_sys_uid(): void
+    {
+        // El CI de Witwan guarda el id del usuario en sys_uid.
+        $this->assertContains('sys_uid', config('ci.id_keys'));
+    }
 }

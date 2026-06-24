@@ -19,20 +19,38 @@ class CiUserResolver
 {
     public function fromCiData(array $ciData): ?User
     {
-        foreach ((array) config('ci.id_keys', ['usuario_id']) as $key) {
-            if (isset($ciData[$key]) && is_numeric($ciData[$key])) {
-                $user = User::query()->find((int) $ciData[$key]);
-                if ($user !== null) {
-                    return $user;
+        // El user_data de CI puede tener la identidad en la raíz o anidada en un
+        // sub-array (ej. la clave 'user_data'). Buscamos en ambos niveles.
+        $scopes = [$ciData];
+        foreach ($ciData as $value) {
+            if (is_array($value)) {
+                $scopes[] = $value;
+            }
+        }
+
+        $idKeys = (array) config('ci.id_keys', ['usuario_id']);
+        $mailKeys = (array) config('ci.mail_keys', ['usuario_mail']);
+
+        // Primero por id (PK usuario_id), que es lo más confiable.
+        foreach ($scopes as $scope) {
+            foreach ($idKeys as $key) {
+                if (isset($scope[$key]) && is_numeric($scope[$key])) {
+                    $user = User::query()->find((int) $scope[$key]);
+                    if ($user !== null) {
+                        return $user;
+                    }
                 }
             }
         }
 
-        foreach ((array) config('ci.mail_keys', ['usuario_mail']) as $key) {
-            if (! empty($ciData[$key])) {
-                $user = User::query()->where('usuario_mail', $ciData[$key])->first();
-                if ($user !== null) {
-                    return $user;
+        // Si no, por mail.
+        foreach ($scopes as $scope) {
+            foreach ($mailKeys as $key) {
+                if (! empty($scope[$key]) && is_string($scope[$key])) {
+                    $user = User::query()->where('usuario_mail', $scope[$key])->first();
+                    if ($user !== null) {
+                        return $user;
+                    }
                 }
             }
         }

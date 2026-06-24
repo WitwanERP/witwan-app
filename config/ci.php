@@ -60,9 +60,14 @@ return [
     ],
 
     // Claves candidatas dentro de user_data para identificar al usuario logueado.
-    // Se prueban en orden; la primera que matchee gana. Ajustar a lo que el CI
-    // guarda con set_userdata (ver prerrequisitos del plan).
-    'id_keys' => ['usuario_id', 'user_id', 'id'],
-    'mail_keys' => ['usuario_mail', 'email', 'mail'],
+    // Se prueban en orden, en el nivel raíz y en sub-arrays anidados. El CI de
+    // Witwan guarda el id del usuario en `sys_uid`. Override por env con una lista
+    // separada por comas (CI_ID_KEYS / CI_MAIL_KEYS).
+    'id_keys' => array_values(array_filter(array_map('trim',
+        explode(',', (string) env('CI_ID_KEYS', 'usuario_id,sys_uid,user_id,uid,id'))
+    ))),
+    'mail_keys' => array_values(array_filter(array_map('trim',
+        explode(',', (string) env('CI_MAIL_KEYS', 'usuario_mail,email,mail'))
+    ))),
 
 ];
