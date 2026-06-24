@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Services\CiSessionReader;
+use App\Services\CiUserResolver;
 use Illuminate\Http\Request;
 use Tests\TestCase;
 
@@ -123,5 +124,15 @@ class CiSessionReaderTest extends TestCase
         $cookie = $this->ciCookie(['session_id' => self::SID]);
 
         $this->assertNull((new CiSessionReader)->sessionIdFromCookie($this->requestWithCookie($cookie)));
+    }
+
+    public function test_diagnose_reporta_cookie_ausente(): void
+    {
+        $d = (new CiSessionReader)->diagnose($this->requestWithCookie(null), new CiUserResolver);
+
+        $this->assertFalse($d['cookie_presente']);
+        $this->assertStringContainsString('no llega', $d['diagnostico']);
+        $this->assertNull($d['session_id']);
+        $this->assertNull($d['usuario']);
     }
 }

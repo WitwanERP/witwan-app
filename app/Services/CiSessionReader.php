@@ -146,6 +146,55 @@ class CiSessionReader
         return (string) $data['session_id'];
     }
 
+    /**
+     * Reporte de cada etapa del pseudo-SSO para diagnóstico (lo usa /app/_probe).
+     * Devuelve contexto seguro (sin valores sensibles) y una pista de en qué etapa
+     * queda la resolución del usuario.
+     */
+    public function diagnose(Request $request, CiUserResolver $resolver): array
+    {
+        $cookieName = (string) config('ci.cookie_name', 'ci_session');
+        $cookiePresente = is_string($request->cookie($cookieName)) && $request->cookie($cookieName) !== '';
+        $keySeteada = (string) config('ci.encryption_key') !== '';
+
+        $sessionId = $this->sessionIdFromCookie($request);
+        $userData = $this->userData($request);
+        $user = is_array($userData) ? $resolver->fromCiData($userData) : null;
+
+        if (! $cookiePresente) {
+            $etapa = "la cookie '{$cookieName}' no llega a Laravel (¿nombre correcto? ¿la descartó EncryptCookies?)";
+        } elseif (config('ci.encrypt_cookie')) {
+            $etapa = 'CI_SESS_ENCRYPT_COOKIE=true: el reader no decodifica cookies cifradas';
+        } elseif (! $keySeteada) {
+            $etapa = 'falta CI_ENCRYPTION_KEY';
+        } elseif ($sessionId === null) {
+            $etapa = 'la cookie no verifica (revisar CI_ENCRYPTION_KEY, CI_COOKIE_HASH o CI_COOKIE_HMAC)';
+        } elseif ($userData === null) {
+            $etapa = 'session_id OK pero no hay fila vigente en ci_sessions (¿BD del tenant? ¿sesión vencida?)';
+        } elseif ($user === null) {
+            $etapa = 'user_data OK pero ningún usuario matcheó (ajustar id_keys/mail_keys en config/ci.php)';
+        } else {
+            $etapa = 'OK: usuario resuelto';
+        }
+
+        return [
+            'diagnostico' => $etapa,
+            'cookie_name' => $cookieName,
+            'cookie_presente' => $cookiePresente,
+            'encryption_key_seteada' => $keySeteada,
+            'encrypt_cookie' => (bool) config('ci.encrypt_cookie'),
+            'cookie_hash' => (string) config('ci.cookie_hash', 'md5'),
+            'cookie_hmac' => (bool) config('ci.cookie_hmac'),
+            'session_id' => $sessionId,
+            'user_data_keys' => is_array($userData) ? array_keys($userData) : null,
+            'usuario' => $user ? [
+                'usuario_id' => $user->usuario_id,
+                'usuario_nombre' => $user->usuario_nombre,
+                'usuario_mail' => $user->usuario_mail,
+            ] : null,
+        ];
+    }
+
     /** La sesión sigue vigente según sess_expiration de CI. */
     private function isFresh(CiSession $row): bool
     {

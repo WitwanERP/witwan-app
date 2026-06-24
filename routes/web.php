@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Web\ClienteController;
+use App\Services\CiSessionReader;
+use App\Services\CiUserResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -36,8 +38,8 @@ Route::prefix('app')->group(function () {
         $tenant = app()->bound('tenant')
             ? [
                 'licencia' => app('tenant')->licencia ?? null,
-                'pais'     => app('tenant')->pais ?? null,
-                'base'     => app('tenant')->base ?? null,
+                'pais' => app('tenant')->pais ?? null,
+                'base' => app('tenant')->base ?? null,
             ]
             : 'sin resolver';
 
@@ -45,8 +47,15 @@ Route::prefix('app')->group(function () {
         try {
             $dbTenant = DB::connection()->getDatabaseName();
         } catch (\Throwable $e) {
-            $dbTenant = 'error al resolver conexión: ' . $e->getMessage();
+            $dbTenant = 'error al resolver conexión: '.$e->getMessage();
         }
+
+        // Diagnóstico del pseudo-SSO (solo con CI_SSO_DEBUG=true): muestra en qué
+        // etapa queda la resolución del usuario desde la cookie de CI. Usa la cookie
+        // real del request, así también revela si EncryptCookies la descartó.
+        $pseudoSso = config('ci.debug')
+            ? app(CiSessionReader::class)->diagnose($request, app(CiUserResolver::class))
+            : 'desactivado (CI_SSO_DEBUG=false)';
 
         return response()->json([
             'ok' => true,
@@ -64,6 +73,7 @@ Route::prefix('app')->group(function () {
             'path' => $request->path(),
             'tenant' => $tenant,
             'db_tenant' => $dbTenant,
+            'pseudo_sso' => $pseudoSso,
             'server_time' => now()->toDateTimeString(),
         ]);
     });
