@@ -121,7 +121,11 @@ class CiSessionReader
         $payload = substr($cookie, 0, -$hashLen);
         $hash = substr($cookie, -$hashLen);
 
-        if (! hash_equals(hash($algo, $payload.$key), $hash)) {
+        $expected = config('ci.cookie_hmac')
+            ? hash_hmac($algo, $payload, $key)
+            : hash($algo, $payload.$key);
+
+        if (! hash_equals($expected, $hash)) {
             $this->debug('hash de la cookie no verifica (¿encryption_key, algo o sess_encrypt_cookie?)', [
                 'algo' => $algo,
                 'hash_len' => $hashLen,

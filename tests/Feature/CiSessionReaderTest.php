@@ -29,12 +29,13 @@ class CiSessionReaderTest extends TestCase
         ]);
     }
 
-    /** Arma una cookie CI2 sin cifrar con la key/hash dados. */
-    private function ciCookie(array $base, string $key = self::KEY, string $algo = 'md5'): string
+    /** Arma una cookie CI2 sin cifrar con la key/hash/modo dados. */
+    private function ciCookie(array $base, string $key = self::KEY, string $algo = 'md5', bool $hmac = false): string
     {
         $payload = serialize($base);
+        $hash = $hmac ? hash_hmac($algo, $payload, $key) : hash($algo, $payload.$key);
 
-        return $payload.hash($algo, $payload.$key);
+        return $payload.$hash;
     }
 
     private function requestWithCookie(?string $value): Request
@@ -52,6 +53,32 @@ class CiSessionReaderTest extends TestCase
             'user_agent' => 'phpunit',
             'last_activity' => time(),
         ]);
+
+        $sid = (new CiSessionReader)->sessionIdFromCookie($this->requestWithCookie($cookie));
+
+        $this->assertSame(self::SID, $sid);
+    }
+
+    public function test_decodifica_cookie_sha1_plano(): void
+    {
+        config(['ci.cookie_hash' => 'sha1']);
+        $cookie = $this->ciCookie([
+            'session_id' => self::SID,
+            'last_activity' => time(),
+        ], self::KEY, 'sha1');
+
+        $sid = (new CiSessionReader)->sessionIdFromCookie($this->requestWithCookie($cookie));
+
+        $this->assertSame(self::SID, $sid);
+    }
+
+    public function test_decodifica_cookie_hmac(): void
+    {
+        config(['ci.cookie_hash' => 'sha1', 'ci.cookie_hmac' => true]);
+        $cookie = $this->ciCookie([
+            'session_id' => self::SID,
+            'last_activity' => time(),
+        ], self::KEY, 'sha1', true);
 
         $sid = (new CiSessionReader)->sessionIdFromCookie($this->requestWithCookie($cookie));
 

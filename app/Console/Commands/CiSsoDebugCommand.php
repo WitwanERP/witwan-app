@@ -41,8 +41,11 @@ class CiSsoDebugCommand extends Command
             config('ci.sess_expiration', 7200),
         ));
 
+        $cookie = $this->argument('cookie');
+        $this->detectHashScheme($cookie, (string) config('ci.encryption_key'));
+
         // Request sintético con la cookie: reutiliza el reader tal cual corre en prod.
-        $request = Request::create('/app', 'GET', [], [$cookieName => $this->argument('cookie')]);
+        $request = Request::create('/app', 'GET', [], [$cookieName => $cookie]);
 
         $sid = $reader->sessionIdFromCookie($request);
         if ($sid === null) {
@@ -74,6 +77,47 @@ class CiSsoDebugCommand extends Command
         $this->info("✓ Usuario resuelto: #{$user->usuario_id} {$user->usuario_nombre} <{$user->usuario_mail}>");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Prueba las 4 combinaciones (md5/sha1 × plano/hmac) contra el hash al final
+     * de la cookie y reporta cuál corresponde, para configurar CI_COOKIE_HASH /
+     * CI_COOKIE_HMAC sin adivinar. Necesita la encryption_key cargada.
+     */
+    private function detectHashScheme(string $cookie, string $key): void
+    {
+        if ($key === '') {
+            $this->warn('Sin CI_ENCRYPTION_KEY no se puede autodetectar el esquema de hash de la cookie.');
+
+            return;
+        }
+
+        foreach (['md5' => 32, 'sha1' => 40] as $algo => $len) {
+            if (strlen($cookie) <= $len) {
+                continue;
+            }
+
+            $payload = substr($cookie, 0, -$len);
+            $hash = substr($cookie, -$len);
+
+            if (! is_array(@unserialize($payload, ['allowed_classes' => false]))) {
+                continue; // este largo de hash no deja un payload serializado válido
+            }
+
+            if (hash_equals(hash($algo, $payload.$key), $hash)) {
+                $this->info("✓ esquema de hash detectado: {$algo} PLANO  →  CI_COOKIE_HASH={$algo}  CI_COOKIE_HMAC=false");
+
+                return;
+            }
+
+            if (hash_equals(hash_hmac($algo, $payload, $key), $hash)) {
+                $this->info("✓ esquema de hash detectado: {$algo} HMAC   →  CI_COOKIE_HASH={$algo}  CI_COOKIE_HMAC=true");
+
+                return;
+            }
+        }
+
+        $this->error('✗ Ningún esquema (md5/sha1 × plano/hmac) coincide con el hash de la cookie. ¿encryption_key correcta? ¿cookie cifrada?');
     }
 
     /** Apunta la conexión por defecto a la BD del tenant (donde vive ci_sessions). */

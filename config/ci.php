@@ -30,6 +30,11 @@ return [
     // CI2 por defecto usa md5 (32 chars hex); algunas builds usan sha1 (40 chars).
     'cookie_hash' => env('CI_COOKIE_HASH', 'md5'),
 
+    // ¿El hash es HMAC (hash_hmac(algo, payload, key)) en vez del plano de CI
+    // (hash(algo, payload.key))? Stock CI usa el plano; usar el comando
+    // ci:sso-debug para autodetectar cuál corresponde.
+    'cookie_hmac' => env('CI_COOKIE_HMAC', false),
+
     // sess_expiration de CI, en segundos (0 = no expira por tiempo). Default CI: 7200.
     'sess_expiration' => (int) env('CI_SESS_EXPIRATION', 7200),
 
