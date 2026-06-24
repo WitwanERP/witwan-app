@@ -16,19 +16,29 @@ const userEmail = computed(() => user.value.usuario_mail ?? '')
 // Botonera que arma el backend (MenuService) desde brain + permisos del rol.
 const menu = computed(() => page.props.menu ?? [])
 
-// Sistema seleccionado, persistido entre páginas.
+// Acordeón de 2 niveles: un sistema abierto y, dentro, un grupo abierto.
 const STORAGE = 'witwan.sidebar.sistema'
-const selected = ref(null)
+const openSistema = ref(null)
+const openGrupo = ref(null)
 
-const syncSelected = () => {
-  const ids = menu.value.map((s) => s.sistema_id)
-  const saved = Number(localStorage.getItem(STORAGE))
-  selected.value = ids.includes(saved) ? saved : (ids[0] ?? null)
+watch(
+  menu,
+  () => {
+    const ids = menu.value.map((s) => s.sistema_id)
+    const saved = Number(localStorage.getItem(STORAGE))
+    openSistema.value = ids.includes(saved) ? saved : (ids[0] ?? null)
+  },
+  { immediate: true },
+)
+
+const toggleSistema = (id) => {
+  openSistema.value = openSistema.value === id ? null : id
+  openGrupo.value = null
+  if (openSistema.value != null) localStorage.setItem(STORAGE, String(openSistema.value))
 }
-watch(menu, syncSelected, { immediate: true })
-watch(selected, (v) => v != null && localStorage.setItem(STORAGE, String(v)))
-
-const sistemaActual = computed(() => menu.value.find((s) => s.sistema_id === selected.value) ?? null)
+const toggleGrupo = (key) => {
+  openGrupo.value = openGrupo.value === key ? null : key
+}
 
 const dashboardActiva = computed(() => page.url === '/app')
 </script>
@@ -57,31 +67,54 @@ const dashboardActiva = computed(() => page.url === '/app')
       </Link>
     </div>
 
-    <!-- Selector de sistema + menú (solo expandido) -->
-    <template v-if="open">
-      <div v-if="menu.length" class="px-3 pt-3 shrink-0">
-        <select
-          v-model="selected"
-          class="w-full bg-gray-800 border border-gray-700 text-sm text-gray-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+    <!-- Acordeón sistema → grupo → sección (solo expandido) -->
+    <nav v-if="open" class="flex-1 overflow-y-auto px-2 py-3 space-y-1">
+      <div v-for="sistema in menu" :key="sistema.sistema_id">
+        <button
+          class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold text-gray-200 hover:bg-gray-800 transition-colors"
+          @click="toggleSistema(sistema.sistema_id)"
         >
-          <option v-for="s in menu" :key="s.sistema_id" :value="s.sistema_id">{{ s.sistema }}</option>
-        </select>
-      </div>
-
-      <nav class="flex-1 overflow-y-auto px-2 py-3 space-y-4">
-        <div v-for="grupo in sistemaActual?.grupos ?? []" :key="grupo.grupo">
-          <p class="px-3 mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">{{ grupo.grupo }}</p>
-          <a
-            v-for="item in grupo.items"
-            :key="item.seccion_id"
-            :href="item.url"
-            class="block px-3 py-1.5 rounded-md text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+          <span>{{ sistema.sistema }}</span>
+          <svg
+            class="w-4 h-4 transition-transform" :class="openSistema === sistema.sistema_id ? 'rotate-90' : ''"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24"
           >
-            {{ item.label }}
-          </a>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+
+        <!-- Grupos del sistema abierto -->
+        <div v-if="openSistema === sistema.sistema_id" class="mt-1 ml-2 border-l border-gray-800 pl-2 space-y-0.5">
+          <div v-for="grupo in sistema.grupos" :key="grupo.grupo">
+            <button
+              class="w-full flex items-center justify-between px-3 py-1.5 rounded-md text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+              @click="toggleGrupo(sistema.sistema_id + ':' + grupo.grupo)"
+            >
+              <span>{{ grupo.grupo }}</span>
+              <svg
+                class="w-3.5 h-3.5 transition-transform"
+                :class="openGrupo === sistema.sistema_id + ':' + grupo.grupo ? 'rotate-90' : ''"
+                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <!-- Secciones del grupo abierto -->
+            <div v-if="openGrupo === sistema.sistema_id + ':' + grupo.grupo" class="ml-3 border-l border-gray-800 pl-2 py-0.5 space-y-0.5">
+              <a
+                v-for="item in grupo.items"
+                :key="item.seccion_id"
+                :href="item.url"
+                class="block px-3 py-1.5 rounded-md text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
+              >
+                {{ item.label }}
+              </a>
+            </div>
+          </div>
         </div>
-      </nav>
-    </template>
+      </div>
+    </nav>
     <div v-else class="flex-1"></div>
 
     <!-- Usuario -->
@@ -123,27 +156,50 @@ const dashboardActiva = computed(() => page.url === '/app')
       </Link>
     </div>
 
-    <div v-if="menu.length" class="px-3 pt-3 shrink-0">
-      <select
-        v-model="selected"
-        class="w-full bg-gray-800 border border-gray-700 text-sm text-gray-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option v-for="s in menu" :key="s.sistema_id" :value="s.sistema_id">{{ s.sistema }}</option>
-      </select>
-    </div>
-
-    <nav class="flex-1 overflow-y-auto px-2 py-3 space-y-4">
-      <div v-for="grupo in sistemaActual?.grupos ?? []" :key="grupo.grupo">
-        <p class="px-3 mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">{{ grupo.grupo }}</p>
-        <a
-          v-for="item in grupo.items"
-          :key="item.seccion_id"
-          :href="item.url"
-          class="block px-3 py-1.5 rounded-md text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
-          @click="$emit('closeMobile')"
+    <nav class="flex-1 overflow-y-auto px-2 py-3 space-y-1">
+      <div v-for="sistema in menu" :key="sistema.sistema_id">
+        <button
+          class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold text-gray-200 hover:bg-gray-800 transition-colors"
+          @click="toggleSistema(sistema.sistema_id)"
         >
-          {{ item.label }}
-        </a>
+          <span>{{ sistema.sistema }}</span>
+          <svg
+            class="w-4 h-4 transition-transform" :class="openSistema === sistema.sistema_id ? 'rotate-90' : ''"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+
+        <div v-if="openSistema === sistema.sistema_id" class="mt-1 ml-2 border-l border-gray-800 pl-2 space-y-0.5">
+          <div v-for="grupo in sistema.grupos" :key="grupo.grupo">
+            <button
+              class="w-full flex items-center justify-between px-3 py-1.5 rounded-md text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+              @click="toggleGrupo(sistema.sistema_id + ':' + grupo.grupo)"
+            >
+              <span>{{ grupo.grupo }}</span>
+              <svg
+                class="w-3.5 h-3.5 transition-transform"
+                :class="openGrupo === sistema.sistema_id + ':' + grupo.grupo ? 'rotate-90' : ''"
+                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <div v-if="openGrupo === sistema.sistema_id + ':' + grupo.grupo" class="ml-3 border-l border-gray-800 pl-2 py-0.5 space-y-0.5">
+              <a
+                v-for="item in grupo.items"
+                :key="item.seccion_id"
+                :href="item.url"
+                class="block px-3 py-1.5 rounded-md text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
+                @click="$emit('closeMobile')"
+              >
+                {{ item.label }}
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
     </nav>
   </aside>
