@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
+import MenuIcon from '@/Components/MenuIcon.vue'
 
 defineProps({
   open: Boolean,
@@ -90,7 +91,10 @@ const dashboardActiva = computed(() => page.url === '/app')
               class="w-full flex items-center justify-between px-3 py-1.5 rounded-md text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
               @click="toggleGrupo(sistema.sistema_id + ':' + grupo.grupo)"
             >
-              <span>{{ grupo.grupo }}</span>
+              <span class="flex items-center gap-2 min-w-0">
+                <MenuIcon :name="grupo.icono" class="w-4 h-4 shrink-0 text-gray-400" />
+                <span class="truncate">{{ grupo.grupo }}</span>
+              </span>
               <svg
                 class="w-3.5 h-3.5 transition-transform"
                 :class="openGrupo === sistema.sistema_id + ':' + grupo.grupo ? 'rotate-90' : ''"
@@ -177,7 +181,10 @@ const dashboardActiva = computed(() => page.url === '/app')
               class="w-full flex items-center justify-between px-3 py-1.5 rounded-md text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
               @click="toggleGrupo(sistema.sistema_id + ':' + grupo.grupo)"
             >
-              <span>{{ grupo.grupo }}</span>
+              <span class="flex items-center gap-2 min-w-0">
+                <MenuIcon :name="grupo.icono" class="w-4 h-4 shrink-0 text-gray-400" />
+                <span class="truncate">{{ grupo.grupo }}</span>
+              </span>
               <svg
                 class="w-3.5 h-3.5 transition-transform"
                 :class="openGrupo === sistema.sistema_id + ':' + grupo.grupo ? 'rotate-90' : ''"
