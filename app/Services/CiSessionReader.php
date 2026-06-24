@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\Log;
  *
  * Cualquier inconsistencia (cookie ausente/manipulada, sesión vencida, fila
  * inexistente) devuelve null: el llamador trata eso como "no autenticado".
+ * Con CI_SSO_DEBUG=true se loguea en cada etapa el motivo del descarte (solo
+ * contexto seguro, nunca valores sensibles) para diagnosticar.
  */
 class CiSessionReader
 {
@@ -35,13 +37,44 @@ class CiSessionReader
 
         /** @var CiSession|null $row */
         $row = CiSession::query()->find($sessionId);
-        if ($row === null || ! $this->isFresh($row) || ! $this->matchesClient($request, $row)) {
+        if ($row === null) {
+            $this->debug('fila ci_sessions no encontrada para el session_id (¿BD del tenant correcta?)', [
+                'session_id' => $sessionId,
+            ]);
+
+            return null;
+        }
+
+        if (! $this->isFresh($row)) {
+            $this->debug('sesión de CI vencida', [
+                'edad_seg' => time() - (int) $row->last_activity,
+                'expiration' => (int) config('ci.sess_expiration', 7200),
+            ]);
+
+            return null;
+        }
+
+        if (! $this->matchesClient($request, $row)) {
+            $this->debug('no matchea ip/user_agent de la sesión de CI (¿proxy?)', [
+                'row_ip' => (string) $row->ip_address,
+                'req_ip' => (string) $request->ip(),
+            ]);
+
             return null;
         }
 
         $data = @unserialize((string) $row->user_data, ['allowed_classes' => false]);
+        if (! is_array($data)) {
+            $this->debug('user_data no deserializa a array', [
+                'preview' => substr((string) $row->user_data, 0, 60),
+            ]);
 
-        return is_array($data) ? $data : null;
+            return null;
+        }
+
+        $this->debug('user_data OK', ['claves' => array_keys($data)]);
+
+        return $data;
     }
 
     /**
@@ -49,8 +82,14 @@ class CiSessionReader
      */
     public function sessionIdFromCookie(Request $request): ?string
     {
-        $cookie = $request->cookie(config('ci.cookie_name', 'ci_session'));
+        $name = (string) config('ci.cookie_name', 'ci_session');
+        $cookie = $request->cookie($name);
         if (! is_string($cookie) || $cookie === '') {
+            $this->debug('cookie de CI ausente en la request', [
+                'cookie_name' => $name,
+                'cookies_presentes' => array_keys($request->cookies->all()),
+            ]);
+
             return null;
         }
 
@@ -71,6 +110,11 @@ class CiSessionReader
         $algo = (string) config('ci.cookie_hash', 'md5');
         $hashLen = strlen(hash($algo, '')); // 32 para md5, 40 para sha1
         if (strlen($cookie) <= $hashLen) {
+            $this->debug('cookie más corta que el hash esperado', [
+                'largo_cookie' => strlen($cookie),
+                'hash_len' => $hashLen,
+            ]);
+
             return null;
         }
 
@@ -78,11 +122,20 @@ class CiSessionReader
         $hash = substr($cookie, -$hashLen);
 
         if (! hash_equals(hash($algo, $payload.$key), $hash)) {
+            $this->debug('hash de la cookie no verifica (¿encryption_key, algo o sess_encrypt_cookie?)', [
+                'algo' => $algo,
+                'hash_len' => $hashLen,
+            ]);
+
             return null; // cookie manipulada o encryption_key incorrecta
         }
 
         $data = @unserialize($payload, ['allowed_classes' => false]);
         if (! is_array($data) || empty($data['session_id'])) {
+            $this->debug('payload de la cookie sin session_id', [
+                'es_array' => is_array($data),
+            ]);
+
             return null;
         }
 
@@ -113,5 +166,13 @@ class CiSessionReader
         }
 
         return true;
+    }
+
+    /** Log de diagnóstico, solo si CI_SSO_DEBUG está activo. */
+    private function debug(string $message, array $context = []): void
+    {
+        if (config('ci.debug')) {
+            Log::debug('[ci-sso] '.$message, $context);
+        }
     }
 }

@@ -43,6 +43,12 @@ return [
     // Si no hay sesión de CI válida, ¿redirigir al login de CI?
     'redirect_guests' => env('CI_REDIRECT_GUESTS', true),
 
+    // Logging de diagnóstico del pseudo-SSO: traza cada etapa donde el flujo
+    // descarta la sesión (cookie ausente, hash inválido, fila no hallada, etc.).
+    // Solo nombres de claves / contexto seguro, nunca valores sensibles. Apagar
+    // en producción una vez resuelto.
+    'debug' => env('CI_SSO_DEBUG', false),
+
     // Paths (sin slash inicial) que NO requieren sesión de CI (no redirigen).
     'guest_paths' => [
         'app/_probe',
