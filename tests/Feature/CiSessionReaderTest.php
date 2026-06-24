@@ -135,4 +135,31 @@ class CiSessionReaderTest extends TestCase
         $this->assertNull($d['session_id']);
         $this->assertNull($d['usuario']);
     }
+
+    public function test_detect_hash_scheme_sha1_plano(): void
+    {
+        $cookie = $this->ciCookie(['session_id' => self::SID, 'last_activity' => time()], self::KEY, 'sha1');
+
+        $this->assertSame(
+            ['cookie_hash' => 'sha1', 'cookie_hmac' => false],
+            (new CiSessionReader)->detectHashScheme($cookie, self::KEY),
+        );
+    }
+
+    public function test_detect_hash_scheme_sha1_hmac(): void
+    {
+        $cookie = $this->ciCookie(['session_id' => self::SID, 'last_activity' => time()], self::KEY, 'sha1', true);
+
+        $this->assertSame(
+            ['cookie_hash' => 'sha1', 'cookie_hmac' => true],
+            (new CiSessionReader)->detectHashScheme($cookie, self::KEY),
+        );
+    }
+
+    public function test_detect_hash_scheme_null_con_key_incorrecta(): void
+    {
+        $cookie = $this->ciCookie(['session_id' => self::SID], self::KEY, 'sha1');
+
+        $this->assertNull((new CiSessionReader)->detectHashScheme($cookie, 'otra-key'));
+    }
 }

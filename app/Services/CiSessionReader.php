@@ -161,6 +161,14 @@ class CiSessionReader
         $userData = $this->userData($request);
         $user = is_array($userData) ? $resolver->fromCiData($userData) : null;
 
+        // Autodetección del esquema de hash (para no adivinar plano vs hmac).
+        $detected = $this->detectHashScheme($request->cookie($cookieName), (string) config('ci.encryption_key'));
+        $detectedHint = $detected
+            ? sprintf('%s %s → CI_COOKIE_HASH=%s CI_COOKIE_HMAC=%s',
+                $detected['cookie_hash'], $detected['cookie_hmac'] ? 'HMAC' : 'PLANO',
+                $detected['cookie_hash'], $detected['cookie_hmac'] ? 'true' : 'false')
+            : null;
+
         if (! $cookiePresente) {
             $etapa = "la cookie '{$cookieName}' no llega a Laravel (¿nombre correcto? ¿la descartó EncryptCookies?)";
         } elseif (config('ci.encrypt_cookie')) {
@@ -168,7 +176,9 @@ class CiSessionReader
         } elseif (! $keySeteada) {
             $etapa = 'falta CI_ENCRYPTION_KEY';
         } elseif ($sessionId === null) {
-            $etapa = 'la cookie no verifica (revisar CI_ENCRYPTION_KEY, CI_COOKIE_HASH o CI_COOKIE_HMAC)';
+            $etapa = $detectedHint
+                ? "la cookie no verifica con la config actual; esquema detectado: {$detectedHint}"
+                : 'la cookie no verifica (revisar CI_ENCRYPTION_KEY, CI_COOKIE_HASH o CI_COOKIE_HMAC)';
         } elseif ($userData === null) {
             $etapa = 'session_id OK pero no hay fila vigente en ci_sessions (¿BD del tenant? ¿sesión vencida?)';
         } elseif ($user === null) {
@@ -185,6 +195,7 @@ class CiSessionReader
             'encrypt_cookie' => (bool) config('ci.encrypt_cookie'),
             'cookie_hash' => (string) config('ci.cookie_hash', 'md5'),
             'cookie_hmac' => (bool) config('ci.cookie_hmac'),
+            'hash_detectado' => $detectedHint,
             'session_id' => $sessionId,
             'user_data_keys' => is_array($userData) ? array_keys($userData) : null,
             'usuario' => $user ? [
@@ -193,6 +204,42 @@ class CiSessionReader
                 'usuario_mail' => $user->usuario_mail,
             ] : null,
         ];
+    }
+
+    /**
+     * Prueba las 4 combinaciones (md5/sha1 × plano/hmac) contra el hash final de
+     * la cookie y devuelve la que coincide (['cookie_hash' => ..., 'cookie_hmac'
+     * => bool]) o null. Identifica cómo arma CI el hash sin adivinar; necesita la
+     * encryption_key.
+     */
+    public function detectHashScheme(?string $cookie, string $key): ?array
+    {
+        if (! is_string($cookie) || $cookie === '' || $key === '') {
+            return null;
+        }
+
+        foreach (['md5' => 32, 'sha1' => 40] as $algo => $len) {
+            if (strlen($cookie) <= $len) {
+                continue;
+            }
+
+            $payload = substr($cookie, 0, -$len);
+            $hash = substr($cookie, -$len);
+
+            if (! is_array(@unserialize($payload, ['allowed_classes' => false]))) {
+                continue; // ese largo de hash no deja un payload serializado válido
+            }
+
+            if (hash_equals(hash($algo, $payload.$key), $hash)) {
+                return ['cookie_hash' => $algo, 'cookie_hmac' => false];
+            }
+
+            if (hash_equals(hash_hmac($algo, $payload, $key), $hash)) {
+                return ['cookie_hash' => $algo, 'cookie_hmac' => true];
+            }
+        }
+
+        return null;
     }
 
     /** La sesión sigue vigente según sess_expiration de CI. */
