@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\MenuService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -28,6 +29,9 @@ class HandleInertiaRequests extends Middleware
                 'licencia' => app('tenant')->licencia ?? null,
                 'pais' => app('tenant')->pais ?? null,
             ] : null,
+
+            // Botonera por sistema → grupo → ítems (filtrada por permisos del rol).
+            'menu' => fn () => $this->menu($request),
 
             // Mensajes flash (success/error) para toasts.
             'flash' => [
@@ -58,5 +62,19 @@ class HandleInertiaRequests extends Middleware
             'rol' => $user->tipousuario?->tipousuario_nombre,
             'interno' => ($user->usuario_interno ?? null) === 'Y',
         ];
+    }
+
+    /**
+     * Botonera del usuario logueado (vacía si no hay sesión o tenant).
+     */
+    private function menu(Request $request): array
+    {
+        $user = $request->user();
+
+        if ($user === null || ! app()->bound('tenant')) {
+            return [];
+        }
+
+        return app(MenuService::class)->forUser($user, (int) app('tenant')->licencia);
     }
 }

@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
 
 defineProps({
@@ -13,62 +13,79 @@ const user = computed(() => page.props.auth?.user ?? {})
 const userName = computed(() => user.value.usuario_nombre ?? 'Usuario')
 const userEmail = computed(() => user.value.usuario_mail ?? '')
 
-// Menú (equivalente al sidebar.php de CI). Hrefs bajo /app.
-const menuItems = computed(() => [
-  {
-    title: 'Dashboard',
-    href: '/app',
-    match: '/app',
-    icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
-  },
-  {
-    title: 'Reservas',
-    href: '/app/reservas',
-    match: '/app/reservas',
-    color: 'text-ww-receptivo',
-    icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
-  },
-  {
-    title: 'Clientes',
-    href: '/app/clientes',
-    match: '/app/clientes',
-    icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
-  },
-])
+// Botonera que arma el backend (MenuService) desde brain + permisos del rol.
+const menu = computed(() => page.props.menu ?? [])
 
-const isActive = (item) =>
-  item.match === '/app' ? page.url === '/app' : page.url.startsWith(item.match)
+// Sistema seleccionado, persistido entre páginas.
+const STORAGE = 'witwan.sidebar.sistema'
+const selected = ref(null)
+
+const syncSelected = () => {
+  const ids = menu.value.map((s) => s.sistema_id)
+  const saved = Number(localStorage.getItem(STORAGE))
+  selected.value = ids.includes(saved) ? saved : (ids[0] ?? null)
+}
+watch(menu, syncSelected, { immediate: true })
+watch(selected, (v) => v != null && localStorage.setItem(STORAGE, String(v)))
+
+const sistemaActual = computed(() => menu.value.find((s) => s.sistema_id === selected.value) ?? null)
+
+const dashboardActiva = computed(() => page.url === '/app')
 </script>
 
 <template>
   <!-- Sidebar desktop -->
   <aside
-    class="fixed inset-y-0 left-0 z-30 bg-gray-900 text-white transition-all duration-300 hidden lg:block"
+    class="fixed inset-y-0 left-0 z-30 bg-gray-900 text-white transition-all duration-300 hidden lg:flex lg:flex-col"
     :class="open ? 'w-64' : 'w-20'"
   >
-    <div class="h-16 flex items-center justify-center border-b border-gray-800">
+    <div class="h-16 flex items-center justify-center border-b border-gray-800 shrink-0">
       <span class="text-xl font-bold">{{ open ? 'WitWan' : 'W' }}</span>
     </div>
 
-    <nav class="mt-4 px-2">
+    <!-- Dashboard -->
+    <div class="px-2 pt-3 shrink-0">
       <Link
-        v-for="item in menuItems"
-        :key="item.href"
-        :href="item.href"
-        class="flex items-center px-4 py-3 mb-1 rounded-lg transition-colors"
-        :class="[
-          isActive(item) ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white',
-          item.color || '',
-        ]"
+        href="/app"
+        class="flex items-center px-4 py-2.5 rounded-lg transition-colors"
+        :class="dashboardActiva ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'"
       >
-        <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.icon" />
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
         </svg>
-        <span v-if="open" class="ml-3">{{ item.title }}</span>
+        <span v-if="open" class="ml-3 text-sm font-medium">Dashboard</span>
       </Link>
-    </nav>
+    </div>
 
-    <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-800">
+    <!-- Selector de sistema + menú (solo expandido) -->
+    <template v-if="open">
+      <div v-if="menu.length" class="px-3 pt-3 shrink-0">
+        <select
+          v-model="selected"
+          class="w-full bg-gray-800 border border-gray-700 text-sm text-gray-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option v-for="s in menu" :key="s.sistema_id" :value="s.sistema_id">{{ s.sistema }}</option>
+        </select>
+      </div>
+
+      <nav class="flex-1 overflow-y-auto px-2 py-3 space-y-4">
+        <div v-for="grupo in sistemaActual?.grupos ?? []" :key="grupo.grupo">
+          <p class="px-3 mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">{{ grupo.grupo }}</p>
+          <a
+            v-for="item in grupo.items"
+            :key="item.seccion_id"
+            :href="item.url"
+            class="block px-3 py-1.5 rounded-md text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+          >
+            {{ item.label }}
+          </a>
+        </div>
+      </nav>
+    </template>
+    <div v-else class="flex-1"></div>
+
+    <!-- Usuario -->
+    <div class="p-4 border-t border-gray-800 shrink-0">
       <div class="flex items-center" :class="{ 'justify-center': !open }">
         <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-sm font-medium">
           {{ userName.charAt(0) }}
@@ -83,10 +100,10 @@ const isActive = (item) =>
 
   <!-- Sidebar mobile -->
   <aside
-    class="fixed inset-y-0 left-0 z-30 w-64 bg-gray-900 text-white transform transition-transform duration-300 lg:hidden"
+    class="fixed inset-y-0 left-0 z-30 w-64 bg-gray-900 text-white transform transition-transform duration-300 lg:hidden flex flex-col"
     :class="mobileOpen ? 'translate-x-0' : '-translate-x-full'"
   >
-    <div class="h-16 flex items-center justify-between px-4 border-b border-gray-800">
+    <div class="h-16 flex items-center justify-between px-4 border-b border-gray-800 shrink-0">
       <span class="text-xl font-bold">WitWan</span>
       <button class="p-2 rounded-lg hover:bg-gray-800" @click="$emit('closeMobile')">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,20 +112,39 @@ const isActive = (item) =>
       </button>
     </div>
 
-    <nav class="mt-4 px-2">
+    <div class="px-2 pt-3 shrink-0">
       <Link
-        v-for="item in menuItems"
-        :key="item.href"
-        :href="item.href"
-        class="flex items-center px-4 py-3 mb-1 rounded-lg transition-colors"
-        :class="isActive(item) ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-800'"
+        href="/app"
+        class="flex items-center px-4 py-2.5 rounded-lg transition-colors"
+        :class="dashboardActiva ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-800'"
         @click="$emit('closeMobile')"
       >
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.icon" />
-        </svg>
-        <span class="ml-3">{{ item.title }}</span>
+        <span class="text-sm font-medium">Dashboard</span>
       </Link>
+    </div>
+
+    <div v-if="menu.length" class="px-3 pt-3 shrink-0">
+      <select
+        v-model="selected"
+        class="w-full bg-gray-800 border border-gray-700 text-sm text-gray-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option v-for="s in menu" :key="s.sistema_id" :value="s.sistema_id">{{ s.sistema }}</option>
+      </select>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto px-2 py-3 space-y-4">
+      <div v-for="grupo in sistemaActual?.grupos ?? []" :key="grupo.grupo">
+        <p class="px-3 mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">{{ grupo.grupo }}</p>
+        <a
+          v-for="item in grupo.items"
+          :key="item.seccion_id"
+          :href="item.url"
+          class="block px-3 py-1.5 rounded-md text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+          @click="$emit('closeMobile')"
+        >
+          {{ item.label }}
+        </a>
+      </div>
     </nav>
   </aside>
 </template>
