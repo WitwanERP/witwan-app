@@ -44,6 +44,7 @@ class MenuService
 
         $permitidas = $this->seccionesPermitidas($user); // null = ve todo (POW)
         $sistemasNombre = (array) config('menu.sistemas', []);
+        $colores = (array) config('menu.colores', []);
 
         $tree = [];
         foreach ($secciones as $sec) {
@@ -53,15 +54,30 @@ class MenuService
 
             $sid = (int) $sec->fk_sistema_id;
             $grupo = trim((string) $sec->seccion_grupo) ?: 'General';
+            $icono = $this->icon($sec->icono);
 
-            $tree[$sid]['sistema_id'] = $sid;
-            $tree[$sid]['sistema'] = $sistemasNombre[$sid] ?? "Sistema {$sid}";
-            $tree[$sid]['grupos'][$grupo]['grupo'] = $grupo;
-            $tree[$sid]['grupos'][$grupo]['icono'] ??= $this->icon($sec->icono);
+            if (! isset($tree[$sid])) {
+                $tree[$sid] = [
+                    'sistema_id' => $sid,
+                    'sistema' => $sistemasNombre[$sid] ?? "Sistema {$sid}",
+                    'color' => $colores[$sid] ?? null,
+                    'grupos' => [],
+                ];
+            }
+
+            if (! isset($tree[$sid]['grupos'][$grupo])) {
+                $tree[$sid]['grupos'][$grupo] = ['grupo' => $grupo, 'icono' => '', 'items' => []];
+            }
+
+            // Ícono del grupo = primer ícono no vacío de sus secciones (como CI).
+            if ($icono !== '' && $tree[$sid]['grupos'][$grupo]['icono'] === '') {
+                $tree[$sid]['grupos'][$grupo]['icono'] = $icono;
+            }
+
             $tree[$sid]['grupos'][$grupo]['items'][] = [
                 'label' => trim((string) $sec->seccion_nombre),
                 'url' => $this->url($sec->seccion_uri),
-                'icono' => $this->icon($sec->icono),
+                'icono' => $icono,
                 'seccion_id' => (int) $sec->seccion_id,
             ];
         }

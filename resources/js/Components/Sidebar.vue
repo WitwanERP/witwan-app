@@ -75,7 +75,10 @@ const dashboardActiva = computed(() => page.url === '/app')
           class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold text-gray-200 hover:bg-gray-800 transition-colors"
           @click="toggleSistema(sistema.sistema_id)"
         >
-          <span>{{ sistema.sistema }}</span>
+          <span class="flex items-center gap-2 min-w-0">
+            <MenuIcon name="folder" class="w-4 h-4 shrink-0" :style="{ color: sistema.color }" />
+            <span class="truncate">{{ sistema.sistema }}</span>
+          </span>
           <svg
             class="w-4 h-4 transition-transform" :class="openSistema === sistema.sistema_id ? 'rotate-90' : ''"
             fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -92,7 +95,7 @@ const dashboardActiva = computed(() => page.url === '/app')
               @click="toggleGrupo(sistema.sistema_id + ':' + grupo.grupo)"
             >
               <span class="flex items-center gap-2 min-w-0">
-                <MenuIcon :name="grupo.icono" class="w-4 h-4 shrink-0 text-gray-400" />
+                <MenuIcon :name="grupo.icono" class="w-4 h-4 shrink-0" :style="{ color: sistema.color }" />
                 <span class="truncate">{{ grupo.grupo }}</span>
               </span>
               <svg
@@ -166,7 +169,10 @@ const dashboardActiva = computed(() => page.url === '/app')
           class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold text-gray-200 hover:bg-gray-800 transition-colors"
           @click="toggleSistema(sistema.sistema_id)"
         >
-          <span>{{ sistema.sistema }}</span>
+          <span class="flex items-center gap-2 min-w-0">
+            <MenuIcon name="folder" class="w-4 h-4 shrink-0" :style="{ color: sistema.color }" />
+            <span class="truncate">{{ sistema.sistema }}</span>
+          </span>
           <svg
             class="w-4 h-4 transition-transform" :class="openSistema === sistema.sistema_id ? 'rotate-90' : ''"
             fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -182,7 +188,7 @@ const dashboardActiva = computed(() => page.url === '/app')
               @click="toggleGrupo(sistema.sistema_id + ':' + grupo.grupo)"
             >
               <span class="flex items-center gap-2 min-w-0">
-                <MenuIcon :name="grupo.icono" class="w-4 h-4 shrink-0 text-gray-400" />
+                <MenuIcon :name="grupo.icono" class="w-4 h-4 shrink-0" :style="{ color: sistema.color }" />
                 <span class="truncate">{{ grupo.grupo }}</span>
               </span>
               <svg

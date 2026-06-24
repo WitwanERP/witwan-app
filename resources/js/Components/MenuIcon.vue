@@ -22,6 +22,7 @@ import {
   ArrowDownTrayIcon,
   PencilSquareIcon,
   Squares2X2Icon,
+  FolderIcon,
 } from '@heroicons/vue/24/outline'
 
 // Mapea el ícono de CI (ya normalizado por MenuService: 'basket', 'plane', …)
@@ -47,6 +48,7 @@ const MAP = {
   'heart-o': HeartIcon,
   save: ArrowDownTrayIcon,
   edit: PencilSquareIcon,
+  folder: FolderIcon,
 }
 
 const props = defineProps({

@@ -16,14 +16,25 @@ return [
     */
 
     // Nombre visible de cada fk_sistema_id de brain.seccion. Brain no guarda los
-    // nombres, así que se configuran acá. Ajustar si no coinciden con CI.
+    // nombres, así que se configuran acá (tomados de la botonera real de CI).
     'sistemas' => [
         1 => 'Receptivo',
-        2 => 'Mayorista',
+        2 => 'Operador',
         3 => 'Minorista',
-        4 => 'Emisiones',
+        4 => 'Aéreos Fase',
         5 => 'Administración',
         6 => 'Configuración',
+    ],
+
+    // Color por sistema (réplica de los inline de CI: tiñe el folder del sistema
+    // y los íconos de sus grupos).
+    'colores' => [
+        1 => '#66CC00',
+        2 => '#FF33FF',
+        3 => '#00FFFF',
+        4 => '#6633CC',
+        5 => '#FFFF00',
+        6 => '#FF9900',
     ],
 
     // Orden de los sistemas en la botonera (los no listados van al final).
