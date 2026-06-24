@@ -92,12 +92,12 @@ class ClienteRequest extends FormRequest
             'gastos_fijo_3' => "$opt|numeric",
             'gastos_fijo_moneda' => "$opt|string|max:10",
 
-            // Flags char(1) S/N
-            'habilita' => "$opt|string|in:S,N",
-            'freelance' => "$opt|string|in:S,N",
-            'representante_geografico' => "$opt|string|in:S,N",
-            'usar_logo' => "$opt|string|in:S,N",
-            'autorizaws' => "$opt|string|in:S,N",
+            // Flags char(1) Y/N (convención real de CI en la BD del tenant)
+            'habilita' => "$opt|string|in:Y,N",
+            'freelance' => "$opt|string|in:Y,N",
+            'representante_geografico' => "$opt|string|in:Y,N",
+            'usar_logo' => "$opt|string|in:Y,N",
+            'autorizaws' => "$opt|integer|in:0,1",
 
             // Otros
             'clienteminorista' => "$opt|integer|in:0,1",

@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ClienteRequest;
 use App\Models\Cadenacliente;
 use App\Models\Moneda;
 use App\Models\Pais;
 use App\Services\ClienteService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -63,5 +65,66 @@ class ClienteController extends Controller
                 'monedas' => Moneda::orderBy('moneda_nombre')->get(['moneda_id', 'moneda_nombre']),
             ],
         ]);
+    }
+
+    /**
+     * Form de alta de cliente (réplica de configuracion/ruc de CI).
+     * `ciudades` se recarga por partial reload cuando cambia el país.
+     */
+    public function create(Request $request): Response
+    {
+        return Inertia::render('Clientes/Form', [
+            'opciones' => $this->opciones(),
+            'ciudades' => $this->ciudades((int) $request->integer('pais_id')),
+        ]);
+    }
+
+    /** Persiste el alta y vuelve al listado. */
+    public function store(ClienteRequest $request, ClienteService $clientes): RedirectResponse
+    {
+        $id = $clientes->crear(
+            $request->validated(),
+            (int) auth()->id(),
+            (int) (app()->bound('tenant') ? app('tenant')->licencia : 0),
+        );
+
+        return redirect()
+            ->route('clientes.index')
+            ->with('success', "Cliente #{$id} creado correctamente.");
+    }
+
+    /** Ciudades de un país (para el select dependiente del form). */
+    private function ciudades(int $paisId): array
+    {
+        if ($paisId <= 0) {
+            return [];
+        }
+
+        return DB::table('ciudad')
+            ->where('fk_pais_id', $paisId)
+            ->where('ciudad_activo', 1)
+            ->orderBy('ciudad_nombre')
+            ->get(['ciudad_id', 'ciudad_nombre'])
+            ->all();
+    }
+
+    /** Datos de referencia para los selects del form. */
+    private function opciones(): array
+    {
+        return [
+            'paises' => Pais::orderBy('pais_nombre')->get(['pais_id', 'pais_nombre']),
+            'vendedores' => DB::table('usuario')
+                ->where('usuario_interno', 'Y')
+                ->orderBy('usuario_nombre')
+                ->selectRaw("usuario_id, CONCAT(usuario_nombre,' ',usuario_apellido) AS nombre")
+                ->get(),
+            'cadenas' => Cadenacliente::orderBy('cadenacliente_nombre')->get(['cadenacliente_id', 'cadenacliente_nombre']),
+            'monedas' => Moneda::orderBy('moneda_nombre')->get(['moneda_id', 'moneda_nombre']),
+            'condicionesIva' => DB::table('condicioniva')->orderBy('condicioniva_nombre')->get(['condicioniva_id', 'condicioniva_nombre']),
+            'tiposFactura' => DB::table('tipofactura')->orderBy('tipofactura_nombre')->get(['tipofactura_id', 'tipofactura_nombre']),
+            'tiposClaveFiscal' => DB::table('tipoclavefiscal')->orderBy('tipoclavefiscal_nombre')->get(['tipoclavefiscal_id', 'tipoclavefiscal_nombre']),
+            'tarifarios' => DB::table('tarifario')->orderBy('orden')->orderBy('tarifario_nombre')->get(['tarifario_id', 'tarifario_nombre', 'fk_sistema_id']),
+            'idiomas' => DB::table('idioma')->orderBy('orden')->get(['idioma_id', 'idioma_nombre']),
+        ];
     }
 }

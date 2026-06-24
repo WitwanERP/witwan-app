@@ -11,6 +11,16 @@
     "src": "resources/css/app.css",
     "isEntry": true
   },
+  "resources/js/Pages/Clientes/Form.vue": {
+    "file": "assets/Form.js",
+    "name": "Form",
+    "src": "resources/js/Pages/Clientes/Form.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js"
+    ]
+  },
   "resources/js/Pages/Clientes/Index.vue": {
     "file": "assets/Index.js",
     "name": "Index",
@@ -37,6 +47,7 @@
     "src": "resources/js/app.js",
     "isEntry": true,
     "dynamicImports": [
+      "resources/js/Pages/Clientes/Form.vue",
       "resources/js/Pages/Clientes/Index.vue",
       "resources/js/Pages/Dashboard.vue"
     ]
