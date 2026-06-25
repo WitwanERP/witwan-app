@@ -1,5 +1,5 @@
 <script setup>
-import { watch } from 'vue'
+import { ref, watch } from 'vue'
 import { Link, router, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
@@ -84,6 +84,40 @@ const form = useForm({
   tarjetas: [],
 })
 
+// Cliente existente con el mismo CUIT (null = sin conflicto). Mientras esté seteado,
+// el alta queda bloqueada hasta tildar el checkbox de confirmación (form.cuit_confirmado).
+const cuitDuplicado = ref(null)
+
+const limpiarCuit = (v) => (v || '').replace(/[-.\s]/g, '')
+
+// Chequeo en vivo: al salir del campo CUIT consultamos si ya existe.
+const chequearCuit = async () => {
+  const cuit = limpiarCuit(form.cuit)
+  if (!cuit) {
+    cuitDuplicado.value = null
+    return
+  }
+  try {
+    const res = await fetch(`/app/clientes/chequear-cuit?cuit=${encodeURIComponent(cuit)}`, {
+      headers: { Accept: 'application/json' },
+    })
+    const data = res.ok ? await res.json() : { existe: false }
+    cuitDuplicado.value = data.existe ? { nombre: data.nombre, cliente_id: data.cliente_id } : null
+  } catch (e) {
+    // Si el chequeo falla, no bloqueamos: el backend valida la unicidad igual.
+    cuitDuplicado.value = null
+  }
+}
+
+// Al editar el CUIT se invalida el aviso y la confirmación previa (se re-chequea al próximo blur).
+watch(
+  () => form.cuit,
+  () => {
+    cuitDuplicado.value = null
+    form.cuit_confirmado = 0
+  },
+)
+
 // Ciudad depende del país: al cambiar, recargo solo la prop `ciudades`.
 watch(
   () => form.fk_pais_id,
@@ -98,30 +132,16 @@ const addContacto = () =>
 const addTarjeta = () =>
   form.tarjetas.push({ cliente_tarjeta_num: '', cliente_tarjeta_banco: '', cliente_tarjeta_venc: '', cliente_tarjeta_cs: '', cliente_tarjeta_empresa: '' })
 
-// Antes de guardar, avisamos si el CUIT ya existe y dejamos confirmar para guardar igual.
+// Antes de guardar: si el CUIT existe y no se confirmó, mostramos el aviso y no enviamos.
 // El formato (CUIT/CUIL en AR, RUT en CL) lo valida el backend y vuelve como form.errors.cuit.
 const submit = async () => {
-  const cuit = (form.cuit || '').replace(/[-.\s]/g, '')
+  // Re-chequeo por si el usuario no disparó el blur (ej. apretó Enter).
+  if (cuitDuplicado.value === null) {
+    await chequearCuit()
+  }
 
-  if (cuit) {
-    try {
-      const res = await fetch(`/app/clientes/chequear-cuit?cuit=${encodeURIComponent(cuit)}`, {
-        headers: { Accept: 'application/json' },
-      })
-      const data = res.ok ? await res.json() : { existe: false }
-
-      if (data.existe) {
-        const quien = data.nombre ? ` (${data.nombre})` : ''
-        if (!window.confirm(`Ya existe un cliente con el CUIT ${cuit}${quien}.\n¿Guardar de todos modos?`)) {
-          return
-        }
-        form.cuit_confirmado = 1
-      } else {
-        form.cuit_confirmado = 0
-      }
-    } catch (e) {
-      // Si el chequeo falla, dejamos que el backend valide la unicidad.
-    }
+  if (cuitDuplicado.value && !form.cuit_confirmado) {
+    return // queda visible la advertencia + checkbox
   }
 
   form.post('/app/clientes', { preserveScroll: true })
@@ -149,7 +169,7 @@ const submit = async () => {
     <form @submit.prevent="submit">
       <!-- Barra de acciones -->
       <div class="flex items-center gap-2 mb-4">
-        <button type="submit" :disabled="form.processing" class="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+        <button type="submit" :disabled="form.processing || (cuitDuplicado && !form.cuit_confirmado)" class="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
           {{ form.processing ? 'Guardando…' : 'Guardar' }}
         </button>
@@ -289,8 +309,18 @@ const submit = async () => {
           </div>
           <div>
             <label class="block text-sm mb-1 font-bold">CUIT</label>
-            <input v-model="form.cuit" type="text" :class="inputCls" />
+            <input v-model="form.cuit" @blur="chequearCuit" type="text" :class="inputCls" />
             <p v-if="form.errors.cuit" class="text-xs text-red-600 mt-1">{{ form.errors.cuit }}</p>
+            <!-- Aviso de CUIT repetido: hay que tildar para poder guardar igual (queda auditado). -->
+            <div v-if="cuitDuplicado" class="mt-2 rounded-md bg-amber-50 border border-amber-300 px-3 py-2 text-xs text-amber-800">
+              <p class="mb-1.5">
+                Ya existe un cliente con este CUIT<template v-if="cuitDuplicado.nombre">: <b>{{ cuitDuplicado.nombre }}</b></template>.
+              </p>
+              <label class="flex items-start gap-2 cursor-pointer">
+                <input type="checkbox" :true-value="1" :false-value="0" v-model="form.cuit_confirmado" class="mt-0.5" />
+                <span>Confirmo crear un cliente con un CUIT ya existente.</span>
+              </label>
+            </div>
           </div>
           <div>
             <label class="block text-sm mb-1">Nro. clave fiscal</label>
@@ -468,7 +498,7 @@ const submit = async () => {
       </section>
 
       <div class="flex items-center gap-2 mb-10">
-        <button type="submit" :disabled="form.processing" class="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+        <button type="submit" :disabled="form.processing || (cuitDuplicado && !form.cuit_confirmado)" class="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
           {{ form.processing ? 'Guardando…' : 'Guardar' }}
         </button>
         <Link href="/app/clientes" class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancelar</Link>

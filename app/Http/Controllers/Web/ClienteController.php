@@ -7,6 +7,7 @@ use App\Http\Requests\ClienteRequest;
 use App\Models\Cadenacliente;
 use App\Models\Moneda;
 use App\Models\Pais;
+use App\Services\AuditoriaService;
 use App\Services\ClienteService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -80,13 +81,37 @@ class ClienteController extends Controller
     }
 
     /** Persiste el alta y vuelve al listado. */
-    public function store(ClienteRequest $request, ClienteService $clientes): RedirectResponse
+    public function store(ClienteRequest $request, ClienteService $clientes, AuditoriaService $auditoria): RedirectResponse
     {
+        // Clientes ya existentes con el mismo CUIT (normalizado): si el usuario
+        // confirmó guardar igual, queda registrado en auditoría más abajo.
+        $cuit = str_replace(['-', '.', ' '], '', (string) $request->input('cuit'));
+        $duplicados = $cuit === '' ? collect() : DB::table('cliente')
+            ->whereRaw(ClienteService::SQL_CUIT_NORMALIZADO.' = ?', [$cuit])
+            ->limit(5)
+            ->get(['cliente_id', 'cliente_nombre', 'cliente_razonsocial', 'cuit']);
+
         $id = $clientes->crear(
             $request->validated(),
             (int) auth()->id(),
             (int) (app()->bound('tenant') ? app('tenant')->licencia : 0),
         );
+
+        // Alta forzada sobre CUIT repetido: dejar traza en la tabla de auditoría.
+        if ($request->boolean('cuit_confirmado') && $duplicados->isNotEmpty()) {
+            $auditoria->registrar(
+                'cliente',
+                $id,
+                'ALTA_CUIT_DUPLICADO',
+                ['cuit' => $cuit, 'existentes' => $duplicados],
+                [
+                    'cliente_id' => $id,
+                    'cuit' => $request->input('cuit'),
+                    'cliente_razonsocial' => $request->input('cliente_razonsocial'),
+                    'cliente_nombre' => $request->input('cliente_nombre'),
+                ],
+            );
+        }
 
         return redirect()
             ->route('clientes.index')
