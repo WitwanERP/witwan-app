@@ -143,12 +143,16 @@ class ClienteService
                 continue;
             }
 
-            if (array_key_exists($col->Field, $data)) {
-                $row[$col->Field] = $data[$col->Field];
+            $valor = $data[$col->Field] ?? null;
+
+            if (array_key_exists($col->Field, $data) && $valor !== null) {
+                $row[$col->Field] = $valor;
             } elseif ($col->Null === 'NO' && $col->Default === null) {
+                // Falta, o vino null (ConvertEmptyStringsToNull convierte los '' del form),
+                // y la columna es NOT NULL sin default: completamos con un default por tipo.
                 $row[$col->Field] = $this->defaultPorTipo((string) $col->Type);
             }
-            // nullable o con default: se omite y resuelve la BD.
+            // nullable o con default: se omite y la resuelve la BD.
         }
 
         return $row;
