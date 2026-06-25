@@ -93,6 +93,33 @@ class ClienteController extends Controller
             ->with('success', "Cliente #{$id} creado correctamente.");
     }
 
+    /**
+     * Chequeo liviano de CUIT duplicado para el aviso del form (antes de guardar).
+     * Devuelve { existe, nombre, cliente_id }. No bloquea: el front muestra un
+     * confirm y, si el usuario acepta, reenvía con cuit_confirmado.
+     */
+    public function chequearCuit(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $cuit = str_replace(['-', '.', ' '], '', (string) $request->query('cuit', ''));
+
+        if ($cuit === '') {
+            return response()->json(['existe' => false]);
+        }
+
+        $excluir = (int) $request->integer('cliente_id');
+
+        $cli = DB::table('cliente')
+            ->where('cuit', $cuit)
+            ->when($excluir > 0, fn ($q) => $q->where('cliente_id', '!=', $excluir))
+            ->first(['cliente_id', 'cliente_nombre', 'cliente_razonsocial']);
+
+        return response()->json([
+            'existe' => (bool) $cli,
+            'nombre' => $cli ? ($cli->cliente_razonsocial ?: $cli->cliente_nombre) : null,
+            'cliente_id' => $cli->cliente_id ?? null,
+        ]);
+    }
+
     /** Ciudades de un país (para el select dependiente del form). */
     private function ciudades(int $paisId): array
     {

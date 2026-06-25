@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ClaveFiscalValida;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class ClienteRequest extends FormRequest
@@ -47,12 +49,9 @@ class ClienteRequest extends FormRequest
             'cliente_emailadmin' => "$opt|email|max:250",
 
             // Fiscal
-            'cuit' => [
-                $this->isMethod('post') ? 'required' : 'sometimes',
-                'string',
-                'max:20',
-                Rule::unique('cliente', 'cuit')->ignore($id, 'cliente_id'),
-            ],
+            'cuit' => $this->reglasCuit($id),
+            // Bandera del front: el usuario vio el aviso de CUIT repetido y eligió guardar igual.
+            'cuit_confirmado' => 'sometimes|boolean',
             'cuit_internacional' => "$opt|string|max:50",
             'fk_tipoclavefiscal_id' => "$req|integer|exists:tipoclavefiscal,tipoclavefiscal_id",
             'fk_condicioniva_id' => "$req|integer|exists:condicioniva,condicioniva_id",
@@ -136,6 +135,52 @@ class ClienteRequest extends FormRequest
             'tarjetas.*.cliente_tarjeta_cs' => 'nullable|string|max:10',
             'tarjetas.*.cliente_tarjeta_empresa' => 'nullable|string|max:50',
         ];
+    }
+
+    /**
+     * Reglas del CUIT / clave fiscal:
+     *   - Único por cliente, SALVO que el usuario haya confirmado guardar el
+     *     repetido (control "avisar CUIT repetido y permitir guardar").
+     *   - Formato válido según país de licencia + tipo elegido (CUIT/CUIL en AR,
+     *     RUT en CL), vía la regla ClaveFiscalValida.
+     *
+     * @param  mixed  $id  cliente_id actual (para ignorar en el unique al editar)
+     * @return array<int,mixed>
+     */
+    private function reglasCuit(mixed $id): array
+    {
+        $reglas = [
+            $this->isMethod('post') ? 'required' : 'sometimes',
+            'string',
+            'max:20',
+            new ClaveFiscalValida($this->paisLicencia(), $this->tipoClaveFiscalNombre()),
+        ];
+
+        if (! $this->boolean('cuit_confirmado')) {
+            $reglas[] = Rule::unique('cliente', 'cuit')->ignore($id, 'cliente_id');
+        }
+
+        return $reglas;
+    }
+
+    /** País de la licencia actual (AR, CL, …) resuelto por el middleware de tenant. */
+    private function paisLicencia(): ?string
+    {
+        return app()->bound('tenant') ? (app('tenant')->pais ?? null) : null;
+    }
+
+    /** Nombre del tipo de clave fiscal elegido (CUIT, CUIL, RUT…); los ids varían por tenant. */
+    private function tipoClaveFiscalNombre(): ?string
+    {
+        $id = (int) $this->input('fk_tipoclavefiscal_id');
+
+        if ($id <= 0) {
+            return null;
+        }
+
+        return DB::table('tipoclavefiscal')
+            ->where('tipoclavefiscal_id', $id)
+            ->value('tipoclavefiscal_nombre');
     }
 
     public function messages(): array

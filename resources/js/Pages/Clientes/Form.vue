@@ -38,6 +38,7 @@ const form = useForm({
   cliente_emailadmin: '',
   // Fiscal
   cuit: '',
+  cuit_confirmado: 0,
   cuit_internacional: '',
   fk_tipoclavefiscal_id: 0,
   nro_clavefiscal: '',
@@ -97,7 +98,34 @@ const addContacto = () =>
 const addTarjeta = () =>
   form.tarjetas.push({ cliente_tarjeta_num: '', cliente_tarjeta_banco: '', cliente_tarjeta_venc: '', cliente_tarjeta_cs: '', cliente_tarjeta_empresa: '' })
 
-const submit = () => form.post('/app/clientes', { preserveScroll: true })
+// Antes de guardar, avisamos si el CUIT ya existe y dejamos confirmar para guardar igual.
+// El formato (CUIT/CUIL en AR, RUT en CL) lo valida el backend y vuelve como form.errors.cuit.
+const submit = async () => {
+  const cuit = (form.cuit || '').replace(/[-.\s]/g, '')
+
+  if (cuit) {
+    try {
+      const res = await fetch(`/app/clientes/chequear-cuit?cuit=${encodeURIComponent(cuit)}`, {
+        headers: { Accept: 'application/json' },
+      })
+      const data = res.ok ? await res.json() : { existe: false }
+
+      if (data.existe) {
+        const quien = data.nombre ? ` (${data.nombre})` : ''
+        if (!window.confirm(`Ya existe un cliente con el CUIT ${cuit}${quien}.\n¿Guardar de todos modos?`)) {
+          return
+        }
+        form.cuit_confirmado = 1
+      } else {
+        form.cuit_confirmado = 0
+      }
+    } catch (e) {
+      // Si el chequeo falla, dejamos que el backend valide la unicidad.
+    }
+  }
+
+  form.post('/app/clientes', { preserveScroll: true })
+}
 </script>
 
 <template>
