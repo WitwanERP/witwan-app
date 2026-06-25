@@ -3,9 +3,9 @@
 namespace App\Http\Requests;
 
 use App\Rules\ClaveFiscalValida;
+use App\Services\ClienteService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 
 class ClienteRequest extends FormRequest
 {
@@ -157,10 +157,35 @@ class ClienteRequest extends FormRequest
         ];
 
         if (! $this->boolean('cuit_confirmado')) {
-            $reglas[] = Rule::unique('cliente', 'cuit')->ignore($id, 'cliente_id');
+            $reglas[] = $this->reglaCuitUnico($id);
         }
 
         return $reglas;
+    }
+
+    /**
+     * Unicidad de CUIT ignorando separadores: los datos legacy de CI guardan el
+     * CUIT con guiones/puntos, así que comparamos ambos lados normalizados
+     * (mismo criterio que el chequeo del front en ClienteController@chequearCuit).
+     */
+    private function reglaCuitUnico(mixed $id): \Closure
+    {
+        return function (string $attribute, mixed $value, \Closure $fail) use ($id): void {
+            $cuit = str_replace(['-', '.', ' '], '', (string) $value);
+
+            if ($cuit === '') {
+                return;
+            }
+
+            $existe = DB::table('cliente')
+                ->whereRaw(ClienteService::SQL_CUIT_NORMALIZADO.' = ?', [$cuit])
+                ->when((int) $id > 0, fn ($q) => $q->where('cliente_id', '!=', (int) $id))
+                ->exists();
+
+            if ($existe) {
+                $fail('Ya existe un cliente con este CUIT.');
+            }
+        };
     }
 
     /** País de la licencia actual (AR, CL, …) resuelto por el middleware de tenant. */

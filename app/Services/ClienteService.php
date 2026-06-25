@@ -16,6 +16,14 @@ use Illuminate\Support\Facades\DB;
  */
 class ClienteService
 {
+    /**
+     * Expresión SQL para comparar CUIT ignorando separadores. Los datos legacy de
+     * CI guardan el CUIT con guiones/puntos (ej. "30-68225896-5") y el alta nueva
+     * lo normaliza sin separadores, así que la comparación debe normalizar la
+     * columna en ambos lados.
+     */
+    public const SQL_CUIT_NORMALIZADO = "REPLACE(REPLACE(REPLACE(cuit, '-', ''), '.', ''), ' ', '')";
+
     /** Columnas que se muestran en el listado (= 'display' ⊇ 'list' en CI). */
     private const COLUMNAS_LISTADO = [
         'cliente_id',

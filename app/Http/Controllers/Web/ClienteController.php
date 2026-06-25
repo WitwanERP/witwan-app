@@ -109,7 +109,7 @@ class ClienteController extends Controller
         $excluir = (int) $request->integer('cliente_id');
 
         $cli = DB::table('cliente')
-            ->where('cuit', $cuit)
+            ->whereRaw(ClienteService::SQL_CUIT_NORMALIZADO.' = ?', [$cuit])
             ->when($excluir > 0, fn ($q) => $q->where('cliente_id', '!=', $excluir))
             ->first(['cliente_id', 'cliente_nombre', 'cliente_razonsocial']);
 
