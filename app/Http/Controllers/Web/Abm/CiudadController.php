@@ -31,6 +31,9 @@ class CiudadController extends AbmController
         ['campo' => 'ciudad_codigo', 'label' => 'Código'],
     ];
     protected array $filtrosLike = ['ciudad_nombre'];
+    protected array $filtrosSelect = [
+        ['campo' => 'fk_pais_id', 'label' => 'País', 'opciones' => 'paises'],
+    ];
     protected string $sortDefault = 'ciudad_nombre';
 
     /** Listado con país y ciudad padre resueltos por join. */
@@ -58,12 +61,17 @@ class CiudadController extends AbmController
             $query->where('c.ciudad_id', (int) $id);
         }
 
+        $pais = (string) $request->get('fk_pais_id', '');
+        if ($pais !== '') {
+            $query->where('c.fk_pais_id', (int) $pais);
+        }
+
         $registros = $query->orderBy('c.ciudad_nombre')->paginate(50)->withQueryString();
 
         return Inertia::render('Abm/Index', [
             'config' => $this->config(),
             'registros' => $registros,
-            'filtros' => $request->only(['ciudad_nombre', 'ciudad_id']),
+            'filtros' => $request->only(['ciudad_nombre', 'ciudad_id', 'fk_pais_id']),
         ]);
     }
 

@@ -18,6 +18,9 @@ class PaisController extends AbmController
         ['campo' => 'pais_cuit', 'label' => 'CUIT país'],
     ];
     protected array $filtrosLike = ['pais_nombre', 'pais_codigo'];
+    protected array $filtrosSelect = [
+        ['campo' => 'fk_region_id', 'label' => 'Región', 'opciones' => 'regiones'],
+    ];
     protected string $sortDefault = 'pais_nombre';
 
     protected function campos(): array

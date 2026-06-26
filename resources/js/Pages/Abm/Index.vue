@@ -16,6 +16,9 @@ const fieldBase =
 
 const form = reactive({})
 for (const c of props.config.filtrosLike) form[c] = props.filtros[c] ?? ''
+for (const f of props.config.filtrosSelect || []) form[f.campo] = props.filtros[f.campo] ?? ''
+
+const tieneFiltros = computed(() => props.config.filtrosLike.length > 0 || (props.config.filtrosSelect || []).length > 0)
 
 const hayFiltros = computed(() => Object.values(form).some((v) => v !== '' && v !== null))
 
@@ -70,7 +73,7 @@ function eliminar(id) {
     </div>
 
     <!-- Filtros -->
-    <div v-if="config.filtrosLike.length" class="card mb-4">
+    <div v-if="tieneFiltros" class="card mb-4">
       <div class="card-header">
         <h3 class="card-title">Filtros</h3>
         <button v-if="hayFiltros" type="button" class="text-sm font-medium text-gray-500 hover:text-red-600" @click="limpiar">Limpiar</button>
@@ -80,6 +83,13 @@ function eliminar(id) {
           <div v-for="campo in config.filtrosLike" :key="campo">
             <label class="form-label">{{ labelFiltro(campo) }}</label>
             <input v-model="form[campo]" type="text" :class="fieldBase" :placeholder="`Buscar por ${labelFiltro(campo).toLowerCase()}…`" />
+          </div>
+          <div v-for="f in config.filtrosSelect || []" :key="f.campo">
+            <label class="form-label">{{ f.label }}</label>
+            <select v-model="form[f.campo]" :class="fieldBase">
+              <option value="">Todos</option>
+              <option v-for="o in (config.opcionesFiltro && config.opcionesFiltro[f.opciones]) || []" :key="o.value" :value="o.value">{{ o.label }}</option>
+            </select>
           </div>
         </div>
       </div>

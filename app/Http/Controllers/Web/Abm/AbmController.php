@@ -31,6 +31,13 @@ abstract class AbmController extends Controller
     protected array $columnasListado = [];
     /** @var list<string> */
     protected array $filtrosLike = [];
+    /**
+     * Filtros de igualdad por select/FK (fieles a CI). Cada uno referencia una
+     * clave de opciones().
+     *
+     * @var list<array{campo:string,label:string,opciones:string}>
+     */
+    protected array $filtrosSelect = [];
     protected string $sortDefault;
 
     /**
@@ -62,12 +69,14 @@ abstract class AbmController extends Controller
             $request->all(),
             $this->pk,
             $this->sortDefault,
+            50,
+            array_column($this->filtrosSelect, 'campo'),
         );
 
         return Inertia::render('Abm/Index', [
             'config' => $this->config(),
             'registros' => $registros,
-            'filtros' => $request->only(array_merge($this->filtrosLike, [$this->pk])),
+            'filtros' => $request->only(array_merge($this->filtrosLike, array_column($this->filtrosSelect, 'campo'), [$this->pk])),
         ]);
     }
 
@@ -112,6 +121,15 @@ abstract class AbmController extends Controller
     /** Config que consumen los componentes Inertia (incluye opciones solo en el form). */
     protected function config(bool $conOpciones = false): array
     {
+        // Para los filtros select del listado solo necesitamos sus opciones.
+        $opcionesFiltro = [];
+        if ($this->filtrosSelect !== []) {
+            $todas = $this->opciones();
+            foreach ($this->filtrosSelect as $f) {
+                $opcionesFiltro[$f['opciones']] = $todas[$f['opciones']] ?? [];
+            }
+        }
+
         return [
             'titulo' => $this->titulo,
             'singular' => $this->singular,
@@ -119,6 +137,8 @@ abstract class AbmController extends Controller
             'pk' => $this->pk,
             'columnas' => $this->columnasListado,
             'filtrosLike' => $this->filtrosLike,
+            'filtrosSelect' => $this->filtrosSelect,
+            'opcionesFiltro' => $opcionesFiltro,
             'campos' => $conOpciones ? $this->campos() : [],
             'opciones' => $conOpciones ? $this->opciones() : [],
         ];

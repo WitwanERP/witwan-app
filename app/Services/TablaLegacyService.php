@@ -23,7 +23,7 @@ class TablaLegacyService
      * @param  list<string>  $filtrosLike   columnas que filtran por LIKE
      * @param  array<string,mixed>  $filtros valores de filtro (incluye sort/dir)
      */
-    public function listar(string $tabla, array $columnas, array $filtrosLike, array $filtros, string $pk, string $sortDefault, int $perPage = 50): LengthAwarePaginator
+    public function listar(string $tabla, array $columnas, array $filtrosLike, array $filtros, string $pk, string $sortDefault, int $perPage = 50, array $filtrosExactos = []): LengthAwarePaginator
     {
         $query = DB::table($tabla)->select($columnas);
 
@@ -31,6 +31,14 @@ class TablaLegacyService
             $valor = trim((string) ($filtros[$campo] ?? ''));
             if ($valor !== '') {
                 $query->where($campo, 'LIKE', "%{$valor}%");
+            }
+        }
+
+        // Filtros de igualdad exacta (selects/FK).
+        foreach ($filtrosExactos as $campo) {
+            $valor = (string) ($filtros[$campo] ?? '');
+            if ($valor !== '') {
+                $query->where($campo, $valor);
             }
         }
 
