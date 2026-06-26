@@ -46,6 +46,7 @@ class ReservaFilaCalculador
         $relacionadosPorPadre = $this->cargarRelacionados($ids);
         $facturasMed = Licencia::flag('facturado_med') ? $this->cargarFacturasMed($ids) : [];
         $agentes = $this->cargarAgentes($reservas);
+        $comisiones = $this->cargarComisiones($ids);
 
         $filas = [];
         foreach ($reservas as $r) {
@@ -105,7 +106,7 @@ class ReservaFilaCalculador
                 'fk_filepadre_id' => (int) $r->fk_filepadre_id,
                 'relacionados' => $relacionadosPorPadre[$id] ?? [],
                 'tildar' => $tildar,
-                'cobrocomision' => isset($r->usuariocomision_id) && $r->usuariocomision_id !== null ? 1 : 0,
+                'cobrocomision' => $comisiones[$id] ?? 0,
                 'problemas' => $problemas,
                 'vemitido' => $vemitido,
                 'auditado' => (int) ($r->auditado ?? 0),
@@ -325,6 +326,22 @@ class ReservaFilaCalculador
         $out = [];
         foreach ($rows as $row) {
             $out[(int) $row->fk_filepadre_id][] = ['id' => (int) $row->reserva_id, 'codigo' => $row->tipocodigo.'-'.$row->codigo];
+        }
+
+        return $out;
+    }
+
+    /** Reservas que tienen alguna comisión de usuario (cobrocomision=1). */
+    private function cargarComisiones(array $ids): array
+    {
+        $rows = DB::table('usuariocomision')
+            ->whereIn('fk_file_id', $ids)
+            ->distinct()
+            ->pluck('fk_file_id');
+
+        $out = [];
+        foreach ($rows as $id) {
+            $out[(int) $id] = 1;
         }
 
         return $out;
