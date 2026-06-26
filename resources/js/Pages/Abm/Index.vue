@@ -38,6 +38,16 @@ function mostrar(valor) {
   return valor
 }
 
+// Label de un filtro: usa el de la columna del listado; si no, humaniza el campo.
+function labelFiltro(campo) {
+  const col = props.config.columnas.find((c) => c.campo === campo)
+  if (col) return col.label
+  return campo
+    .replace(/^[a-z]+_/, '')
+    .replace(/_/g, ' ')
+    .replace(/^\w/, (c) => c.toUpperCase())
+}
+
 function eliminar(id) {
   if (!window.confirm(`¿Eliminar ${props.config.singular} #${id}? Esta acción no se puede deshacer.`)) return
   router.delete(`${props.config.baseUrl}/${id}`, { preserveScroll: true })
@@ -68,7 +78,8 @@ function eliminar(id) {
       <div class="card-body">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <div v-for="campo in config.filtrosLike" :key="campo">
-            <input v-model="form[campo]" type="text" :class="fieldBase" :placeholder="`Buscar…`" />
+            <label class="form-label">{{ labelFiltro(campo) }}</label>
+            <input v-model="form[campo]" type="text" :class="fieldBase" :placeholder="`Buscar por ${labelFiltro(campo).toLowerCase()}…`" />
           </div>
         </div>
       </div>
