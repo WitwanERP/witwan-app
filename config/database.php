@@ -55,7 +55,12 @@ return [
             'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
             'prefix' => '',
             'prefix_indexes' => true,
-            'strict' => true,
+            // La BD del tenant es legacy (compartida con CI), que corre SIN modo
+            // estricto: usa fechas '0000-00-00' y consultas con GROUP BY parcial.
+            // Laravel por defecto fuerza sql_mode estricto (incluye ONLY_FULL_GROUP_BY)
+            // en cada conexión, lo que rompe esas consultas. Por eso default false
+            // (consistente con el server/CI). Override por env si hiciera falta.
+            'strict' => env('DB_STRICT', false),
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
@@ -75,7 +80,8 @@ return [
             'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
             'prefix' => '',
             'prefix_indexes' => true,
-            'strict' => true,
+            // Ver nota en la conexión mysql: BD legacy sin modo estricto.
+            'strict' => env('DB_STRICT', false),
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
