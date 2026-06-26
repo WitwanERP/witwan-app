@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Web\ClienteController;
+use App\Http\Controllers\Web\PasajeroController;
 use App\Services\CiSessionReader;
 use App\Services\CiUserResolver;
 use Illuminate\Http\Request;
@@ -37,6 +38,13 @@ Route::prefix('app')->group(function () {
     Route::post('/clientes', [ClienteController::class, 'store'])->name('clientes.store');
     Route::get('/clientes/{cliente}/edit', [ClienteController::class, 'edit'])->whereNumber('cliente')->name('clientes.edit');
     Route::put('/clientes/{cliente}', [ClienteController::class, 'update'])->whereNumber('cliente')->name('clientes.update');
+
+    // Pasajeros
+    Route::get('/pasajeros', [PasajeroController::class, 'index'])->name('pasajeros.index');
+    Route::get('/pasajeros/create', [PasajeroController::class, 'create'])->name('pasajeros.create');
+    Route::post('/pasajeros', [PasajeroController::class, 'store'])->name('pasajeros.store');
+    Route::get('/pasajeros/{pasajero}/edit', [PasajeroController::class, 'edit'])->whereNumber('pasajero')->name('pasajeros.edit');
+    Route::put('/pasajeros/{pasajero}', [PasajeroController::class, 'update'])->whereNumber('pasajero')->name('pasajeros.update');
 
     // Smoke test del proxy / tenant (se mantiene para diagnóstico).
     Route::get('/_probe', function (Request $request) {

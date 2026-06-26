@@ -41,6 +41,26 @@
       "_AppLayout.js"
     ]
   },
+  "resources/js/Pages/Pasajeros/Form.vue": {
+    "file": "assets/Form2.js",
+    "name": "Form",
+    "src": "resources/js/Pages/Pasajeros/Form.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js"
+    ]
+  },
+  "resources/js/Pages/Pasajeros/Index.vue": {
+    "file": "assets/Index2.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Pasajeros/Index.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js"
+    ]
+  },
   "resources/js/app.js": {
     "file": "assets/app2.js",
     "name": "app",
@@ -49,7 +69,9 @@
     "dynamicImports": [
       "resources/js/Pages/Clientes/Form.vue",
       "resources/js/Pages/Clientes/Index.vue",
-      "resources/js/Pages/Dashboard.vue"
+      "resources/js/Pages/Dashboard.vue",
+      "resources/js/Pages/Pasajeros/Form.vue",
+      "resources/js/Pages/Pasajeros/Index.vue"
     ]
   }
 }
