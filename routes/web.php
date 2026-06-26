@@ -1,8 +1,15 @@
 <?php
 
+use App\Http\Controllers\Web\Abm\AerolineaController;
+use App\Http\Controllers\Web\Abm\BancoController;
 use App\Http\Controllers\Web\Abm\CiudadController;
+use App\Http\Controllers\Web\Abm\FeriadoController;
+use App\Http\Controllers\Web\Abm\NegocioController;
 use App\Http\Controllers\Web\Abm\PaisController;
+use App\Http\Controllers\Web\Abm\ProgramaFidelidadController;
+use App\Http\Controllers\Web\Abm\ProyectoController;
 use App\Http\Controllers\Web\Abm\RegionController;
+use App\Http\Controllers\Web\Abm\TipoclavefiscalController;
 use App\Http\Controllers\Web\ClienteController;
 use App\Http\Controllers\Web\PasajeroController;
 use App\Services\CiSessionReader;
@@ -64,6 +71,15 @@ Route::prefix('app')->group(function () {
     $abm('geo/regiones', RegionController::class);
     $abm('geo/paises', PaisController::class);
     $abm('geo/ciudades', CiudadController::class);
+
+    // Configuración: ABMs sencillos
+    $abm('config/negocios', NegocioController::class);
+    $abm('config/proyectos', ProyectoController::class);
+    $abm('config/programas-fidelidad', ProgramaFidelidadController::class);
+    $abm('config/tipos-clave-fiscal', TipoclavefiscalController::class);
+    $abm('config/bancos', BancoController::class);
+    $abm('config/feriados', FeriadoController::class);
+    $abm('config/aerolineas', AerolineaController::class);
 
     // Smoke test del proxy / tenant (se mantiene para diagnóstico).
     Route::get('/_probe', function (Request $request) {
