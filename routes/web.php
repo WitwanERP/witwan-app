@@ -12,6 +12,7 @@ use App\Http\Controllers\Web\Abm\RegionController;
 use App\Http\Controllers\Web\Abm\TipoclavefiscalController;
 use App\Http\Controllers\Web\ClienteController;
 use App\Http\Controllers\Web\PasajeroController;
+use App\Http\Controllers\Web\Reservas\ReservaListadoController;
 use App\Services\CiSessionReader;
 use App\Services\CiUserResolver;
 use Illuminate\Http\Request;
@@ -55,6 +56,19 @@ Route::prefix('app')->group(function () {
     Route::post('/pasajeros', [PasajeroController::class, 'store'])->name('pasajeros.store');
     Route::get('/pasajeros/{pasajero}/edit', [PasajeroController::class, 'edit'])->whereNumber('pasajero')->name('pasajeros.edit');
     Route::put('/pasajeros/{pasajero}', [PasajeroController::class, 'update'])->whereNumber('pasajero')->name('pasajeros.update');
+
+    // Reservas — listado custom (réplica del CI legacy reserva/lista). {area} es el
+    // sistema (receptivo, mayorista, minorista, …); el resto de filtros van por query-string.
+    Route::prefix('reservas')->group(function () {
+        $areas = 'corporativo|receptivo|mayorista|nacional|minorista|consolidador|administracion|admin|configuracion|all';
+
+        Route::get('/{area}', [ReservaListadoController::class, 'index'])->where('area', $areas)->name('reservas.index');
+        Route::get('/{area}/export', [ReservaListadoController::class, 'exportar'])->where('area', $areas)->name('reservas.export');
+        Route::get('/{area}/resumen/{id}', [ReservaListadoController::class, 'resumen'])->where('area', $areas)->whereNumber('id')->name('reservas.resumen');
+        Route::get('/{area}/clientes', [ReservaListadoController::class, 'clientesAutocomplete'])->where('area', $areas)->name('reservas.clientes');
+        Route::post('/{area}/eliminar', [ReservaListadoController::class, 'eliminar'])->where('area', $areas)->name('reservas.eliminar');
+        Route::post('/{area}/agrupar', [ReservaListadoController::class, 'agrupar'])->where('area', $areas)->name('reservas.agrupar');
+    });
 
     // ABMs de configuración (config-driven, controllers que extienden Abm\AbmController).
     // Helper local: registra las 6 rutas REST de un ABM bajo un slug dado.

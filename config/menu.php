@@ -43,6 +43,20 @@ return [
     // permisogrupo_nombre que decide si una sección aparece en el menú.
     'permiso_acceso' => 'acceso',
 
+    // Secciones ya migradas a /app: mapea la seccion_uri del CI legacy (en
+    // brain.seccion) a la nueva ruta Inertia. MenuService::url() la consulta para
+    // que el ítem apunte a /app sin tocar el resto del menú. Las claves deben
+    // coincidir con el seccion_uri real (sin barra inicial). Ajustar tras revisar
+    // brain.seccion del tenant.
+    'rutas_migradas' => [
+        'reserva/lista/receptivo' => '/app/reservas/receptivo',
+        'reserva/lista/corporativo' => '/app/reservas/corporativo',
+        'reserva/lista/mayorista' => '/app/reservas/mayorista',
+        'reserva/lista/nacional' => '/app/reservas/nacional',
+        'reserva/lista/minorista' => '/app/reservas/minorista',
+        'reserva/lista/consolidador' => '/app/reservas/consolidador',
+    ],
+
     // Cache del menú armado, en segundos (clave por licencia+rol). 0 = sin cache.
     'cache_ttl' => (int) env('MENU_CACHE_TTL', 0),
 

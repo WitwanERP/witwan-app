@@ -81,6 +81,56 @@
       "_AppLayout.js"
     ]
   },
+  "resources/js/Pages/Reservas/Listado.vue": {
+    "file": "assets/Listado.js",
+    "name": "Listado",
+    "src": "resources/js/Pages/Reservas/Listado.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "resources/js/Pages/Reservas/components/FiltrosReserva.vue",
+      "resources/js/Pages/Reservas/components/TablaReservas.vue",
+      "resources/js/Pages/Reservas/components/TotalesMoneda.vue",
+      "resources/js/Pages/Reservas/components/ModalResumen.vue"
+    ]
+  },
+  "resources/js/Pages/Reservas/components/FiltrosReserva.vue": {
+    "file": "assets/FiltrosReserva.js",
+    "name": "FiltrosReserva",
+    "src": "resources/js/Pages/Reservas/components/FiltrosReserva.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "resources/js/Pages/Reservas/components/ModalResumen.vue": {
+    "file": "assets/ModalResumen.js",
+    "name": "ModalResumen",
+    "src": "resources/js/Pages/Reservas/components/ModalResumen.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "resources/js/Pages/Reservas/components/TablaReservas.vue": {
+    "file": "assets/TablaReservas.js",
+    "name": "TablaReservas",
+    "src": "resources/js/Pages/Reservas/components/TablaReservas.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "resources/js/Pages/Reservas/components/TotalesMoneda.vue": {
+    "file": "assets/TotalesMoneda.js",
+    "name": "TotalesMoneda",
+    "src": "resources/js/Pages/Reservas/components/TotalesMoneda.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
   "resources/js/app.js": {
     "file": "assets/app2.js",
     "name": "app",
@@ -93,7 +143,12 @@
       "resources/js/Pages/Clientes/Index.vue",
       "resources/js/Pages/Dashboard.vue",
       "resources/js/Pages/Pasajeros/Form.vue",
-      "resources/js/Pages/Pasajeros/Index.vue"
+      "resources/js/Pages/Pasajeros/Index.vue",
+      "resources/js/Pages/Reservas/Listado.vue",
+      "resources/js/Pages/Reservas/components/FiltrosReserva.vue",
+      "resources/js/Pages/Reservas/components/ModalResumen.vue",
+      "resources/js/Pages/Reservas/components/TablaReservas.vue",
+      "resources/js/Pages/Reservas/components/TotalesMoneda.vue"
     ]
   }
 }

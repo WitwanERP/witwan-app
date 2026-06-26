@@ -118,6 +118,13 @@ class MenuService
     {
         $uri = trim($uri);
 
+        // Secciones migradas a /app: redirigir al nuevo front (config/menu.php).
+        $migradas = (array) config('menu.rutas_migradas', []);
+        $clave = ltrim($uri, '/');
+        if (isset($migradas[$clave])) {
+            return $migradas[$clave];
+        }
+
         return str_starts_with($uri, '/') ? $uri : '/'.$uri;
     }
 
