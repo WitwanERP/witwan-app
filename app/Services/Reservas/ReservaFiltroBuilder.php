@@ -7,16 +7,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Aplica al query del listado de reservas TODAS las condiciones WHERE de
+ * Aplica al query del listado de reservas TODAS las condiciones WHERE/JOIN de
  * reserva_model.php::listar() (líneas 98-404), fiel al legacy.
  *
- * IMPORTANTE: para ser compatible con MySQL en modo ONLY_FULL_GROUP_BY (que
- * algunos tenants tienen activo), NO usamos JOIN a tablas 1:N (servicio,
- * factura, pnraereo, servicio_nomina, historialfile) en el FROM — eso obligaría
- * a GROUP BY. En su lugar, los filtros sobre esas tablas se expresan como
- * subconsultas EXISTS/IN correlacionadas por reserva.reserva_id, lo que da el
- * mismo resultado sin multiplicar filas ni necesitar GROUP BY. Los JOIN 1:1
- * (cliente, usuario, negocio) los arma ReservaListadoService.
+ * El query base (reserva + JOIN servicio/cliente/usuario/rel_filefactura/factura/
+ * usuariocomision) lo arma ReservaListadoService; acá se agregan los filtros y los
+ * JOIN condicionales (pnraereo, servicio_nomina, historialfile).
  *
  * Mapa de claves de $filtros (nombres HTTP del front), equivalentes a CI:
  *   status, tipo (tipocodigo), codigo, cliente, responsable(→promotor), rsv(idsistema),
@@ -25,12 +21,17 @@ use Illuminate\Support\Facades\DB;
  *   codigo_externo, residente, titular, solofacturado, solopagos, soloocultas,
  *   mostrarreprogramados, soloovencidas, tipoproducto(→servicio.fk_tipoproducto_id),
  *   pago, facturafrom, facturato, factura, from, to, tipofecha, fecha_alta, fecha_alta_to,
- *   auditado, id.
+ *   auditado.
  */
 class ReservaFiltroBuilder
 {
+    /** @var array<string,bool> joins condicionales ya agregados */
+    private array $joins = [];
+
     public function aplicar(Builder $query, array $f): void
     {
+        $this->joins = [];
+
         // --- Base obligatoria (listar 98-139) ---
         $query->where('reserva.fk_agrupado_id', 0);
         $query->where('reserva.reserva_id', '!=', 1);
@@ -86,15 +87,15 @@ class ReservaFiltroBuilder
             $query->whereIn('reserva.tipocodigo', $tipo);
         }
 
-        // --- Proveedor / prestador (servicio, EXISTS) (listar 161-167) ---
+        // --- Proveedor / prestador / representante (listar 161-171) ---
         if (! empty($f['proveedor']) && (int) $f['proveedor'] !== 0) {
-            $this->existsServicio($query, fn ($q) => $q->where('servicio.fk_proveedor_id', (int) $f['proveedor'])->where('servicio.status', '!=', 'CA'));
+            $query->where('servicio.fk_proveedor_id', (int) $f['proveedor'])
+                ->where('servicio.status', '!=', 'CA');
         }
         if (! empty($f['prestador']) && (int) $f['prestador'] !== 0) {
-            $this->existsServicio($query, fn ($q) => $q->where('servicio.fk_prestador_id', (int) $f['prestador'])->where('servicio.status', '!=', 'CA'));
+            $query->where('servicio.fk_prestador_id', (int) $f['prestador'])
+                ->where('servicio.status', '!=', 'CA');
         }
-
-        // --- Representante (cliente, JOIN 1:1) (listar 169-171, 402) ---
         if (! empty($f['representante']) && (int) $f['representante'] !== 0) {
             $query->where('cliente.nombre_representante', (string) (int) $f['representante']);
         }
@@ -114,7 +115,7 @@ class ReservaFiltroBuilder
             }
         }
 
-        // --- cadenacliente (cliente, JOIN 1:1) (listar 215) ---
+        // --- cadenacliente (listar 215) ---
         if (! empty($f['cadenacliente']) && (int) $f['cadenacliente'] !== 0) {
             $query->where('cliente.fk_cadenacliente_id', (int) $f['cadenacliente']);
         }
@@ -138,19 +139,18 @@ class ReservaFiltroBuilder
 
         // --- ticket / recloc / nro_confirmacion / codigo_externo (listar 234-246) ---
         if (! empty($f['ticket'])) {
-            $ticket = (string) $f['ticket'];
-            $this->existsServicio($query, function ($q) use ($ticket) {
-                $q->whereExists(fn ($p) => $p->from('pnraereo')->whereColumn('pnraereo.fk_ocupacion_id', 'servicio.servicio_id')->where('pnraereo.pnraereo_tkt', $ticket));
-            });
+            $this->joinPnraereo($query);
+            $query->where('pnraereo.pnraereo_tkt', (string) $f['ticket']);
         }
         if (! empty($f['recloc'])) {
             $recloc = (string) $f['recloc'];
-            $this->existsServicio($query, function ($q) use ($recloc) {
-                $q->whereExists(fn ($p) => $p->from('pnraereo')->whereColumn('pnraereo.fk_ocupacion_id', 'servicio.servicio_id')->where('pnraereo.codigo_recloc', $recloc));
+            $query->whereIn('servicio.servicio_id', function ($q) use ($recloc) {
+                $q->select('fk_ocupacion_id')->distinct()
+                    ->from('pnraereo')->where('codigo_recloc', $recloc);
             });
         }
         if (! empty($f['nro_confirmacion'])) {
-            $this->existsServicio($query, fn ($q) => $q->where('servicio.nro_confirmacion', 'LIKE', $f['nro_confirmacion'].'%'));
+            $query->where('servicio.nro_confirmacion', 'LIKE', $f['nro_confirmacion'].'%');
         }
         if (! empty($f['codigo_externo'])) {
             $query->where('reserva.codigo_externo', 'LIKE', $f['codigo_externo'].'%');
@@ -166,20 +166,16 @@ class ReservaFiltroBuilder
             }
         }
 
-        // --- titular (reserva + servicio_nomina via EXISTS) (listar 254-265) ---
+        // --- titular (listar 254-265) ---
         if (! empty($f['titular'])) {
             $titular = (string) $f['titular'];
+            $this->joinServicioNomina($query);
             $query->where(function (Builder $q) use ($titular) {
                 $q->where('reserva.titular_apellido', 'LIKE', "%{$titular}%");
                 if (is_numeric($titular)) {
                     $q->orWhere('reserva.titular_nombre', 'LIKE', "%{$titular}%");
                 }
-                $q->orWhereExists(function ($sub) use ($titular) {
-                    $sub->from('servicio_nomina as sn')
-                        ->join('servicio as sv', 'sv.servicio_id', '=', 'sn.fk_servicio_id')
-                        ->whereColumn('sv.fk_reserva_id', 'reserva.reserva_id')
-                        ->where('sn.apellido', 'LIKE', "%{$titular}%");
-                });
+                $q->orWhere('servicio_nomina.apellido', 'LIKE', "%{$titular}%");
             });
         }
 
@@ -208,9 +204,9 @@ class ReservaFiltroBuilder
             $query->whereRaw('reserva.fecha_vencimiento <= CURDATE()');
         }
 
-        // --- tipoproducto (servicio, EXISTS) (listar 311-315) ---
+        // --- tipoproducto (servicio) (listar 311-315) ---
         if (! empty($f['tipoproducto'])) {
-            $this->existsServicio($query, fn ($q) => $q->where('servicio.fk_tipoproducto_id', (string) $f['tipoproducto']));
+            $query->where('servicio.fk_tipoproducto_id', (string) $f['tipoproducto']);
         }
 
         // --- pago (sin recibo) (listar 316-318) ---
@@ -222,8 +218,20 @@ class ReservaFiltroBuilder
             });
         }
 
-        // --- factura: from/to/nro (rel_filefactura+factura, EXISTS) (listar 323-331) ---
-        $this->factura($query, $f);
+        // --- factura: from/to/nro (listar 323-331) ---
+        if (! empty($f['facturafrom'])) {
+            $query->where('factura.factura_fecha', '>=', $this->fecha($f['facturafrom']).' 00:00:00')
+                ->where('factura.statusfactura', '!=', 'AN')
+                ->where('factura.statusfactura', '!=', 'NU');
+        }
+        if (! empty($f['facturato'])) {
+            $query->where('factura.factura_fecha', '<=', $this->fecha($f['facturato']).' 23:59:59')
+                ->where('factura.statusfactura', '!=', 'AN')
+                ->where('factura.statusfactura', '!=', 'NU');
+        }
+        if (! empty($f['factura']) && (int) $f['factura'] !== 0) {
+            $query->where('factura.factura_nro', 'LIKE', '%'.$f['factura'].'%');
+        }
 
         // --- Rango de fechas según tipofecha (listar 333-401) ---
         $this->rangoFechas($query, $f, $tipofecha);
@@ -237,41 +245,7 @@ class ReservaFiltroBuilder
         }
     }
 
-    /** EXISTS sobre servicio de la reserva (reemplaza el JOIN a servicio del legacy). */
-    private function existsServicio(Builder $query, callable $cond): void
-    {
-        $query->whereExists(function ($q) use ($cond) {
-            $q->from('servicio')->whereColumn('servicio.fk_reserva_id', 'reserva.reserva_id');
-            $cond($q);
-        });
-    }
-
-    /** Filtros de factura (rel_filefactura + factura) como EXISTS. */
-    private function factura(Builder $query, array $f): void
-    {
-        $aplica = function (callable $cond) use ($query) {
-            $query->whereExists(function ($q) use ($cond) {
-                $q->from('rel_filefactura')
-                    ->join('factura', 'factura.factura_id', '=', 'rel_filefactura.fk_factura_id')
-                    ->whereColumn('rel_filefactura.fk_file_id', 'reserva.reserva_id')
-                    ->where('factura.statusfactura', '!=', 'AN')
-                    ->where('factura.statusfactura', '!=', 'NU');
-                $cond($q);
-            });
-        };
-
-        if (! empty($f['facturafrom'])) {
-            $aplica(fn ($q) => $q->where('factura.factura_fecha', '>=', $this->fecha($f['facturafrom']).' 00:00:00'));
-        }
-        if (! empty($f['facturato'])) {
-            $aplica(fn ($q) => $q->where('factura.factura_fecha', '<=', $this->fecha($f['facturato']).' 23:59:59'));
-        }
-        if (! empty($f['factura']) && (int) $f['factura'] !== 0) {
-            $aplica(fn ($q) => $q->where('factura.factura_nro', 'LIKE', '%'.$f['factura'].'%'));
-        }
-    }
-
-    /** solofacturado 1/2/3 con la bifurcación por licencia de listar 269-293 (EXISTS). */
+    /** solofacturado 1/2/3 con la bifurcación por licencia de listar 269-293. */
     private function solofacturado(Builder $query, array $f): void
     {
         if (! isset($f['solofacturado']) || $f['solofacturado'] === '') {
@@ -280,32 +254,28 @@ class ReservaFiltroBuilder
         $v = (int) $f['solofacturado'];
 
         if (Licencia::flag('facturado_med')) {
-            $sub = fn ($q) => $q->select('fk_file_id')->distinct()->from('factura')
-                ->where('statusfactura', '!=', 'AN')->where('statusfactura', '!=', 'NU');
             if ($v === 1) {
-                $query->whereIn('reserva.reserva_id', $sub);
+                $query->whereIn('reserva.reserva_id', function ($q) {
+                    $q->select('fk_file_id')->distinct()->from('factura')
+                        ->where('statusfactura', '!=', 'AN')->where('statusfactura', '!=', 'NU');
+                });
             } elseif ($v === 2) {
-                $query->whereNotIn('reserva.reserva_id', $sub);
+                $query->whereNotIn('reserva.reserva_id', function ($q) {
+                    $q->select('fk_file_id')->distinct()->from('factura')
+                        ->where('statusfactura', '!=', 'AN')->where('statusfactura', '!=', 'NU');
+                });
             }
 
             return;
         }
 
-        // Resto de licencias: por servicio (rel_serviciofactura), correlacionado a la reserva.
-        $facturado = fn ($q) => $q->from('servicio as sf')
-            ->whereColumn('sf.fk_reserva_id', 'reserva.reserva_id')
-            ->whereIn('sf.servicio_id', fn ($s) => $s->select('fk_servicio_id')->distinct()->from('rel_serviciofactura'));
-
-        $pendiente = fn ($q) => $q->from('servicio as s2')
-            ->where('s2.status', '!=', 'CA')
-            ->whereColumn('s2.fk_reserva_id', 'reserva.reserva_id')
-            ->where(fn ($w) => $w->where('s2.total', '!=', 0)->orWhere('s2.costo', '!=', 0))
-            ->whereNotIn('s2.servicio_id', fn ($s) => $s->select('fk_servicio_id')->distinct()->from('rel_serviciofactura'));
+        // Resto de licencias: lógica por servicio (rel_serviciofactura).
+        $pendienteSub = "(SELECT s2.servicio_id FROM servicio s2 WHERE s2.status!='CA' AND s2.fk_reserva_id=servicio.fk_reserva_id AND (s2.total!=0 OR s2.costo!=0) AND s2.servicio_id NOT IN (SELECT DISTINCT(rsf.fk_servicio_id) FROM rel_serviciofactura rsf) LIMIT 1)";
 
         if ($v === 1) {
-            $query->whereExists($facturado)->whereNotExists($pendiente);
+            $query->whereRaw("servicio.servicio_id IN (SELECT DISTINCT(fk_servicio_id) FROM rel_serviciofactura) AND ISNULL({$pendienteSub})");
         } elseif ($v === 3) {
-            $query->whereExists($facturado)->whereExists($pendiente);
+            $query->whereRaw("servicio.servicio_id IN (SELECT DISTINCT(fk_servicio_id) FROM rel_serviciofactura) AND !ISNULL({$pendienteSub})");
         } elseif ($v === 2) {
             $corte = Licencia::flag('mybeds_corte_servicio', null);
             $corteSql = is_numeric($corte) ? " AND sfc.servicio_id > {$corte}" : '';
@@ -316,80 +286,61 @@ class ReservaFiltroBuilder
     /** Rango de fechas según tipofecha: alta/vencimiento/checkin/checkout/emision/canceladas. */
     private function rangoFechas(Builder $query, array $f, string $tipofecha): void
     {
-        $from = ! empty($f['from']) ? $this->fecha($f['from']) : null;
-        $to = ! empty($f['to']) ? $this->fecha($f['to']) : null;
-        if ($from === null && $to === null) {
-            return;
+        if (! empty($f['from'])) {
+            $from = $this->fecha($f['from']);
+            match ($tipofecha) {
+                'checkin' => $query->where('reserva.inicio', '>=', $from),
+                'checkout' => $query->where('servicio.vigencia_fin', '>=', $from),
+                'vencimiento' => $query->where('reserva.fecha_vencimiento', '>=', $from),
+                'emision' => $this->joinPnraereo($query)->where('pnraereo.pnraereo_fechaemision', '>=', $from),
+                'canceladas' => $this->joinHistorialfile($query)->where('historialfile.historial_date', '>=', $from),
+                default => $query->where('reserva.fecha_alta', '>=', $from),
+            };
         }
 
-        switch ($tipofecha) {
-            case 'checkin':
-                if ($from) {
-                    $query->where('reserva.inicio', '>=', $from);
-                }
-                if ($to) {
-                    $query->where('reserva.inicio', '<=', $to);
-                }
-                break;
-
-            case 'vencimiento':
-                if ($from) {
-                    $query->where('reserva.fecha_vencimiento', '>=', $from);
-                }
-                if ($to) {
-                    $query->where('reserva.fecha_vencimiento', '<=', $to);
-                }
-                break;
-
-            case 'checkout':
-                $this->existsServicio($query, function ($q) use ($from, $to) {
-                    if ($from) {
-                        $q->where('servicio.vigencia_fin', '>=', $from);
-                    }
-                    if ($to) {
-                        $q->where('servicio.vigencia_fin', '<=', $to);
-                    }
-                });
-                break;
-
-            case 'emision':
-                $this->existsServicio($query, function ($q) use ($from, $to) {
-                    $q->whereExists(function ($p) use ($from, $to) {
-                        $p->from('pnraereo')->whereColumn('pnraereo.fk_ocupacion_id', 'servicio.servicio_id');
-                        if ($from) {
-                            $p->where('pnraereo.pnraereo_fechaemision', '>=', $from);
-                        }
-                        if ($to) {
-                            $p->where('pnraereo.pnraereo_fechaemision', '<=', $to);
-                        }
-                    });
-                });
-                break;
-
-            case 'canceladas':
-                $query->whereExists(function ($q) use ($from, $to) {
-                    $q->from('historialfile')
-                        ->whereColumn('historialfile.fk_reserva_id', 'reserva.reserva_id')
-                        ->where('historialfile.historial_valor', 'CA')
-                        ->where('historialfile.historial_campo', 'reserva.fk_filestatus_id');
-                    if ($from) {
-                        $q->where('historialfile.historial_date', '>=', $from);
-                    }
-                    if ($to) {
-                        $q->where('historialfile.historial_date', '<=', $to);
-                    }
-                });
-                break;
-
-            default:
-                if ($from) {
-                    $query->where('reserva.fecha_alta', '>=', $from);
-                }
-                if ($to) {
-                    $query->where('reserva.fecha_alta', '<=', $to);
-                }
-                break;
+        if (! empty($f['to'])) {
+            $to = $this->fecha($f['to']);
+            match ($tipofecha) {
+                'checkin' => $query->where('reserva.inicio', '<=', $to),
+                'checkout' => $query->where('servicio.vigencia_fin', '<=', $to),
+                'vencimiento' => $query->where('reserva.fecha_vencimiento', '<=', $to),
+                'emision' => $query->where('pnraereo.pnraereo_fechaemision', '<=', $to),
+                'canceladas' => $query->where('historialfile.historial_date', '<=', $to)
+                    ->where('historialfile.historial_valor', 'CA')
+                    ->where('historialfile.historial_campo', 'reserva.fk_filestatus_id'),
+                default => $query->where('reserva.fecha_alta', '<=', $to),
+            };
         }
+    }
+
+    private function joinPnraereo(Builder $query): Builder
+    {
+        if (empty($this->joins['pnraereo'])) {
+            $query->leftJoin('pnraereo', 'pnraereo.fk_ocupacion_id', '=', 'servicio.servicio_id');
+            $this->joins['pnraereo'] = true;
+        }
+
+        return $query;
+    }
+
+    private function joinServicioNomina(Builder $query): Builder
+    {
+        if (empty($this->joins['servicio_nomina'])) {
+            $query->leftJoin('servicio_nomina', 'servicio_nomina.fk_servicio_id', '=', 'servicio.servicio_id');
+            $this->joins['servicio_nomina'] = true;
+        }
+
+        return $query;
+    }
+
+    private function joinHistorialfile(Builder $query): Builder
+    {
+        if (empty($this->joins['historialfile'])) {
+            $query->leftJoin('historialfile', 'historialfile.fk_reserva_id', '=', 'reserva.reserva_id');
+            $this->joins['historialfile'] = true;
+        }
+
+        return $query;
     }
 
     /** Nombre de país de la licencia (LICPAIS) para el filtro residente. */

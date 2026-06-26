@@ -6,7 +6,6 @@ use App\Models\Reserva;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Núcleo del listado de reservas: arma la query base con los JOIN del legacy,
@@ -35,9 +34,12 @@ class ReservaListadoService
 
         $this->filtros->aplicar($query, $filtros);
         $this->scope->aplicar($query, $usuario);
-        $this->selectHistorialCanceladas($query, $filtros);
 
-        $query->orderByDesc('reserva.reserva_id');
+        if (($filtros['tipofecha'] ?? '') === 'canceladas') {
+            $query->addSelect('historialfile.historial_date');
+        }
+
+        $query->groupBy('reserva.reserva_id')->orderByDesc('reserva.reserva_id');
 
         /** @var LengthAwarePaginator $paginator */
         $paginator = $query->paginate($perPage)->withQueryString();
@@ -56,47 +58,35 @@ class ReservaListadoService
         $query = $this->baseQuery($filtros);
         $this->filtros->aplicar($query, $filtros);
         $this->scope->aplicar($query, $usuario);
-        $this->selectHistorialCanceladas($query, $filtros);
 
-        $query->orderByDesc('reserva.reserva_id');
+        if (($filtros['tipofecha'] ?? '') === 'canceladas') {
+            $query->addSelect('historialfile.historial_date');
+        }
+
+        $query->groupBy('reserva.reserva_id')->orderByDesc('reserva.reserva_id');
 
         $filas = $this->calculador->calcular($query->get());
 
         return ['registros' => $filas, 'totales' => $this->acumularTotales($filas)];
     }
 
-    /**
-     * Query base con SÓLO los JOIN 1:1 (cliente, usuario, negocio) — los filtros
-     * sobre tablas 1:N van como EXISTS en ReservaFiltroBuilder, así no hace falta
-     * GROUP BY (compatible con ONLY_FULL_GROUP_BY).
-     */
+    /** Query base con los JOIN obligatorios del legacy (listar 105-454). */
     private function baseQuery(array $filtros): Builder
     {
         return Reserva::query()
+            ->leftJoin('servicio', 'servicio.fk_reserva_id', '=', 'reserva.reserva_id')
             ->leftJoin('cliente', 'reserva.fk_cliente_id', '=', 'cliente.cliente_id')
             ->leftJoin('usuario', 'usuario.usuario_id', '=', 'reserva.fk_usuario_id')
+            ->leftJoin('rel_filefactura', 'rel_filefactura.fk_file_id', '=', 'reserva.reserva_id')
+            ->leftJoin('factura', 'factura.factura_id', '=', 'rel_filefactura.fk_factura_id')
+            ->leftJoin('usuariocomision', 'usuariocomision.fk_file_id', '=', 'reserva.reserva_id')
             ->leftJoin('negocio', 'negocio.negocio_id', '=', 'reserva.fk_negocio_id')
             ->select('reserva.*')
             ->addSelect('cliente.cliente_id')
             ->addSelect('cliente.cliente_nombre')
             ->addSelect('negocio.negocio_nombre')
+            ->addSelect('usuariocomision.usuariocomision_id')
             ->selectRaw("CONCAT(usuario.usuario_apellido, ', ', usuario.usuario_nombre) AS usuario");
-    }
-
-    /** En modo canceladas, expone la fecha de cancelación (subselect, sin JOIN 1:N). */
-    private function selectHistorialCanceladas(Builder $query, array $filtros): void
-    {
-        if (($filtros['tipofecha'] ?? '') !== 'canceladas') {
-            return;
-        }
-
-        $query->addSelect([
-            'historial_date' => DB::table('historialfile')
-                ->selectRaw('MAX(historial_date)')
-                ->whereColumn('historialfile.fk_reserva_id', 'reserva.reserva_id')
-                ->where('historialfile.historial_valor', 'CA')
-                ->where('historialfile.historial_campo', 'reserva.fk_filestatus_id'),
-        ]);
     }
 
     /** Totales por moneda sobre las filas de la página (lista.php:461-463). */

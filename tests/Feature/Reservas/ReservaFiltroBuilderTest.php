@@ -30,8 +30,8 @@ class ReservaFiltroBuilderTest extends TestCase
 
     private function sqlCon(array $filtros): array
     {
-        // Base como en ReservaListadoService: sólo JOIN 1:1 (los filtros 1:N son EXISTS).
         $query = Reserva::query()
+            ->leftJoin('servicio', 'servicio.fk_reserva_id', '=', 'reserva.reserva_id')
             ->leftJoin('cliente', 'reserva.fk_cliente_id', '=', 'cliente.cliente_id');
 
         (new ReservaFiltroBuilder)->aplicar($query, $filtros);
