@@ -11,8 +11,28 @@
     "src": "resources/css/app.css",
     "isEntry": true
   },
-  "resources/js/Pages/Clientes/Form.vue": {
+  "resources/js/Pages/Abm/Form.vue": {
     "file": "assets/Form.js",
+    "name": "Form",
+    "src": "resources/js/Pages/Abm/Form.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js"
+    ]
+  },
+  "resources/js/Pages/Abm/Index.vue": {
+    "file": "assets/Index.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Abm/Index.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js"
+    ]
+  },
+  "resources/js/Pages/Clientes/Form.vue": {
+    "file": "assets/Form2.js",
     "name": "Form",
     "src": "resources/js/Pages/Clientes/Form.vue",
     "isDynamicEntry": true,
@@ -22,7 +42,7 @@
     ]
   },
   "resources/js/Pages/Clientes/Index.vue": {
-    "file": "assets/Index.js",
+    "file": "assets/Index2.js",
     "name": "Index",
     "src": "resources/js/Pages/Clientes/Index.vue",
     "isDynamicEntry": true,
@@ -42,7 +62,7 @@
     ]
   },
   "resources/js/Pages/Pasajeros/Form.vue": {
-    "file": "assets/Form2.js",
+    "file": "assets/Form3.js",
     "name": "Form",
     "src": "resources/js/Pages/Pasajeros/Form.vue",
     "isDynamicEntry": true,
@@ -52,7 +72,7 @@
     ]
   },
   "resources/js/Pages/Pasajeros/Index.vue": {
-    "file": "assets/Index2.js",
+    "file": "assets/Index3.js",
     "name": "Index",
     "src": "resources/js/Pages/Pasajeros/Index.vue",
     "isDynamicEntry": true,
@@ -67,6 +87,8 @@
     "src": "resources/js/app.js",
     "isEntry": true,
     "dynamicImports": [
+      "resources/js/Pages/Abm/Form.vue",
+      "resources/js/Pages/Abm/Index.vue",
       "resources/js/Pages/Clientes/Form.vue",
       "resources/js/Pages/Clientes/Index.vue",
       "resources/js/Pages/Dashboard.vue",

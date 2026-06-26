@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Web\Abm\CiudadController;
+use App\Http\Controllers\Web\Abm\PaisController;
+use App\Http\Controllers\Web\Abm\RegionController;
 use App\Http\Controllers\Web\ClienteController;
 use App\Http\Controllers\Web\PasajeroController;
 use App\Services\CiSessionReader;
@@ -45,6 +48,22 @@ Route::prefix('app')->group(function () {
     Route::post('/pasajeros', [PasajeroController::class, 'store'])->name('pasajeros.store');
     Route::get('/pasajeros/{pasajero}/edit', [PasajeroController::class, 'edit'])->whereNumber('pasajero')->name('pasajeros.edit');
     Route::put('/pasajeros/{pasajero}', [PasajeroController::class, 'update'])->whereNumber('pasajero')->name('pasajeros.update');
+
+    // ABMs de configuración (config-driven, controllers que extienden Abm\AbmController).
+    // Helper local: registra las 6 rutas REST de un ABM bajo un slug dado.
+    $abm = function (string $slug, string $controlador) {
+        Route::get("/{$slug}", [$controlador, 'index'])->name(str_replace('/', '.', $slug).'.index');
+        Route::get("/{$slug}/create", [$controlador, 'create'])->name(str_replace('/', '.', $slug).'.create');
+        Route::post("/{$slug}", [$controlador, 'store'])->name(str_replace('/', '.', $slug).'.store');
+        Route::get("/{$slug}/{id}/edit", [$controlador, 'edit'])->whereNumber('id')->name(str_replace('/', '.', $slug).'.edit');
+        Route::put("/{$slug}/{id}", [$controlador, 'update'])->whereNumber('id')->name(str_replace('/', '.', $slug).'.update');
+        Route::delete("/{$slug}/{id}", [$controlador, 'destroy'])->whereNumber('id')->name(str_replace('/', '.', $slug).'.destroy');
+    };
+
+    // GEO
+    $abm('geo/regiones', RegionController::class);
+    $abm('geo/paises', PaisController::class);
+    $abm('geo/ciudades', CiudadController::class);
 
     // Smoke test del proxy / tenant (se mantiene para diagnóstico).
     Route::get('/_probe', function (Request $request) {
