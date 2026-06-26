@@ -1,0 +1,15 @@
+# Los bundles de Vite se generan con nombre FIJO (sin hash de contenido), para
+# poder versionarlos en git. La contra es que el navegador, al cachearlos por
+# URL, puede servir una versión vieja del entry (app2.js) cuyo glob de páginas
+# no incluye las páginas nuevas → síntoma: páginas recién agregadas quedan en
+# blanco hasta un hard-refresh.
+#
+# Con no-cache el navegador conserva el archivo pero DEBE revalidarlo contra el
+# servidor en cada carga (vía ETag / Last-Modified); si no cambió recibe un 304
+# barato, y si cambió baja la versión nueva automáticamente. Así desaparece el
+# problema sin renunciar a los nombres fijos.
+<IfModule mod_headers.c>
+    <FilesMatch "\.(js|css|json)$">
+        Header set Cache-Control "no-cache, must-revalidate"
+    </FilesMatch>
+</IfModule>
