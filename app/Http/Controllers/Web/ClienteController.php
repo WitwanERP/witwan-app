@@ -80,6 +80,33 @@ class ClienteController extends Controller
         ]);
     }
 
+    /**
+     * Form de edición de cliente (réplica de configuracion/ruc de CI en modo edit).
+     * Pasa el cliente con sus contactos/tarjetas y las ciudades de su país.
+     */
+    public function edit(int $cliente, ClienteService $clientes): Response
+    {
+        $datos = $clientes->paraEditar($cliente);
+
+        abort_if($datos === null, 404);
+
+        return Inertia::render('Clientes/Form', [
+            'cliente' => $datos,
+            'opciones' => $this->opciones(),
+            'ciudades' => $this->ciudades((int) ($datos['fk_pais_id'] ?? 0)),
+        ]);
+    }
+
+    /** Persiste la edición y vuelve al listado. */
+    public function update(ClienteRequest $request, int $cliente, ClienteService $clientes): RedirectResponse
+    {
+        $clientes->actualizar($cliente, $request->validated());
+
+        return redirect()
+            ->route('clientes.index')
+            ->with('success', "Cliente #{$cliente} actualizado correctamente.");
+    }
+
     /** Persiste el alta y vuelve al listado. */
     public function store(ClienteRequest $request, ClienteService $clientes, AuditoriaService $auditoria): RedirectResponse
     {

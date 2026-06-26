@@ -35,6 +35,8 @@ Route::prefix('app')->group(function () {
     Route::get('/clientes/chequear-cuit', [ClienteController::class, 'chequearCuit'])->name('clientes.chequear-cuit');
     Route::get('/clientes/create', [ClienteController::class, 'create'])->name('clientes.create');
     Route::post('/clientes', [ClienteController::class, 'store'])->name('clientes.store');
+    Route::get('/clientes/{cliente}/edit', [ClienteController::class, 'edit'])->whereNumber('cliente')->name('clientes.edit');
+    Route::put('/clientes/{cliente}', [ClienteController::class, 'update'])->whereNumber('cliente')->name('clientes.update');
 
     // Smoke test del proxy / tenant (se mantiene para diagnóstico).
     Route::get('/_probe', function (Request $request) {

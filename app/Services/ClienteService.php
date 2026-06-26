@@ -135,6 +135,86 @@ class ClienteService
     }
 
     /**
+     * Carga un cliente para editar: la fila de `cliente` más los sets repetibles
+     * (contactos/tarjetas) que viven como JSON en `cliente_extra`. Devuelve null
+     * si el cliente no existe.
+     *
+     * @return array<string,mixed>|null
+     */
+    public function paraEditar(int $id): ?array
+    {
+        $cliente = DB::table('cliente')->where('cliente_id', $id)->first();
+
+        if ($cliente === null) {
+            return null;
+        }
+
+        $data = (array) $cliente;
+        $data['contactos'] = $this->leerExtra($id, 'contactos');
+        $data['tarjetas'] = $this->leerExtra($id, 'tarjetas');
+
+        return $data;
+    }
+
+    /**
+     * Actualiza un cliente existente y regraba sus contactos/tarjetas.
+     *
+     * A diferencia del alta, NO completa columnas faltantes con defaults: solo
+     * toca las columnas reales presentes en $data, para no pisar datos legacy.
+     *
+     * @param  array<string,mixed>  $data  datos ya validados (ClienteRequest)
+     */
+    public function actualizar(int $id, array $data): void
+    {
+        DB::transaction(function () use ($id, $data) {
+            $contactos = $data['contactos'] ?? null;
+            $tarjetas = $data['tarjetas'] ?? null;
+            unset($data['contactos'], $data['tarjetas']);
+
+            $data['um'] = now();
+
+            $fila = $this->filaClienteUpdate($data);
+            if (! empty($fila)) {
+                DB::table('cliente')->where('cliente_id', $id)->update($fila);
+            }
+
+            // Regrabar los sets repetibles: borrar y reinsertar (como CI).
+            DB::table('cliente_extra')->where('fk_cliente_id', $id)->whereIn('extra_nombre', ['contactos', 'tarjetas'])->delete();
+            $this->guardarExtra($id, 'contactos', $contactos);
+            $this->guardarExtra($id, 'tarjetas', $tarjetas);
+        });
+    }
+
+    /** Lee un set repetible (contactos/tarjetas) de cliente_extra y lo decodifica. */
+    private function leerExtra(int $id, string $nombre): array
+    {
+        $json = DB::table('cliente_extra')
+            ->where('fk_cliente_id', $id)
+            ->where('extra_nombre', $nombre)
+            ->value('extra_valor');
+
+        return $json ? (json_decode($json, true) ?: []) : [];
+    }
+
+    /**
+     * Fila para UPDATE: solo las columnas reales de `cliente` presentes en $data
+     * (sin completar NOT NULL ni defaults: en edición no queremos pisar nada que
+     * el form no haya mandado).
+     *
+     * @param  array<string,mixed>  $data
+     * @return array<string,mixed>
+     */
+    private function filaClienteUpdate(array $data): array
+    {
+        $columnas = collect(DB::select('DESCRIBE `cliente`'))
+            ->reject(fn ($col) => str_contains((string) $col->Extra, 'auto_increment'))
+            ->pluck('Field')
+            ->all();
+
+        return array_intersect_key($data, array_flip($columnas));
+    }
+
+    /**
      * Construye la fila a insertar: toma de $data solo las columnas reales de
      * `cliente` y completa las NOT NULL sin default que falten con un default
      * por tipo (la tabla legacy no tiene defaults).

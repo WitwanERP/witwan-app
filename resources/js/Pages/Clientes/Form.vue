@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Link, router, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
@@ -8,12 +8,20 @@ defineOptions({ layout: AppLayout })
 const props = defineProps({
   opciones: { type: Object, default: () => ({}) },
   ciudades: { type: Array, default: () => [] },
+  // En edición llega el cliente con sus columnas + contactos/tarjetas; en alta es null.
+  cliente: { type: Object, default: null },
 })
+
+const esEdicion = computed(() => props.cliente !== null)
+const clienteId = props.cliente?.cliente_id ?? null
 
 // Clases reutilizables (estilo CI: inputs full-width, labels en negrita = obligatorio).
 const inputCls = 'w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
 
-const form = useForm({
+// Valores por defecto del alta. En edición, cada clave presente en el cliente
+// pisa el default preservando el tipo (number/string) para que los selects e
+// inputs queden bien enlazados.
+const defaults = {
   // Cliente
   cliente_pasajerodirecto: 0,
   cliente_razonsocial: '',
@@ -52,6 +60,9 @@ const form = useForm({
   plazo_pago: 0,
   fk_cadenacliente_id: 0,
   consolidador: 'N',
+  // Integración
+  idnemo: 0,
+  idtravelc: 0,
   // Tarifarios
   fk_tarifario1_id: 0,
   fk_tarifario2_id: 0,
@@ -82,7 +93,24 @@ const form = useForm({
   // Repetibles
   contactos: [],
   tarjetas: [],
-})
+}
+
+function valoresIniciales() {
+  const base = { ...defaults }
+  if (!props.cliente) return base
+
+  for (const k of Object.keys(defaults)) {
+    const v = props.cliente[k]
+    if (v !== undefined && v !== null) {
+      base[k] = typeof defaults[k] === 'number' ? Number(v) : v
+    }
+  }
+  base.contactos = Array.isArray(props.cliente.contactos) ? props.cliente.contactos : []
+  base.tarjetas = Array.isArray(props.cliente.tarjetas) ? props.cliente.tarjetas : []
+  return base
+}
+
+const form = useForm(valoresIniciales())
 
 // Cliente existente con el mismo CUIT (null = sin conflicto). Mientras esté seteado,
 // el alta queda bloqueada hasta tildar el checkbox de confirmación (form.cuit_confirmado).
@@ -98,7 +126,8 @@ const chequearCuit = async () => {
     return
   }
   try {
-    const res = await fetch(`/app/clientes/chequear-cuit?cuit=${encodeURIComponent(cuit)}`, {
+    const excluir = clienteId ? `&cliente_id=${clienteId}` : ''
+    const res = await fetch(`/app/clientes/chequear-cuit?cuit=${encodeURIComponent(cuit)}${excluir}`, {
       headers: { Accept: 'application/json' },
     })
     const data = res.ok ? await res.json() : { existe: false }
@@ -144,7 +173,11 @@ const submit = async () => {
     return // queda visible la advertencia + checkbox
   }
 
-  form.post('/app/clientes', { preserveScroll: true })
+  if (esEdicion.value) {
+    form.put(`/app/clientes/${clienteId}`, { preserveScroll: true })
+  } else {
+    form.post('/app/clientes', { preserveScroll: true })
+  }
 }
 </script>
 
@@ -158,7 +191,7 @@ const submit = async () => {
       <span>/</span>
       <Link href="/app/clientes" class="hover:text-gray-700">Clientes</Link>
       <span>/</span>
-      <span class="text-gray-900 font-semibold">Nuevo</span>
+      <span class="text-gray-900 font-semibold">{{ esEdicion ? `Editar #${clienteId}` : 'Nuevo' }}</span>
     </nav>
 
     <!-- Aviso obligatorios -->
@@ -385,6 +418,14 @@ const submit = async () => {
               <option value="N">No</option>
               <option value="S">Sí</option>
             </select>
+          </div>
+          <div>
+            <label class="block text-sm mb-1">ID Pricesurfer</label>
+            <input v-model.number="form.idnemo" type="number" :class="inputCls" />
+          </div>
+          <div>
+            <label class="block text-sm mb-1">ID Travel Compositor</label>
+            <input v-model.number="form.idtravelc" type="number" :class="inputCls" />
           </div>
         </div>
       </section>
