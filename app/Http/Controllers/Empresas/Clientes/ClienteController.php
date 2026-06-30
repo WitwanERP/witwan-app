@@ -636,7 +636,7 @@ class ClienteController extends Controller
         $reservas = DB::select("
             SELECT reserva.reserva_id, reserva.total, reserva.cobrado, reserva.fk_moneda_id AS fmoneda
             FROM reserva
-            JOIN servicio ON servicio.fk_reserva_id = reserva.reserva_id
+            LEFT JOIN servicio ON servicio.fk_reserva_id = reserva.reserva_id
             WHERE (status != 'CA' AND servicio_id NOT IN (SELECT DISTINCT(fk_servicio_id) FROM rel_serviciofactura WHERE fk_servicio_id IS NOT NULL))
               AND fk_cliente_id = ?
               AND fk_filestatus_id IN ('CL','CO')
@@ -646,6 +646,22 @@ class ClienteController extends Controller
 
         foreach ($reservas as $reserva) {
             // Get currency exchange rate - simplified version
+            $tcmoneda = $this->getCurrencyRate($reserva->fmoneda);
+            $usado += ($reserva->total - $reserva->cobrado) * $tcmoneda;
+        }
+
+        // 3. TEMPORAL: reservas en 'CO' sin ningún servicio y con codigo_externo != 0
+        $reservasSinServicio = DB::select("
+            SELECT reserva.reserva_id, reserva.total, reserva.cobrado, reserva.fk_moneda_id AS fmoneda
+            FROM reserva
+            WHERE reserva.fk_cliente_id = ?
+              AND reserva.fk_filestatus_id = 'CO'
+              AND reserva.codigo_externo != 0
+              AND reserva.total != reserva.cobrado
+              AND NOT EXISTS (SELECT 1 FROM servicio WHERE servicio.fk_reserva_id = reserva.reserva_id)
+        ", [$clientId]);
+
+        foreach ($reservasSinServicio as $reserva) {
             $tcmoneda = $this->getCurrencyRate($reserva->fmoneda);
             $usado += ($reserva->total - $reserva->cobrado) * $tcmoneda;
         }
