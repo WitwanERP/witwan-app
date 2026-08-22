@@ -58,3 +58,37 @@
     .badge-info    { @apply bg-blue-100 text-blue-800; }
     .badge-gray    { @apply bg-gray-100 text-gray-800; }
 }
+
+/* ---------------------------------------------------------------------------
+   Impresión
+   Las pantallas de comprobantes (facturas de tercero) se imprimen con el propio
+   navegador, igual que el CI legacy, que tampoco generaba PDF. Se ocultan el
+   sidebar, la barra superior y los botones de acción.
+--------------------------------------------------------------------------- */
+@media print {
+  aside,
+  header,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+
+  /* El layout desplaza el contenido para dejar lugar al sidebar. */
+  body,
+  main,
+  .lg\:ml-64,
+  .lg\:ml-20 {
+    margin-left: 0 !important;
+    background: #fff !important;
+  }
+
+  .card {
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+}

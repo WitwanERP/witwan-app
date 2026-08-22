@@ -11,6 +11,9 @@ use App\Http\Controllers\Web\Abm\ProyectoController;
 use App\Http\Controllers\Web\Abm\RegionController;
 use App\Http\Controllers\Web\Abm\TipoclavefiscalController;
 use App\Http\Controllers\Web\ClienteController;
+use App\Http\Controllers\Web\Documentos\DteChileController;
+use App\Http\Controllers\Web\Documentos\FacturaproveedorController as FacturaproveedorWebController;
+use App\Http\Controllers\Web\Documentos\FacturaproveedorMultipleController;
 use App\Http\Controllers\Web\PasajeroController;
 use App\Http\Controllers\Web\Reservas\ReservaListadoController;
 use App\Services\CiSessionReader;
@@ -68,6 +71,44 @@ Route::prefix('app')->group(function () {
         Route::get('/{area}/clientes', [ReservaListadoController::class, 'clientesAutocomplete'])->where('area', $areas)->name('reservas.clientes');
         Route::post('/{area}/eliminar', [ReservaListadoController::class, 'eliminar'])->where('area', $areas)->name('reservas.eliminar');
         Route::post('/{area}/agrupar', [ReservaListadoController::class, 'agrupar'])->where('area', $areas)->name('reservas.agrupar');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | Administración > Documentos > Facturas de Terceros
+    |----------------------------------------------------------------------
+    | Reemplaza a /administracion/factura3ero del CI legacy. Las rutas fijas van
+    | ANTES de /{id} para que no las capture el comodín numérico.
+    |
+    | Los endpoints JSON auxiliares viven acá y no en routes/api.php: esa capa
+    | está detrás de JWT y el front Inertia no la consume por HTTP.
+    |
+    | Los nombres van bajo 'documentos.' porque routes/api.php:287 ya registra un
+    | apiResource('facturas-proveedor') con los nombres planos: sin prefijo, uno
+    | pisaría al otro y route() devolvería la URL equivocada.
+    */
+    Route::prefix('facturas-proveedor')->group(function () {
+        Route::get('/', [FacturaproveedorWebController::class, 'index'])->name('documentos.facturas-proveedor.index');
+        Route::get('/export', [FacturaproveedorWebController::class, 'exportar'])->name('documentos.facturas-proveedor.export');
+        Route::get('/subdiario', [FacturaproveedorWebController::class, 'subdiario'])->name('documentos.facturas-proveedor.subdiario');
+        Route::get('/dte-chile', [DteChileController::class, 'index'])->name('documentos.facturas-proveedor.dte-chile');
+        Route::get('/multiple', [FacturaproveedorMultipleController::class, 'create'])->name('documentos.facturas-proveedor.multiple');
+        Route::post('/multiple', [FacturaproveedorMultipleController::class, 'store'])->name('documentos.facturas-proveedor.multiple.store');
+        Route::get('/create', [FacturaproveedorWebController::class, 'create'])->name('documentos.facturas-proveedor.create');
+
+        // Auxiliares JSON (fetch desde el Vue).
+        Route::get('/proveedores', [FacturaproveedorWebController::class, 'proveedores']);
+        Route::get('/cotizacion', [FacturaproveedorWebController::class, 'cotizacion']);
+        Route::get('/ocupaciones', [FacturaproveedorWebController::class, 'ocupaciones']);
+        Route::get('/duplicado', [FacturaproveedorWebController::class, 'duplicado']);
+        Route::post('/calcular', [FacturaproveedorWebController::class, 'calcular']);
+
+        Route::post('/', [FacturaproveedorWebController::class, 'store'])->name('documentos.facturas-proveedor.store');
+        Route::get('/{id}', [FacturaproveedorWebController::class, 'show'])->whereNumber('id')->name('documentos.facturas-proveedor.show');
+        Route::get('/{id}/archivo', [FacturaproveedorWebController::class, 'archivo'])->whereNumber('id')->name('documentos.facturas-proveedor.archivo');
+        Route::get('/{id}/edit', [FacturaproveedorWebController::class, 'edit'])->whereNumber('id')->name('documentos.facturas-proveedor.edit');
+        Route::put('/{id}', [FacturaproveedorWebController::class, 'update'])->whereNumber('id')->name('documentos.facturas-proveedor.update');
+        Route::delete('/{id}', [FacturaproveedorWebController::class, 'destroy'])->whereNumber('id')->name('documentos.facturas-proveedor.destroy');
     });
 
     // ABMs de configuración (config-driven, controllers que extienden Abm\AbmController).

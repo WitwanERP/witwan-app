@@ -6,6 +6,10 @@
       "resources/js/app.js"
     ]
   },
+  "_calculo.js": {
+    "file": "assets/calculo.js",
+    "name": "calculo"
+  },
   "resources/css/app.css": {
     "file": "assets/app.css",
     "src": "resources/css/app.css",
@@ -61,8 +65,174 @@
       "_AppLayout.js"
     ]
   },
-  "resources/js/Pages/Pasajeros/Form.vue": {
+  "resources/js/Pages/Documentos/FacturasProveedor/CargaMultiple.vue": {
+    "file": "assets/CargaMultiple.js",
+    "name": "CargaMultiple",
+    "src": "resources/js/Pages/Documentos/FacturasProveedor/CargaMultiple.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/SelectorProveedor.vue",
+      "_calculo.js"
+    ]
+  },
+  "resources/js/Pages/Documentos/FacturasProveedor/DteChile.vue": {
+    "file": "assets/DteChile.js",
+    "name": "DteChile",
+    "src": "resources/js/Pages/Documentos/FacturasProveedor/DteChile.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js"
+    ]
+  },
+  "resources/js/Pages/Documentos/FacturasProveedor/Form.vue": {
     "file": "assets/Form3.js",
+    "name": "Form",
+    "src": "resources/js/Pages/Documentos/FacturasProveedor/Form.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/SelectorProveedor.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/ConceptosAdicionales.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/GrillaImportes.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/ImputacionAreas.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/PickerOcupaciones.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/ResumenTotales.vue",
+      "_calculo.js"
+    ]
+  },
+  "resources/js/Pages/Documentos/FacturasProveedor/Index.vue": {
+    "file": "assets/Index3.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Documentos/FacturasProveedor/Index.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/FiltrosFactura.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/TablaFacturas.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/TotalesPorTipo.vue",
+      "_calculo.js"
+    ]
+  },
+  "resources/js/Pages/Documentos/FacturasProveedor/Subdiario.vue": {
+    "file": "assets/Subdiario.js",
+    "name": "Subdiario",
+    "src": "resources/js/Pages/Documentos/FacturasProveedor/Subdiario.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/FiltrosFactura.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/TablaFacturas.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/TotalesPorTipo.vue",
+      "_calculo.js"
+    ]
+  },
+  "resources/js/Pages/Documentos/FacturasProveedor/Ver.vue": {
+    "file": "assets/Ver.js",
+    "name": "Ver",
+    "src": "resources/js/Pages/Documentos/FacturasProveedor/Ver.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "_calculo.js"
+    ]
+  },
+  "resources/js/Pages/Documentos/FacturasProveedor/components/ConceptosAdicionales.vue": {
+    "file": "assets/ConceptosAdicionales.js",
+    "name": "ConceptosAdicionales",
+    "src": "resources/js/Pages/Documentos/FacturasProveedor/components/ConceptosAdicionales.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_calculo.js",
+      "resources/js/app.js"
+    ]
+  },
+  "resources/js/Pages/Documentos/FacturasProveedor/components/FiltrosFactura.vue": {
+    "file": "assets/FiltrosFactura.js",
+    "name": "FiltrosFactura",
+    "src": "resources/js/Pages/Documentos/FacturasProveedor/components/FiltrosFactura.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "resources/js/Pages/Documentos/FacturasProveedor/components/GrillaImportes.vue": {
+    "file": "assets/GrillaImportes.js",
+    "name": "GrillaImportes",
+    "src": "resources/js/Pages/Documentos/FacturasProveedor/components/GrillaImportes.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_calculo.js"
+    ]
+  },
+  "resources/js/Pages/Documentos/FacturasProveedor/components/ImputacionAreas.vue": {
+    "file": "assets/ImputacionAreas.js",
+    "name": "ImputacionAreas",
+    "src": "resources/js/Pages/Documentos/FacturasProveedor/components/ImputacionAreas.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_calculo.js",
+      "resources/js/app.js"
+    ]
+  },
+  "resources/js/Pages/Documentos/FacturasProveedor/components/PickerOcupaciones.vue": {
+    "file": "assets/PickerOcupaciones.js",
+    "name": "PickerOcupaciones",
+    "src": "resources/js/Pages/Documentos/FacturasProveedor/components/PickerOcupaciones.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_calculo.js"
+    ]
+  },
+  "resources/js/Pages/Documentos/FacturasProveedor/components/ResumenTotales.vue": {
+    "file": "assets/ResumenTotales.js",
+    "name": "ResumenTotales",
+    "src": "resources/js/Pages/Documentos/FacturasProveedor/components/ResumenTotales.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_calculo.js",
+      "resources/js/app.js"
+    ]
+  },
+  "resources/js/Pages/Documentos/FacturasProveedor/components/SelectorProveedor.vue": {
+    "file": "assets/SelectorProveedor.js",
+    "name": "SelectorProveedor",
+    "src": "resources/js/Pages/Documentos/FacturasProveedor/components/SelectorProveedor.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "resources/js/Pages/Documentos/FacturasProveedor/components/TablaFacturas.vue": {
+    "file": "assets/TablaFacturas.js",
+    "name": "TablaFacturas",
+    "src": "resources/js/Pages/Documentos/FacturasProveedor/components/TablaFacturas.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_calculo.js"
+    ]
+  },
+  "resources/js/Pages/Documentos/FacturasProveedor/components/TotalesPorTipo.vue": {
+    "file": "assets/TotalesPorTipo.js",
+    "name": "TotalesPorTipo",
+    "src": "resources/js/Pages/Documentos/FacturasProveedor/components/TotalesPorTipo.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_calculo.js",
+      "resources/js/app.js"
+    ]
+  },
+  "resources/js/Pages/Pasajeros/Form.vue": {
+    "file": "assets/Form4.js",
     "name": "Form",
     "src": "resources/js/Pages/Pasajeros/Form.vue",
     "isDynamicEntry": true,
@@ -72,7 +242,7 @@
     ]
   },
   "resources/js/Pages/Pasajeros/Index.vue": {
-    "file": "assets/Index3.js",
+    "file": "assets/Index4.js",
     "name": "Index",
     "src": "resources/js/Pages/Pasajeros/Index.vue",
     "isDynamicEntry": true,
@@ -142,6 +312,21 @@
       "resources/js/Pages/Clientes/Form.vue",
       "resources/js/Pages/Clientes/Index.vue",
       "resources/js/Pages/Dashboard.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/CargaMultiple.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/DteChile.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/Form.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/Index.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/Subdiario.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/Ver.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/ConceptosAdicionales.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/FiltrosFactura.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/GrillaImportes.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/ImputacionAreas.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/PickerOcupaciones.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/ResumenTotales.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/SelectorProveedor.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/TablaFacturas.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/TotalesPorTipo.vue",
       "resources/js/Pages/Pasajeros/Form.vue",
       "resources/js/Pages/Pasajeros/Index.vue",
       "resources/js/Pages/Reservas/Listado.vue",

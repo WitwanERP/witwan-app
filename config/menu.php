@@ -55,6 +55,13 @@ return [
         'reserva/lista/nacional' => '/app/reservas/nacional',
         'reserva/lista/minorista' => '/app/reservas/minorista',
         'reserva/lista/consolidador' => '/app/reservas/consolidador',
+
+        // Administración > Documentos. El seccion_uri en brain es
+        // '/administracion/factura3ero' (sección 72); MenuService::url() compara
+        // sin la barra inicial. NO se mapea 'administracion/factura3erom': la
+        // carga múltiple vive dentro del front nuevo, en /multiple.
+        'administracion/factura3ero' => '/app/facturas-proveedor',
+        'administracion/factura3ero/subdiariocompra' => '/app/facturas-proveedor/subdiario',
     ],
 
     // Cache del menú armado, en segundos (clave por licencia+rol). 0 = sin cache.

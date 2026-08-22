@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { router } from '@inertiajs/vue3'
 import Sidebar from '@/Components/Sidebar.vue'
 import Navbar from '@/Components/Navbar.vue'
+import FlashMessages from '@/Components/FlashMessages.vue'
 
 const sidebarOpen = ref(true)
 const mobileSidebarOpen = ref(false)
@@ -38,6 +39,8 @@ function handleLogout() {
         @toggle-mobile-sidebar="toggleMobileSidebar"
         @logout="handleLogout"
       />
+
+      <FlashMessages />
 
       <main class="p-4 lg:p-6">
         <slot />

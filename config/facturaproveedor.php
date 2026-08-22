@@ -130,6 +130,74 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Proveedor BSP  (ajax.php:313)
+    |--------------------------------------------------------------------------
+    | Los boletos aéreos del BSP se agrupan por semana y se contabilizan contra
+    | la cuenta de provisión. `familia_secontur` aplica a _t_l == 'secontur',
+    | no sólo a la licencia witwan_secontur.
+    */
+    'proveedor_bsp' => [
+        'familia_secontur' => 370,
+        'por_licencia' => ['witwan_hayland' => 107],
+        'config_item' => env('FP_PROVEEDOR_BSP'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ventana de servicios pendientes  (ajax.php:246-253)
+    |--------------------------------------------------------------------------
+    | Antigüedad máxima de los servicios que se ofrecen para imputar. Se ignora
+    | cuando la búsqueda viene con código de reserva.
+    */
+    'ventana_servicios' => [
+        'default' => '-18 months',
+        'witwan_morisan' => '2022-05-01',
+        'witwan_hayland' => '-3 months',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Asiento contable: concepto => cuenta de sysconfig  (factura3ero.php:1169-1368)
+    |--------------------------------------------------------------------------
+    */
+    'asiento' => [
+        'netos' => [
+            'exento' => 'fc3exento',
+            'general' => 'fc3gral',
+            'especial' => 'fc3especial',
+            'nocomputable' => 'fc3nocomputable',
+            'monto27' => 'fc3monto27',
+            'monto25' => 'fc3monto25',
+        ],
+        'impuestos' => [
+            // El IVA turismo se debita en negativo.
+            'ivatur' => ['cuenta' => 'ctaivatur', 'signo' => -1],
+            'retencioniva' => ['cuenta' => 'fc3retiva'],
+            'retencioniibb' => ['cuenta' => 'fc3retiibb'],
+            'retencionganancias' => ['cuenta' => 'fc3retganancias'],
+            'percepcioniibb' => ['cuenta' => 'fc3perciibb'],
+            'percepcioniva' => ['cuenta' => 'fc3perciva'],
+            'percepcionganancias' => ['cuenta' => 'fc3perganancias'],
+            'otrosimpuestos' => ['cuenta' => 'fc3otros'],
+        ],
+        // 'gasto' es la cuenta alternativa cuando tipomovimiento == 'Gasto'.
+        'iva' => [
+            'general' => ['normal' => 'fc3ivatotal', 'gasto' => 'fc3ivatotal_i'],
+            'especial' => ['normal' => 'fc3ivaespecial', 'gasto' => 'fc3ivaespecial_i'],
+            'monto27' => ['normal' => 'fc3iva27', 'gasto' => 'fc3iva27'],
+            'monto25' => ['normal' => 'fc3iva25', 'gasto' => 'fc3iva25'],
+        ],
+        'credito' => [
+            'default' => 'cuentaproveedor',
+            'USD' => 'cuentaproveedorusd',
+            'Gasto' => 'cuentaproveedorvarios',
+            'Boleta' => 'cuentaproveedorvarios',
+            'BSP' => 'provisionBSP',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | SECONTUR: división multi-base
     |--------------------------------------------------------------------------
     | Sólo la licencia exacta `witwan_secontur` replica la factura prorrateada en

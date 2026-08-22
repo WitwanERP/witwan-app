@@ -21,13 +21,24 @@ use App\Helpers\SysconfigHelper;
  */
 final class CuentasContables
 {
-    /** @param  array<string,mixed>  $valores  clave de sysconfig => id de plancuenta */
-    public function __construct(private readonly array $valores) {}
+    /**
+     * @param  array<string,mixed>|null  $valores  clave de sysconfig => id de
+     *                                             plancuenta. Con null se leen de la licencia activa la primera vez que
+     *                                             hagan falta: así el contenedor puede construir la clase sin argumentos y
+     *                                             sin pegarle a la base en cada request que no contabiliza nada.
+     */
+    public function __construct(private ?array $valores = null) {}
 
     /** Instancia con la configuración de la licencia activa. */
     public static function paraLicenciaActual(): self
     {
-        return new self(SysconfigHelper::all() ?: []);
+        return new self;
+    }
+
+    /** @return array<string,mixed> */
+    private function valores(): array
+    {
+        return $this->valores ??= (SysconfigHelper::all() ?: []);
     }
 
     /**
@@ -49,7 +60,7 @@ final class CuentasContables
     /** Igual que id() pero devuelve null en vez de fallar. */
     public function idONull(string $clave): ?int
     {
-        $valor = $this->valores[$clave] ?? null;
+        $valor = $this->valores()[$clave] ?? null;
 
         if ($valor === null || $valor === '' || (int) $valor === 0) {
             return null;
