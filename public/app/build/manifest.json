@@ -115,6 +115,7 @@
       "resources/js/Pages/Documentos/FacturasProveedor/components/FiltrosFactura.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/components/TablaFacturas.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/components/TotalesPorTipo.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/RangoFechas.vue",
       "_calculo.js"
     ]
   },
@@ -129,6 +130,7 @@
       "resources/js/Pages/Documentos/FacturasProveedor/components/FiltrosFactura.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/components/TablaFacturas.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/components/TotalesPorTipo.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/RangoFechas.vue",
       "_calculo.js"
     ]
   },
@@ -159,7 +161,8 @@
     "src": "resources/js/Pages/Documentos/FacturasProveedor/components/FiltrosFactura.vue",
     "isDynamicEntry": true,
     "imports": [
-      "resources/js/app.js"
+      "resources/js/app.js",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/RangoFechas.vue"
     ]
   },
   "resources/js/Pages/Documentos/FacturasProveedor/components/GrillaImportes.vue": {
@@ -190,6 +193,15 @@
     "imports": [
       "resources/js/app.js",
       "_calculo.js"
+    ]
+  },
+  "resources/js/Pages/Documentos/FacturasProveedor/components/RangoFechas.vue": {
+    "file": "assets/RangoFechas.js",
+    "name": "RangoFechas",
+    "src": "resources/js/Pages/Documentos/FacturasProveedor/components/RangoFechas.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js"
     ]
   },
   "resources/js/Pages/Documentos/FacturasProveedor/components/ResumenTotales.vue": {
@@ -323,6 +335,7 @@
       "resources/js/Pages/Documentos/FacturasProveedor/components/GrillaImportes.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/components/ImputacionAreas.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/components/PickerOcupaciones.vue",
+      "resources/js/Pages/Documentos/FacturasProveedor/components/RangoFechas.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/components/ResumenTotales.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/components/SelectorProveedor.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/components/TablaFacturas.vue",

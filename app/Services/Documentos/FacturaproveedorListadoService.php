@@ -202,9 +202,38 @@ class FacturaproveedorListadoService
             ->selectRaw($this->expresiones());
     }
 
+    /**
+     * Completa los rangos de fecha que llegan a medias.
+     *
+     * El front ya deja los dos extremos coherentes y a la vista, pero a esta
+     * query también se llega por URL (un link guardado, el export), así que se
+     * vuelve a asegurar acá.
+     *
+     * Un "desde" sin "hasta" se cierra en hoy, igual que el legacy
+     * (Form.php:1120 usa format_date(''), que devuelve la fecha actual). Un
+     * "hasta" sin "desde" se aplica como cota superior abierta: el legacy en ese
+     * caso descartaba el filtro entero y devolvía todo, que es justamente el
+     * resultado engañoso que se quiere evitar.
+     */
+    private function normalizarRangos(array $filtros): array
+    {
+        foreach (['fecha', 'fechacarga', 'fechacontable'] as $campo) {
+            $desde = $filtros[$campo.'_desde'] ?? null;
+            $hasta = $filtros[$campo.'_hasta'] ?? null;
+
+            if (! blank($desde) && blank($hasta)) {
+                $filtros[$campo.'_hasta'] = Carbon::today()->format('Y-m-d');
+            }
+        }
+
+        return $filtros;
+    }
+
     /** Joins y WHERE, sin proyección: lo compartido entre listado, totales y export. */
     private function baseQuery(array $filtros): Builder
     {
+        $filtros = $this->normalizarRangos($filtros);
+
         $q = DB::table('facturaproveedor')
             ->join('proveedor', 'proveedor.proveedor_id', '=', 'facturaproveedor.fk_proveedor_id')
             ->leftJoin('usuario', 'usuario.usuario_id', '=', 'facturaproveedor.fk_usuario_id')

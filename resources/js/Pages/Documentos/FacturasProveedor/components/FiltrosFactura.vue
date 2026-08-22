@@ -1,6 +1,7 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 import { router } from '@inertiajs/vue3'
+import RangoFechas from './RangoFechas.vue'
 
 const props = defineProps({
   filtros: { type: Object, default: () => ({}) },
@@ -18,13 +19,27 @@ const form = reactive({
   proyecto: props.filtros.proyecto ?? '',
   tipodocumento: props.filtros.tipodocumento ?? '',
   moneda: props.filtros.moneda ?? '',
-  fecha_desde: props.filtros.fecha_desde ?? '',
-  fecha_hasta: props.filtros.fecha_hasta ?? '',
-  fechacontable_desde: props.filtros.fechacontable_desde ?? '',
-  fechacontable_hasta: props.filtros.fechacontable_hasta ?? '',
-  fechacarga_desde: props.filtros.fechacarga_desde ?? '',
-  fechacarga_hasta: props.filtros.fechacarga_hasta ?? '',
 })
+
+/**
+ * Los tres rangos se manejan como un objeto {desde, hasta} cada uno, para que el
+ * componente pueda mantener los dos extremos coherentes. Al enviar se aplanan a
+ * los nombres que espera el backend (fecha_desde, fecha_hasta, …).
+ */
+const RANGOS = [
+  { clave: 'fecha', label: 'Fecha de factura' },
+  { clave: 'fechacontable', label: 'Fecha contable' },
+  { clave: 'fechacarga', label: 'Fecha de carga' },
+]
+
+const rangos = reactive(
+  Object.fromEntries(
+    RANGOS.map((r) => [
+      r.clave,
+      { desde: props.filtros[`${r.clave}_desde`] ?? '', hasta: props.filtros[`${r.clave}_hasta`] ?? '' },
+    ])
+  )
+)
 
 // Autocomplete de proveedor: el listado completo son miles de filas.
 const buscador = ref('')
@@ -67,11 +82,21 @@ const fieldBase =
 function aplicar() {
   const params = {}
   for (const [k, v] of Object.entries(form)) if (v !== '' && v !== null) params[k] = v
+
+  for (const [clave, rango] of Object.entries(rangos)) {
+    if (rango.desde) params[`${clave}_desde`] = rango.desde
+    if (rango.hasta) params[`${clave}_hasta`] = rango.hasta
+  }
+
   router.get(props.destino, params, { preserveState: true, preserveScroll: true, replace: true })
 }
 
 function limpiar() {
   for (const k of Object.keys(form)) form[k] = ''
+  for (const clave of Object.keys(rangos)) {
+    rangos[clave].desde = ''
+    rangos[clave].hasta = ''
+  }
   limpiarProveedor()
   router.get(props.destino, {}, { preserveState: true, preserveScroll: true, replace: true })
 }
@@ -165,30 +190,17 @@ onMounted(() => {
             </select>
           </div>
 
-          <div>
-            <label class="form-label">Fecha de factura</label>
-            <div class="flex gap-2">
-              <input v-model="form.fecha_desde" type="date" :class="fieldBase" />
-              <input v-model="form.fecha_hasta" type="date" :class="fieldBase" />
-            </div>
-          </div>
-
-          <div>
-            <label class="form-label">Fecha contable</label>
-            <div class="flex gap-2">
-              <input v-model="form.fechacontable_desde" type="date" :class="fieldBase" />
-              <input v-model="form.fechacontable_hasta" type="date" :class="fieldBase" />
-            </div>
-          </div>
-
-          <div>
-            <label class="form-label">Fecha de carga</label>
-            <div class="flex gap-2">
-              <input v-model="form.fechacarga_desde" type="date" :class="fieldBase" />
-              <input v-model="form.fechacarga_hasta" type="date" :class="fieldBase" />
-            </div>
-          </div>
+          <RangoFechas
+            v-for="r in RANGOS"
+            :key="r.clave"
+            v-model="rangos[r.clave]"
+            :label="r.label"
+          />
         </div>
+
+        <p class="form-hint mt-3">
+          Al cargar un extremo de un rango, el otro se completa solo para que la consulta quede acotada.
+        </p>
 
         <div class="mt-4 flex gap-2">
           <button type="submit" class="btn btn-primary">Filtrar</button>

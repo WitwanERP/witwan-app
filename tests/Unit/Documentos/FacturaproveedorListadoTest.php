@@ -78,6 +78,38 @@ class FacturaproveedorListadoTest extends TestCase
         }
     }
 
+    /**
+     * Un rango a medias es el origen de los "resultados fallidos" del legacy: con
+     * el "desde" vacío, Form.php:1112 descarta el filtro entero y devuelve todo,
+     * incluido lo posterior al "hasta" que el usuario sí cargó.
+     */
+    public function test_un_desde_sin_hasta_se_cierra_en_hoy(): void
+    {
+        $bindings = $this->bindings(['fecha_desde' => '2026-01-01']);
+
+        $this->assertContains(now()->format('Y-m-d'), $bindings);
+    }
+
+    public function test_un_hasta_sin_desde_se_aplica_igual_como_cota_superior(): void
+    {
+        $sql = $this->sql(['fecha_hasta' => '2024-12-31']);
+
+        // El legacy acá devolvía TODO; nosotros respetamos lo que cargó el usuario.
+        $this->assertStringContainsString('date(`facturaproveedor`.`fecha`) <= ?', $sql);
+        $this->assertStringNotContainsString('date(`facturaproveedor`.`fecha`) >= ?', $sql);
+        $this->assertContains('2024-12-31', $this->bindings(['fecha_hasta' => '2024-12-31']));
+    }
+
+    public function test_los_tres_rangos_se_normalizan_igual(): void
+    {
+        foreach (['fecha', 'fechacarga', 'fechacontable'] as $campo) {
+            $sql = $this->sql([$campo.'_desde' => '2026-01-01']);
+
+            $this->assertStringContainsString("date(`facturaproveedor`.`{$campo}`) <= ?", $sql,
+                "El rango {$campo} debería cerrarse solo");
+        }
+    }
+
     public function test_acepta_fechas_en_formato_del_legacy(): void
     {
         // El CI manda dd/mm/YYYY; el front nuevo, ISO. Los dos tienen que andar.
