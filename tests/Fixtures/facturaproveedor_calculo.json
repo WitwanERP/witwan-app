@@ -1,0 +1,75 @@
+[
+  {
+    "nombre": "solo alicuota general (21%)",
+    "pais": "AR", "general": 0.21,
+    "datos": {"general": 1000},
+    "esperado": {"montosiniva": 1000, "ivaGeneral": 210, "ivaCalculado": 210, "soloiva": 210, "retper": 0, "montototal": 1210, "montoperc": 1000}
+  },
+  {
+    "nombre": "general + especial (10,5%)",
+    "pais": "AR", "general": 0.21,
+    "datos": {"general": 1000, "especial": 1000},
+    "esperado": {"montosiniva": 2000, "ivaGeneral": 210, "ivaEspecial": 105, "ivaCalculado": 315, "soloiva": 315, "retper": 0, "montototal": 2315, "montoperc": 2000}
+  },
+  {
+    "nombre": "alicuotas 27% y 2,5%",
+    "pais": "AR", "general": 0.21,
+    "datos": {"monto27": 1000, "monto25": 1000},
+    "esperado": {"montosiniva": 2000, "iva27": 270, "iva25": 25, "ivaCalculado": 295, "soloiva": 295, "retper": 0, "montototal": 2295, "montoperc": 2000}
+  },
+  {
+    "nombre": "el IVA turismo se resta del IVA, no del neto",
+    "pais": "AR", "general": 0.21,
+    "datos": {"general": 1000, "ivatur": 50},
+    "esperado": {"montosiniva": 1000, "ivaCalculado": 210, "soloiva": 160, "retper": 0, "montototal": 1160, "montoperc": 1000}
+  },
+  {
+    "nombre": "retenciones y percepciones suman al total y al montoperc",
+    "pais": "AR", "general": 0.21,
+    "datos": {"general": 1000, "retencioniva": 100, "percepcioniibb": 30, "otrosimpuestos": 20},
+    "esperado": {"montosiniva": 1000, "ivaCalculado": 210, "soloiva": 210, "retper": 150, "montototal": 1360, "montoperc": 1150}
+  },
+  {
+    "nombre": "exento y no computable no generan IVA",
+    "pais": "AR", "general": 0.21,
+    "datos": {"exento": 500, "nocomputable": 250},
+    "esperado": {"montosiniva": 750, "ivaCalculado": 0, "soloiva": 0, "retper": 0, "montototal": 750, "montoperc": 750}
+  },
+  {
+    "nombre": "el redondeo es por componente, no sobre la suma",
+    "pais": "AR", "general": 0.21,
+    "datos": {"general": 2.38, "monto25": 1.00},
+    "esperado": {"montosiniva": 3.38, "ivaGeneral": 0.5, "iva25": 0.03, "ivaCalculado": 0.53, "soloiva": 0.53, "retper": 0, "montototal": 3.91, "montoperc": 3.38}
+  },
+  {
+    "nombre": "Chile: manda el IVA cargado a mano y no se descuenta el IVA turismo",
+    "pais": "CL", "general": 0.19,
+    "datos": {"general": 1000, "ivatotal": 190, "ivatur": 50},
+    "esperado": {"montosiniva": 1000, "ivaCalculado": 190, "soloiva": 190, "retper": 0, "montototal": 1190, "montoperc": 1000}
+  },
+  {
+    "nombre": "Chile: el IVA se redondea a peso entero",
+    "pais": "CL", "general": 0.19,
+    "datos": {"general": 1000, "ivatotal": 190.6},
+    "esperado": {"montosiniva": 1000, "ivaCalculado": 190.6, "soloiva": 191, "retper": 0, "montototal": 1191, "montoperc": 1000}
+  },
+  {
+    "nombre": "Republica Dominicana usa 18%",
+    "pais": "DO", "general": 0.18,
+    "datos": {"general": 1000},
+    "esperado": {"montosiniva": 1000, "ivaGeneral": 180, "ivaCalculado": 180, "soloiva": 180, "retper": 0, "montototal": 1180, "montoperc": 1000}
+  },
+  {
+    "nombre": "los conceptos adicionales REEMPLAZAN al exento cargado",
+    "pais": "AR", "general": 0.21,
+    "datos": {"exento": 999, "general": 100},
+    "adicionales": {"sellado": 100, "gastos": 50},
+    "esperado": {"exento": 150, "montosiniva": 250, "ivaGeneral": 21, "ivaCalculado": 21, "soloiva": 21, "retper": 0, "montototal": 271, "montoperc": 250}
+  },
+  {
+    "nombre": "una nota de credito se calcula igual: el signo lo pone el tipo de documento",
+    "pais": "AR", "general": 0.21,
+    "datos": {"general": 500, "exento": 100},
+    "esperado": {"montosiniva": 600, "ivaGeneral": 105, "ivaCalculado": 105, "soloiva": 105, "retper": 0, "montototal": 705, "montoperc": 600}
+  }
+]

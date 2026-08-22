@@ -16,6 +16,7 @@ use App\Models\Proveedor;
 use App\Models\Proyecto;
 use App\Models\RelFacturaproveedorocupacion;
 use App\Models\Servicio;
+use App\Support\Licencia;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -443,7 +444,7 @@ class FacturaproveedorController extends Controller
      */
     public function destroy($id)
     {
-        if (!PermisoHelper::tienePermiso(self::SECTION_ID, 'baja')) {
+        if (!PermisoHelper::tienePermiso(self::SECTION_ID, 'borrado')) {
             return response()->json(['message' => 'No tiene permiso para eliminar facturas de terceros'], 403);
         }
 
@@ -856,19 +857,39 @@ class FacturaproveedorController extends Controller
         return $this->licPais() === 'CL' ? 0 : 2;
     }
 
+    /**
+     * Equivalente a CI `LICPAIS`, que sale de los datos de la licencia
+     * (`index.php:63`: `define('LICPAIS', $licensedata['licencia_pais'])`), NO de
+     * sysconfig. Antes se leía `sysconfig.licpais`, que no existe en los tenants:
+     * caía siempre al default 'AR' y desactivaba en silencio la rama chilena
+     * (`soloiva = round(ivatotal)` y redondeo del IVA a 0 decimales).
+     */
     private function licPais(): string
     {
-        return (string) SysconfigHelper::get('licpais', config('app.licpais', 'AR'));
+        $pais = Licencia::pais();
+
+        return $pais !== '' ? $pais : (string) SysconfigHelper::get('licpais', 'AR');
     }
 
+    /**
+     * Sólo la licencia `witwan_secontur` divide la factura entre bases hermanas
+     * (`factura3ero.php:1040` compara LICENCIA exacta). La familia secontur
+     * —más amplia— es `Licencia::esFamiliaSecontur()` y sólo afecta presentación.
+     */
     private function esSecontur(): bool
     {
-        return SysconfigHelper::get('licencia') === 'witwan_secontur';
+        return Licencia::base() === 'witwan_secontur';
     }
 
+    /**
+     * Moneda básica del tenant. La columna es 'Y'/'N' (default 'N'), igual que en
+     * el CI legacy: `Admin_Controller.php:642` compara contra 'Y' para armar
+     * `SET @monedabasica`. Antes se buscaba 'S', que nunca matcheaba y hacía caer
+     * todo el listado al fallback 'ARS' (convirtiendo por cotización de más).
+     */
     private function monedaBasica(): string
     {
-        $moneda = Moneda::where('moneda_basica', 'S')->first();
+        $moneda = Moneda::where('moneda_basica', 'Y')->first();
         return $moneda?->moneda_id ?? 'ARS';
     }
 

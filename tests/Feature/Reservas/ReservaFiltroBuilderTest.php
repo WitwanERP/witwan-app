@@ -25,7 +25,8 @@ class ReservaFiltroBuilderTest extends TestCase
         // Cache en memoria (el entorno de test no tiene acceso a la BD/cache real)
         // y seed de fileauditado para que el chequeo no consulte sysconfig.
         Cache::swap(new Repository(new ArrayStore));
-        Cache::put('sysconfig.fileauditado', '0', 60);
+        // La cache de sysconfig está namespaceada por licencia (ver SysconfigHelper).
+        Cache::put('sysconfig.witwan_rays.fileauditado', '0', 60);
     }
 
     private function sqlCon(array $filtros): array

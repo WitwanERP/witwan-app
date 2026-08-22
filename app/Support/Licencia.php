@@ -47,14 +47,40 @@ class Licencia
     }
 
     /**
-     * Resuelve un flag declarativo de config/reservas.php para la licencia actual.
-     * Soporta dos formas en el catálogo:
+     * Equivalente a CI `$this->_t_l == 'secontur'` (Admin_Controller.php:682):
+     * la FAMILIA de licencias secontur, que agrupa varias bases distintas.
+     *
+     * OJO: no confundir con la licencia `witwan_secontur` a secas. La familia
+     * decide cosas de presentación (qué columnas se muestran en los listados);
+     * la división multi-base de facturas se gatilla sólo con la base exacta
+     * (`factura3ero.php:1040`).
+     */
+    public static function esFamiliaSecontur(): bool
+    {
+        $base = self::base();
+
+        foreach (['secon', 'maldivas', 'morisan', 'alternativasur'] as $fragmento) {
+            if (str_contains($base, $fragmento)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Resuelve un flag declarativo para la licencia actual. Soporta dos formas en
+     * el catálogo:
      *   - lista de licencias        => true si base() está en la lista
      *   - mapa licencia => valor    => devuelve el valor para base() (o null)
+     *
+     * La clave sin punto se busca en config/reservas.php (comportamiento
+     * histórico); con punto se usa tal cual, para que otros módulos tengan su
+     * propio catálogo (p. ej. 'facturaproveedor.areas_imputacion').
      */
     public static function flag(string $clave, mixed $default = false): mixed
     {
-        $cat = config("reservas.{$clave}");
+        $cat = config(str_contains($clave, '.') ? $clave : "reservas.{$clave}");
 
         if ($cat === null) {
             return $default;
