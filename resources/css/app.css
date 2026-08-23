@@ -17,6 +17,17 @@
     --color-ww-warning: #f59e0b;
     --color-ww-info: #3b82f6;
 
+    /* Chrome del layout: paleta del Metronic del CI legacy (header/sidebar/footer
+       oscuros #2b3643, contenido #eef1f5). */
+    --color-mt-dark: #2b3643;
+    --color-mt-hover: #364150;
+    --color-mt-sub: #242f3b;
+    --color-mt-border: #3a4757;
+    --color-mt-text: #b4bcc8;
+    --color-mt-muted: #8a94a3;
+    --color-mt-content: #eef1f5;
+    --color-mt-accent: #4b8df8;
+
     /* Sistemas por color (receptivo / mayorista / minorista / ...) */
     --color-ww-receptivo: #66cc00;
     --color-ww-mayorista: #ff33ff;
@@ -69,6 +80,7 @@
   aside,
   header,
   nav,
+  .page-footer,
   .no-print {
     display: none !important;
   }
@@ -77,12 +89,14 @@
     padding: 0 !important;
   }
 
-  /* El layout desplaza el contenido para dejar lugar al sidebar. */
+  /* El layout desplaza el contenido para dejar lugar al sidebar y lo baja por
+     el header fijo; al imprimir se anulan ambos. */
   body,
   main,
-  .lg\:ml-64,
-  .lg\:ml-20 {
+  .page-content-wrapper,
+  .page-container {
     margin-left: 0 !important;
+    padding-top: 0 !important;
     background: #fff !important;
   }
 

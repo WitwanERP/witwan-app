@@ -1,33 +1,52 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
+import { ChevronRightIcon, HomeIcon } from '@heroicons/vue/24/outline'
 import MenuIcon from '@/Components/MenuIcon.vue'
 
 defineProps({
   open: Boolean,
   mobileOpen: Boolean,
 })
-defineEmits(['closeMobile'])
+const emit = defineEmits(['closeMobile'])
 
 const page = usePage()
-const user = computed(() => page.props.auth?.user ?? {})
-const userName = computed(() => user.value.usuario_nombre ?? 'Usuario')
-const userEmail = computed(() => user.value.usuario_mail ?? '')
 
 // Botonera que arma el backend (MenuService) desde brain + permisos del rol.
 const menu = computed(() => page.props.menu ?? [])
 
-// Acordeón de 2 niveles: un sistema abierto y, dentro, un grupo abierto.
+// Acordeón de 2 niveles (data-keep-expanded="false" del CI): un sistema abierto
+// y, dentro, un grupo abierto.
 const STORAGE = 'witwan.sidebar.sistema'
 const openSistema = ref(null)
 const openGrupo = ref(null)
 
+const dashboardActiva = computed(() => page.url === '/app')
+
+/** Sección activa: la migrada a /app cuya URL matchea la del navegador. */
+const esActiva = (url) =>
+  typeof url === 'string' &&
+  url.startsWith('/app') &&
+  (page.url === url || page.url.startsWith(url + '/') || page.url.startsWith(url + '?'))
+
+// Al cargar (o al cambiar de página) se abre la rama de la sección activa; si no
+// hay ninguna, la última que el usuario dejó abierta.
 watch(
-  menu,
+  [menu, () => page.url],
   () => {
+    for (const sistema of menu.value) {
+      for (const grupo of sistema.grupos) {
+        if (grupo.items.some((i) => esActiva(i.url))) {
+          openSistema.value = sistema.sistema_id
+          openGrupo.value = sistema.sistema_id + ':' + grupo.grupo
+          return
+        }
+      }
+    }
+
     const ids = menu.value.map((s) => s.sistema_id)
-    const saved = Number(localStorage.getItem(STORAGE))
-    openSistema.value = ids.includes(saved) ? saved : (ids[0] ?? null)
+    const guardado = Number(localStorage.getItem(STORAGE))
+    if (openSistema.value === null && ids.includes(guardado)) openSistema.value = guardado
   },
   { immediate: true },
 )
@@ -37,183 +56,150 @@ const toggleSistema = (id) => {
   openGrupo.value = null
   if (openSistema.value != null) localStorage.setItem(STORAGE, String(openSistema.value))
 }
-const toggleGrupo = (key) => {
-  openGrupo.value = openGrupo.value === key ? null : key
-}
-
-const dashboardActiva = computed(() => page.url === '/app')
+const toggleGrupo = (key) => (openGrupo.value = openGrupo.value === key ? null : key)
+const claveGrupo = (sistema, grupo) => sistema.sistema_id + ':' + grupo.grupo
 </script>
 
 <template>
-  <!-- Sidebar desktop -->
+  <!--
+    page-sidebar: fijo bajo el header (42px). En desktop mide 235px, o 45px
+    colapsado (solo íconos, con flyout al pasar el mouse). En mobile baja como
+    panel debajo del header, igual que el navbar-collapse del CI.
+  -->
   <aside
-    class="fixed inset-y-0 left-0 z-30 bg-gray-900 text-white transition-all duration-300 hidden lg:flex lg:flex-col"
-    :class="open ? 'w-64' : 'w-20'"
+    class="page-sidebar fixed bottom-0 left-0 top-[42px] z-30 overflow-y-auto overflow-x-hidden bg-mt-dark text-[13px] transition-all duration-200"
+    :class="[
+      mobileOpen ? 'block w-full' : 'hidden',
+      open ? 'lg:block lg:w-[235px]' : 'lg:block lg:w-[45px] lg:overflow-visible',
+    ]"
   >
-    <div class="h-16 flex items-center justify-center border-b border-gray-800 shrink-0">
-      <span class="text-xl font-bold">{{ open ? 'WitWan' : 'W' }}</span>
-    </div>
+    <ul class="py-2">
+      <!-- INICIO -->
+      <li>
+        <Link
+          href="/app"
+          class="flex items-center gap-3 border-l-[3px] px-3 py-2.5 transition-colors"
+          :class="[
+            dashboardActiva
+              ? 'border-mt-accent bg-mt-hover text-white'
+              : 'border-transparent text-mt-text hover:bg-mt-hover hover:text-white',
+            open ? '' : 'lg:justify-center lg:px-0',
+          ]"
+          :title="open ? null : 'Inicio'"
+          @click="emit('closeMobile')"
+        >
+          <HomeIcon class="h-4 w-4 shrink-0" />
+          <span v-show="open || mobileOpen" class="truncate font-medium uppercase">Inicio</span>
+        </Link>
+      </li>
 
-    <!-- Dashboard -->
-    <div class="px-2 pt-3 shrink-0">
-      <Link
-        href="/app"
-        class="flex items-center px-4 py-2.5 rounded-lg transition-colors"
-        :class="dashboardActiva ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'"
-      >
-        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-        </svg>
-        <span v-if="open" class="ml-3 text-sm font-medium">Dashboard</span>
-      </Link>
-    </div>
+      <li class="my-2 border-t border-mt-border/40"></li>
 
-    <!-- Acordeón sistema → grupo → sección (solo expandido) -->
-    <nav v-if="open" class="flex-1 overflow-y-auto px-2 py-3 space-y-1">
-      <div v-for="sistema in menu" :key="sistema.sistema_id">
+      <!-- Sistemas -->
+      <li v-for="sistema in menu" :key="sistema.sistema_id" class="group relative">
         <button
-          class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold text-gray-200 hover:bg-gray-800 transition-colors"
+          type="button"
+          class="flex w-full items-center gap-3 border-l-[3px] px-3 py-2.5 text-left transition-colors"
+          :class="[
+            openSistema === sistema.sistema_id
+              ? 'border-transparent bg-mt-hover text-white'
+              : 'border-transparent text-mt-text hover:bg-mt-hover hover:text-white',
+            open ? '' : 'lg:justify-center lg:px-0',
+          ]"
+          :title="open ? null : sistema.sistema"
           @click="toggleSistema(sistema.sistema_id)"
         >
-          <span class="flex items-center gap-2 min-w-0">
-            <MenuIcon name="folder" class="w-4 h-4 shrink-0" :style="{ color: sistema.color }" />
-            <span class="truncate">{{ sistema.sistema }}</span>
+          <MenuIcon name="folder" class="h-4 w-4 shrink-0" :style="{ color: sistema.color }" />
+          <span v-show="open || mobileOpen" class="min-w-0 flex-1 truncate font-medium uppercase">
+            {{ sistema.sistema }}
           </span>
-          <svg
-            class="w-4 h-4 transition-transform" :class="openSistema === sistema.sistema_id ? 'rotate-90' : ''"
-            fill="none" stroke="currentColor" viewBox="0 0 24 24"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
+          <ChevronRightIcon
+            v-show="open || mobileOpen"
+            class="h-3.5 w-3.5 shrink-0 transition-transform"
+            :class="openSistema === sistema.sistema_id ? 'rotate-90' : ''"
+          />
         </button>
 
-        <!-- Grupos del sistema abierto -->
-        <div v-if="openSistema === sistema.sistema_id" class="mt-1 ml-2 border-l border-gray-800 pl-2 space-y-0.5">
-          <div v-for="grupo in sistema.grupos" :key="grupo.grupo">
-            <button
-              class="w-full flex items-center justify-between px-3 py-1.5 rounded-md text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
-              @click="toggleGrupo(sistema.sistema_id + ':' + grupo.grupo)"
-            >
-              <span class="flex items-center gap-2 min-w-0">
-                <MenuIcon :name="grupo.icono" class="w-4 h-4 shrink-0" :style="{ color: sistema.color }" />
-                <span class="truncate">{{ grupo.grupo }}</span>
-              </span>
-              <svg
-                class="w-3.5 h-3.5 transition-transform"
-                :class="openGrupo === sistema.sistema_id + ':' + grupo.grupo ? 'rotate-90' : ''"
-                fill="none" stroke="currentColor" viewBox="0 0 24 24"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-
-            <!-- Secciones del grupo abierto -->
-            <div v-if="openGrupo === sistema.sistema_id + ':' + grupo.grupo" class="ml-3 border-l border-gray-800 pl-2 py-0.5 space-y-0.5">
-              <a
-                v-for="item in grupo.items"
-                :key="item.seccion_id"
-                :href="item.url"
-                class="block px-3 py-1.5 rounded-md text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
-              >
-                {{ item.label }}
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </nav>
-    <div v-else class="flex-1"></div>
-
-    <!-- Usuario -->
-    <div class="p-4 border-t border-gray-800 shrink-0">
-      <div class="flex items-center" :class="{ 'justify-center': !open }">
-        <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-sm font-medium">
-          {{ userName.charAt(0) }}
-        </div>
-        <div v-if="open" class="ml-3 overflow-hidden">
-          <p class="text-sm font-medium truncate">{{ userName }}</p>
-          <p class="text-xs text-gray-400 truncate">{{ userEmail }}</p>
-        </div>
-      </div>
-    </div>
-  </aside>
-
-  <!-- Sidebar mobile -->
-  <aside
-    class="fixed inset-y-0 left-0 z-30 w-64 bg-gray-900 text-white transform transition-transform duration-300 lg:hidden flex flex-col"
-    :class="mobileOpen ? 'translate-x-0' : '-translate-x-full'"
-  >
-    <div class="h-16 flex items-center justify-between px-4 border-b border-gray-800 shrink-0">
-      <span class="text-xl font-bold">WitWan</span>
-      <button class="p-2 rounded-lg hover:bg-gray-800" @click="$emit('closeMobile')">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-    </div>
-
-    <div class="px-2 pt-3 shrink-0">
-      <Link
-        href="/app"
-        class="flex items-center px-4 py-2.5 rounded-lg transition-colors"
-        :class="dashboardActiva ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-800'"
-        @click="$emit('closeMobile')"
-      >
-        <span class="text-sm font-medium">Dashboard</span>
-      </Link>
-    </div>
-
-    <nav class="flex-1 overflow-y-auto px-2 py-3 space-y-1">
-      <div v-for="sistema in menu" :key="sistema.sistema_id">
-        <button
-          class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold text-gray-200 hover:bg-gray-800 transition-colors"
-          @click="toggleSistema(sistema.sistema_id)"
+        <!-- Grupos + secciones (acordeón; oculto cuando el sidebar está colapsado) -->
+        <ul
+          v-show="openSistema === sistema.sistema_id && (open || mobileOpen)"
+          class="bg-mt-sub"
         >
-          <span class="flex items-center gap-2 min-w-0">
-            <MenuIcon name="folder" class="w-4 h-4 shrink-0" :style="{ color: sistema.color }" />
-            <span class="truncate">{{ sistema.sistema }}</span>
-          </span>
-          <svg
-            class="w-4 h-4 transition-transform" :class="openSistema === sistema.sistema_id ? 'rotate-90' : ''"
-            fill="none" stroke="currentColor" viewBox="0 0 24 24"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-
-        <div v-if="openSistema === sistema.sistema_id" class="mt-1 ml-2 border-l border-gray-800 pl-2 space-y-0.5">
-          <div v-for="grupo in sistema.grupos" :key="grupo.grupo">
+          <li v-for="grupo in sistema.grupos" :key="grupo.grupo">
             <button
-              class="w-full flex items-center justify-between px-3 py-1.5 rounded-md text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
-              @click="toggleGrupo(sistema.sistema_id + ':' + grupo.grupo)"
+              type="button"
+              class="flex w-full items-center gap-3 py-2 pl-8 pr-3 text-left transition-colors"
+              :class="
+                openGrupo === claveGrupo(sistema, grupo)
+                  ? 'text-white'
+                  : 'text-mt-text hover:text-white'
+              "
+              @click="toggleGrupo(claveGrupo(sistema, grupo))"
             >
-              <span class="flex items-center gap-2 min-w-0">
-                <MenuIcon :name="grupo.icono" class="w-4 h-4 shrink-0" :style="{ color: sistema.color }" />
-                <span class="truncate">{{ grupo.grupo }}</span>
-              </span>
-              <svg
-                class="w-3.5 h-3.5 transition-transform"
-                :class="openGrupo === sistema.sistema_id + ':' + grupo.grupo ? 'rotate-90' : ''"
-                fill="none" stroke="currentColor" viewBox="0 0 24 24"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
+              <MenuIcon
+                :name="grupo.icono"
+                class="h-4 w-4 shrink-0"
+                :style="{ color: sistema.color }"
+              />
+              <span class="min-w-0 flex-1 truncate">{{ grupo.grupo }}</span>
+              <ChevronRightIcon
+                class="h-3 w-3 shrink-0 transition-transform"
+                :class="openGrupo === claveGrupo(sistema, grupo) ? 'rotate-90' : ''"
+              />
             </button>
 
-            <div v-if="openGrupo === sistema.sistema_id + ':' + grupo.grupo" class="ml-3 border-l border-gray-800 pl-2 py-0.5 space-y-0.5">
-              <a
-                v-for="item in grupo.items"
-                :key="item.seccion_id"
-                :href="item.url"
-                class="block px-3 py-1.5 rounded-md text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
-                @click="$emit('closeMobile')"
-              >
-                {{ item.label }}
-              </a>
+            <ul v-show="openGrupo === claveGrupo(sistema, grupo)">
+              <li v-for="item in grupo.items" :key="item.seccion_id">
+                <a
+                  :href="item.url"
+                  class="block border-l-[3px] py-1.5 pl-14 pr-3 transition-colors"
+                  :class="
+                    esActiva(item.url)
+                      ? 'border-mt-accent bg-mt-hover text-white'
+                      : 'border-transparent text-mt-text hover:bg-mt-hover hover:text-white'
+                  "
+                  @click="emit('closeMobile')"
+                >
+                  {{ item.label }}
+                </a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+
+        <!-- Flyout del sidebar colapsado (solo desktop) -->
+        <div
+          v-if="!open"
+          class="invisible absolute left-full top-0 z-40 hidden max-h-[70vh] w-[240px] overflow-y-auto border border-mt-border bg-mt-sub opacity-0 shadow-lg transition-opacity group-hover:visible group-hover:opacity-100 lg:block"
+        >
+          <div class="bg-mt-hover px-3 py-2 font-medium uppercase text-white">
+            {{ sistema.sistema }}
+          </div>
+          <div v-for="grupo in sistema.grupos" :key="grupo.grupo">
+            <div class="flex items-center gap-2 px-3 py-2 text-mt-muted">
+              <MenuIcon
+                :name="grupo.icono"
+                class="h-4 w-4 shrink-0"
+                :style="{ color: sistema.color }"
+              />
+              <span class="truncate">{{ grupo.grupo }}</span>
             </div>
+            <a
+              v-for="item in grupo.items"
+              :key="item.seccion_id"
+              :href="item.url"
+              class="block py-1.5 pl-9 pr-3 transition-colors"
+              :class="
+                esActiva(item.url)
+                  ? 'bg-mt-hover text-white'
+                  : 'text-mt-text hover:bg-mt-hover hover:text-white'
+              "
+            >
+              {{ item.label }}
+            </a>
           </div>
         </div>
-      </div>
-    </nav>
+      </li>
+    </ul>
   </aside>
 </template>

@@ -72,6 +72,49 @@ class CotizacionService
         return (float) ($valor ?? 0);
     }
 
+    /**
+     * Cotizaciones del día para el header (equivalente al dropdown `fa-usd` del
+     * CI, que lista la fecha y la relación de cada moneda de la licencia).
+     *
+     * Devuelve la básica en 1 y omite las monedas sin cotización cargada, para
+     * no mostrar un 0 que se leería como "vale cero".
+     */
+    public function ultimas(?string $fecha = null): array
+    {
+        $dia = $this->fecha($fecha);
+        $basica = $this->monedaBasica();
+
+        $ultima = DB::table('cotizacion as c')
+            ->select('c.cotizacion_relacion')
+            ->whereColumn('c.cotizacion_moneda', 'm.moneda_id')
+            ->where('c.cotizacion_fecha', '<=', $dia)
+            ->orderByDesc('c.cotizacion_fecha')
+            ->limit(1);
+
+        $monedas = DB::table('moneda as m')
+            ->select('m.moneda_id')
+            ->selectSub($ultima, 'valor')
+            ->orderBy('m.orden')
+            ->get();
+
+        $lista = [];
+        foreach ($monedas as $fila) {
+            $moneda = (string) $fila->moneda_id;
+            $valor = $moneda === $basica ? 1.0 : (float) ($fila->valor ?? 0);
+
+            if ($valor <= 0) {
+                continue;
+            }
+
+            $lista[] = ['moneda' => $moneda, 'valor' => number_format($valor, 4, '.', '')];
+        }
+
+        return [
+            'fecha' => Carbon::parse($dia)->format('d/m/Y'),
+            'monedas' => $lista,
+        ];
+    }
+
     /** Moneda básica del tenant (columna 'Y'/'N', igual que Admin_Controller.php:642). */
     public function monedaBasica(): string
     {
