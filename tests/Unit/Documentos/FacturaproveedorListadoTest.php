@@ -3,6 +3,7 @@
 namespace Tests\Unit\Documentos;
 
 use App\Services\Documentos\FacturaproveedorListadoService;
+use Tests\Concerns\CompilaSqlDeMysql;
 use Tests\TestCase;
 
 /**
@@ -14,6 +15,15 @@ use Tests\TestCase;
  */
 class FacturaproveedorListadoTest extends TestCase
 {
+    use CompilaSqlDeMysql;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->usarGramaticaMysql();
+    }
+
     private function servicio(): FacturaproveedorListadoService
     {
         // Moneda básica y alícuota fijas: si dependieran de la base, este test

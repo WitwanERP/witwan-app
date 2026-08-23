@@ -6,9 +6,27 @@
       "resources/js/app.js"
     ]
   },
+  "_BuscadorRemoto.js": {
+    "file": "assets/BuscadorRemoto.js",
+    "name": "BuscadorRemoto",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "_RangoFechas.js": {
+    "file": "assets/RangoFechas.js",
+    "name": "RangoFechas",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
   "_calculo.js": {
     "file": "assets/calculo.js",
     "name": "calculo"
+  },
+  "_formato.js": {
+    "file": "assets/formato.js",
+    "name": "formato"
   },
   "resources/css/app.css": {
     "file": "assets/app.css",
@@ -55,6 +73,109 @@
       "_AppLayout.js"
     ]
   },
+  "resources/js/Pages/Contabilidad/Asientos/Editar.vue": {
+    "file": "assets/Editar.js",
+    "name": "Editar",
+    "src": "resources/js/Pages/Contabilidad/Asientos/Editar.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "_BuscadorRemoto.js",
+      "_formato.js"
+    ]
+  },
+  "resources/js/Pages/Contabilidad/Asientos/Form.vue": {
+    "file": "assets/Form3.js",
+    "name": "Form",
+    "src": "resources/js/Pages/Contabilidad/Asientos/Form.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "resources/js/Pages/Contabilidad/Asientos/components/GrillaDebeHaber.vue",
+      "resources/js/Pages/Contabilidad/Asientos/components/GrillaFondos.vue",
+      "_formato.js",
+      "_BuscadorRemoto.js"
+    ]
+  },
+  "resources/js/Pages/Contabilidad/Asientos/Index.vue": {
+    "file": "assets/Index3.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Contabilidad/Asientos/Index.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "resources/js/Pages/Contabilidad/Asientos/components/FiltrosAsiento.vue",
+      "resources/js/Pages/Contabilidad/Asientos/components/TablaAsientos.vue",
+      "resources/js/Pages/Contabilidad/Asientos/components/TotalesPorMoneda.vue",
+      "_RangoFechas.js",
+      "_formato.js"
+    ]
+  },
+  "resources/js/Pages/Contabilidad/Asientos/Ver.vue": {
+    "file": "assets/Ver.js",
+    "name": "Ver",
+    "src": "resources/js/Pages/Contabilidad/Asientos/Ver.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "_formato.js"
+    ]
+  },
+  "resources/js/Pages/Contabilidad/Asientos/components/FiltrosAsiento.vue": {
+    "file": "assets/FiltrosAsiento.js",
+    "name": "FiltrosAsiento",
+    "src": "resources/js/Pages/Contabilidad/Asientos/components/FiltrosAsiento.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_RangoFechas.js"
+    ]
+  },
+  "resources/js/Pages/Contabilidad/Asientos/components/GrillaDebeHaber.vue": {
+    "file": "assets/GrillaDebeHaber.js",
+    "name": "GrillaDebeHaber",
+    "src": "resources/js/Pages/Contabilidad/Asientos/components/GrillaDebeHaber.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_BuscadorRemoto.js",
+      "_formato.js"
+    ]
+  },
+  "resources/js/Pages/Contabilidad/Asientos/components/GrillaFondos.vue": {
+    "file": "assets/GrillaFondos.js",
+    "name": "GrillaFondos",
+    "src": "resources/js/Pages/Contabilidad/Asientos/components/GrillaFondos.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_formato.js"
+    ]
+  },
+  "resources/js/Pages/Contabilidad/Asientos/components/TablaAsientos.vue": {
+    "file": "assets/TablaAsientos.js",
+    "name": "TablaAsientos",
+    "src": "resources/js/Pages/Contabilidad/Asientos/components/TablaAsientos.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_formato.js"
+    ]
+  },
+  "resources/js/Pages/Contabilidad/Asientos/components/TotalesPorMoneda.vue": {
+    "file": "assets/TotalesPorMoneda.js",
+    "name": "TotalesPorMoneda",
+    "src": "resources/js/Pages/Contabilidad/Asientos/components/TotalesPorMoneda.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_formato.js",
+      "resources/js/app.js"
+    ]
+  },
   "resources/js/Pages/Dashboard.vue": {
     "file": "assets/Dashboard.js",
     "name": "Dashboard",
@@ -74,7 +195,8 @@
       "resources/js/app.js",
       "_AppLayout.js",
       "resources/js/Pages/Documentos/FacturasProveedor/components/SelectorProveedor.vue",
-      "_calculo.js"
+      "_calculo.js",
+      "_formato.js"
     ]
   },
   "resources/js/Pages/Documentos/FacturasProveedor/DteChile.vue": {
@@ -88,7 +210,7 @@
     ]
   },
   "resources/js/Pages/Documentos/FacturasProveedor/Form.vue": {
-    "file": "assets/Form3.js",
+    "file": "assets/Form4.js",
     "name": "Form",
     "src": "resources/js/Pages/Documentos/FacturasProveedor/Form.vue",
     "isDynamicEntry": true,
@@ -101,11 +223,12 @@
       "resources/js/Pages/Documentos/FacturasProveedor/components/ImputacionAreas.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/components/PickerOcupaciones.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/components/ResumenTotales.vue",
-      "_calculo.js"
+      "_calculo.js",
+      "_formato.js"
     ]
   },
   "resources/js/Pages/Documentos/FacturasProveedor/Index.vue": {
-    "file": "assets/Index3.js",
+    "file": "assets/Index4.js",
     "name": "Index",
     "src": "resources/js/Pages/Documentos/FacturasProveedor/Index.vue",
     "isDynamicEntry": true,
@@ -115,8 +238,8 @@
       "resources/js/Pages/Documentos/FacturasProveedor/components/FiltrosFactura.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/components/TablaFacturas.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/components/TotalesPorTipo.vue",
-      "resources/js/Pages/Documentos/FacturasProveedor/components/RangoFechas.vue",
-      "_calculo.js"
+      "_RangoFechas.js",
+      "_formato.js"
     ]
   },
   "resources/js/Pages/Documentos/FacturasProveedor/Subdiario.vue": {
@@ -130,19 +253,19 @@
       "resources/js/Pages/Documentos/FacturasProveedor/components/FiltrosFactura.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/components/TablaFacturas.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/components/TotalesPorTipo.vue",
-      "resources/js/Pages/Documentos/FacturasProveedor/components/RangoFechas.vue",
-      "_calculo.js"
+      "_RangoFechas.js",
+      "_formato.js"
     ]
   },
   "resources/js/Pages/Documentos/FacturasProveedor/Ver.vue": {
-    "file": "assets/Ver.js",
+    "file": "assets/Ver2.js",
     "name": "Ver",
     "src": "resources/js/Pages/Documentos/FacturasProveedor/Ver.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js",
       "_AppLayout.js",
-      "_calculo.js"
+      "_formato.js"
     ]
   },
   "resources/js/Pages/Documentos/FacturasProveedor/components/ConceptosAdicionales.vue": {
@@ -151,7 +274,7 @@
     "src": "resources/js/Pages/Documentos/FacturasProveedor/components/ConceptosAdicionales.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_calculo.js",
+      "_formato.js",
       "resources/js/app.js"
     ]
   },
@@ -162,7 +285,7 @@
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js",
-      "resources/js/Pages/Documentos/FacturasProveedor/components/RangoFechas.vue"
+      "_RangoFechas.js"
     ]
   },
   "resources/js/Pages/Documentos/FacturasProveedor/components/GrillaImportes.vue": {
@@ -172,7 +295,7 @@
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js",
-      "_calculo.js"
+      "_formato.js"
     ]
   },
   "resources/js/Pages/Documentos/FacturasProveedor/components/ImputacionAreas.vue": {
@@ -181,7 +304,7 @@
     "src": "resources/js/Pages/Documentos/FacturasProveedor/components/ImputacionAreas.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_calculo.js",
+      "_formato.js",
       "resources/js/app.js"
     ]
   },
@@ -192,16 +315,7 @@
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js",
-      "_calculo.js"
-    ]
-  },
-  "resources/js/Pages/Documentos/FacturasProveedor/components/RangoFechas.vue": {
-    "file": "assets/RangoFechas.js",
-    "name": "RangoFechas",
-    "src": "resources/js/Pages/Documentos/FacturasProveedor/components/RangoFechas.vue",
-    "isDynamicEntry": true,
-    "imports": [
-      "resources/js/app.js"
+      "_formato.js"
     ]
   },
   "resources/js/Pages/Documentos/FacturasProveedor/components/ResumenTotales.vue": {
@@ -210,7 +324,7 @@
     "src": "resources/js/Pages/Documentos/FacturasProveedor/components/ResumenTotales.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_calculo.js",
+      "_formato.js",
       "resources/js/app.js"
     ]
   },
@@ -230,7 +344,7 @@
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js",
-      "_calculo.js"
+      "_formato.js"
     ]
   },
   "resources/js/Pages/Documentos/FacturasProveedor/components/TotalesPorTipo.vue": {
@@ -239,12 +353,12 @@
     "src": "resources/js/Pages/Documentos/FacturasProveedor/components/TotalesPorTipo.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_calculo.js",
+      "_formato.js",
       "resources/js/app.js"
     ]
   },
   "resources/js/Pages/Pasajeros/Form.vue": {
-    "file": "assets/Form4.js",
+    "file": "assets/Form5.js",
     "name": "Form",
     "src": "resources/js/Pages/Pasajeros/Form.vue",
     "isDynamicEntry": true,
@@ -254,7 +368,7 @@
     ]
   },
   "resources/js/Pages/Pasajeros/Index.vue": {
-    "file": "assets/Index4.js",
+    "file": "assets/Index5.js",
     "name": "Index",
     "src": "resources/js/Pages/Pasajeros/Index.vue",
     "isDynamicEntry": true,
@@ -323,6 +437,15 @@
       "resources/js/Pages/Abm/Index.vue",
       "resources/js/Pages/Clientes/Form.vue",
       "resources/js/Pages/Clientes/Index.vue",
+      "resources/js/Pages/Contabilidad/Asientos/Editar.vue",
+      "resources/js/Pages/Contabilidad/Asientos/Form.vue",
+      "resources/js/Pages/Contabilidad/Asientos/Index.vue",
+      "resources/js/Pages/Contabilidad/Asientos/Ver.vue",
+      "resources/js/Pages/Contabilidad/Asientos/components/FiltrosAsiento.vue",
+      "resources/js/Pages/Contabilidad/Asientos/components/GrillaDebeHaber.vue",
+      "resources/js/Pages/Contabilidad/Asientos/components/GrillaFondos.vue",
+      "resources/js/Pages/Contabilidad/Asientos/components/TablaAsientos.vue",
+      "resources/js/Pages/Contabilidad/Asientos/components/TotalesPorMoneda.vue",
       "resources/js/Pages/Dashboard.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/CargaMultiple.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/DteChile.vue",
@@ -335,7 +458,6 @@
       "resources/js/Pages/Documentos/FacturasProveedor/components/GrillaImportes.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/components/ImputacionAreas.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/components/PickerOcupaciones.vue",
-      "resources/js/Pages/Documentos/FacturasProveedor/components/RangoFechas.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/components/ResumenTotales.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/components/SelectorProveedor.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/components/TablaFacturas.vue",

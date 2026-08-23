@@ -120,12 +120,26 @@ final class TipoAsiento
     }
 
     /**
-     * El campo "afecta cobranza" sólo existe en cuenta corriente y sólo si la
-     * licencia lo tiene prendido (`botonafectacobranza`, formasientocta.php:66).
+     * ¿El tipo contempla el campo "afecta cobranza"? Sólo cuenta corriente.
+     *
+     * Es lo que mira el armado del asiento, y a propósito NO consulta la
+     * licencia: el legacy graba la columna cuando el POST la trae
+     * (asientocta.php:212), y el POST la trae justamente cuando la pantalla
+     * mostró el campo. Separarlo así deja el armado del asiento sin tocar la
+     * base, que es lo que permite verificarlo en un test.
+     */
+    public function soportaAfectaCobranza(): bool
+    {
+        return (bool) $this->def['afecta_cobranza'];
+    }
+
+    /**
+     * ¿Se muestra el campo "afecta cobranza"? Además del tipo, la licencia lo
+     * tiene que tener prendido (`botonafectacobranza`, formasientocta.php:66).
      */
     public function usaAfectaCobranza(): bool
     {
-        return (bool) $this->def['afecta_cobranza']
+        return $this->soportaAfectaCobranza()
             && (string) \App\Helpers\SysconfigHelper::get('botonafectacobranza', '') === '1';
     }
 

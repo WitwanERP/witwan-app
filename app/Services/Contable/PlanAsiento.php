@@ -108,9 +108,11 @@ class PlanAsiento
                 $mov['statusmovimiento'] = 'AR';
             }
 
-            // asientocta.php:212-214: sólo si la licencia muestra el campo.
-            if ($tipo->usaAfectaCobranza()) {
-                $mov['afecta_cobranza'] = (int) (bool) ($datos['afecta_cobranza'] ?? true);
+            // asientocta.php:212-214: la columna se escribe cuando el formulario
+            // trajo el campo, o sea cuando la licencia lo muestra. Si no vino, se
+            // deja el default de la tabla (1), igual que el legacy.
+            if ($tipo->soportaAfectaCobranza() && array_key_exists('afecta_cobranza', $datos)) {
+                $mov['afecta_cobranza'] = (int) (bool) $datos['afecta_cobranza'];
             }
 
             $movimientos[] = $mov;
