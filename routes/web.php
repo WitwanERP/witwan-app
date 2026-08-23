@@ -11,6 +11,7 @@ use App\Http\Controllers\Web\Abm\ProyectoController;
 use App\Http\Controllers\Web\Abm\RegionController;
 use App\Http\Controllers\Web\Abm\TipoclavefiscalController;
 use App\Http\Controllers\Web\ClienteController;
+use App\Http\Controllers\Web\Contabilidad\AsientoController;
 use App\Http\Controllers\Web\Documentos\DteChileController;
 use App\Http\Controllers\Web\Documentos\FacturaproveedorController as FacturaproveedorWebController;
 use App\Http\Controllers\Web\Documentos\FacturaproveedorMultipleController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\Web\PasajeroController;
 use App\Http\Controllers\Web\Reservas\ReservaListadoController;
 use App\Services\CiSessionReader;
 use App\Services\CiUserResolver;
+use App\Support\Contable\TipoAsiento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -110,6 +112,45 @@ Route::prefix('app')->group(function () {
         Route::put('/{id}', [FacturaproveedorWebController::class, 'update'])->whereNumber('id')->name('documentos.facturas-proveedor.update');
         Route::delete('/{id}', [FacturaproveedorWebController::class, 'destroy'])->whereNumber('id')->name('documentos.facturas-proveedor.destroy');
     });
+
+    /*
+    |----------------------------------------------------------------------
+    | Administración > Contabilidad / Caja > Asientos
+    |----------------------------------------------------------------------
+    | Un solo módulo para los tres controllers del CI, discriminados por
+    | `ordenadmin.tipo`:
+    |
+    |   contable          (tipo 'A') <- /administracion/asientocontable
+    |   cuenta-corriente  (tipo 'C') <- /administracion/asientocta
+    |   fondos            (tipo 'M') <- /administracion/fondos
+    |
+    | Las rutas fijas van ANTES de /{id} para que no las capture el comodín
+    | numérico. Los endpoints JSON auxiliares viven acá y no en routes/api.php:
+    | esa capa está detrás de JWT y el front Inertia no la consume por HTTP.
+    |
+    | `anular` es POST y no GET como en el CI: allá era un link, y un prefetch
+    | del navegador alcanzaba para anular un asiento.
+    */
+    Route::prefix('contabilidad/asientos/{tipo}')
+        ->where(['tipo' => TipoAsiento::patronDeRuta()])
+        ->group(function () {
+            Route::get('/', [AsientoController::class, 'index'])->name('asientos.index');
+            Route::get('/export', [AsientoController::class, 'exportar'])->name('asientos.export');
+            Route::get('/create', [AsientoController::class, 'create'])->name('asientos.create');
+            Route::post('/', [AsientoController::class, 'store'])->name('asientos.store');
+
+            // Auxiliares JSON (fetch desde el Vue).
+            Route::get('/cuentas', [AsientoController::class, 'cuentas']);
+            Route::get('/clientes', [AsientoController::class, 'clientes']);
+            Route::get('/proveedores', [AsientoController::class, 'proveedores']);
+            Route::get('/files', [AsientoController::class, 'files']);
+            Route::get('/cotizacion', [AsientoController::class, 'cotizacion']);
+
+            Route::get('/{id}', [AsientoController::class, 'show'])->whereNumber('id')->name('asientos.show');
+            Route::get('/{id}/edit', [AsientoController::class, 'edit'])->whereNumber('id')->name('asientos.edit');
+            Route::put('/{id}', [AsientoController::class, 'update'])->whereNumber('id')->name('asientos.update');
+            Route::post('/{id}/anular', [AsientoController::class, 'anular'])->whereNumber('id')->name('asientos.anular');
+        });
 
     // ABMs de configuración (config-driven, controllers que extienden Abm\AbmController).
     // Helper local: registra las 6 rutas REST de un ABM bajo un slug dado.

@@ -1,7 +1,7 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 import { router } from '@inertiajs/vue3'
-import RangoFechas from './RangoFechas.vue'
+import RangoFechas from '@/Components/RangoFechas.vue'
 
 const props = defineProps({
   filtros: { type: Object, default: () => ({}) },

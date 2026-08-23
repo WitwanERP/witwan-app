@@ -37,9 +37,13 @@ final class Permisos
      * Exige el permiso. En modo estricto aborta con 403; en observación sólo
      * loguea.
      *
+     * @param  string  $claveEstricto  clave de config que decide el modo. Es por
+     *                                 módulo a propósito: cada uno se puede pasar a estricto cuando su
+     *                                 medición en observación muestre que no corta a nadie.
+     *
      * @throws RuntimeException si la sección no se puede resolver (fail-closed).
      */
-    public static function exigir(string $uriSeccion, string $accion, string $modulo): void
+    public static function exigir(string $uriSeccion, string $accion, string $modulo, string $claveEstricto = 'facturaproveedor.permisos_estrictos'): void
     {
         if (self::tiene($uriSeccion, $accion)) {
             return;
@@ -47,7 +51,7 @@ final class Permisos
 
         $usuario = auth()->id();
 
-        if (self::estricto()) {
+        if (self::estricto($claveEstricto)) {
             abort(403, "No tiene permiso para {$accion} en {$modulo}.");
         }
 
@@ -60,8 +64,8 @@ final class Permisos
         ]);
     }
 
-    private static function estricto(): bool
+    private static function estricto(string $clave = 'facturaproveedor.permisos_estrictos'): bool
     {
-        return (bool) config('facturaproveedor.permisos_estrictos', false);
+        return (bool) config($clave, false);
     }
 }

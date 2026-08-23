@@ -62,6 +62,13 @@ return [
         // carga múltiple vive dentro del front nuevo, en /multiple.
         'administracion/factura3ero' => '/app/facturas-proveedor',
         'administracion/factura3ero/subdiariocompra' => '/app/facturas-proveedor/subdiario',
+
+        // Administración > Contabilidad / Caja. Los tres son la misma tabla
+        // (`ordenadmin` por `tipo`) y en /app comparten módulo; en brain siguen
+        // siendo tres secciones distintas, con sus propios permisos.
+        'administracion/asientocontable' => '/app/contabilidad/asientos/contable',
+        'administracion/asientocta' => '/app/contabilidad/asientos/cuenta-corriente',
+        'administracion/fondos' => '/app/contabilidad/asientos/fondos',
     ],
 
     // Cache del menú armado, en segundos (clave por licencia+rol). 0 = sin cache.

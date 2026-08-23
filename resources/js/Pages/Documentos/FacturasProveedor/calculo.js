@@ -90,10 +90,6 @@ export function calcularTotales(form, tasas, conceptos = []) {
   }
 }
 
-/** Formato de importe para mostrar (es-AR / es-CL usan el mismo separador). */
-export function formatearImporte(v, decimales = 2) {
-  return num(v).toLocaleString('es-AR', {
-    minimumFractionDigits: decimales,
-    maximumFractionDigits: decimales,
-  })
-}
+// El formato de importe se mudó a @/lib/formato: lo necesita cualquier pantalla
+// que muestre plata, no sólo las facturas. Se reexporta para no tocar sus usos.
+export { formatearImporte } from '@/lib/formato'

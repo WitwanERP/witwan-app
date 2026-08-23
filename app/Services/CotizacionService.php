@@ -40,6 +40,38 @@ class CotizacionService
         return (float) ($fila->cotizacion_costo != 0 ? $fila->cotizacion_costo : $fila->cotizacion_relacion);
     }
 
+    /**
+     * Cotización de relación ("de venta").
+     *
+     * Port de `cotizarmoneda()` (application/helpers/admin_helper.php:140-159),
+     * la hermana de `cotizarmoneda2()`: misma búsqueda pero devuelve
+     * `cotizacion_relacion`. Es la que usa el Admin_Controller para armar el mapa
+     * `_ctz` con el que se valúan los movimientos de fondo (fondos.php:229).
+     *
+     * Dos matices frente al helper del CI, los mismos que ya aplica alCosto():
+     *
+     *  - La moneda básica devuelve 1 sin consultar. El legacy la consulta igual y
+     *    suele devolver 0 (no hay fila de cotización de la moneda contra sí
+     *    misma), con lo que el movimiento queda valuado en 0.
+     *  - Para el resto, si no hay cotización cargada devuelve 0, igual que el
+     *    legacy: forzar un 1 escondería que a esa moneda le falta la cotización.
+     *    El front avisa cuando la sugerida viene en 0.
+     */
+    public function aLaVenta(string $moneda, ?string $fecha = null): float
+    {
+        if ($moneda === '' || $moneda === $this->monedaBasica()) {
+            return 1.0;
+        }
+
+        $valor = DB::table('cotizacion')
+            ->where('cotizacion_moneda', $moneda)
+            ->where('cotizacion_fecha', '<=', $this->fecha($fecha))
+            ->orderByDesc('cotizacion_fecha')
+            ->value('cotizacion_relacion');
+
+        return (float) ($valor ?? 0);
+    }
+
     /** Moneda básica del tenant (columna 'Y'/'N', igual que Admin_Controller.php:642). */
     public function monedaBasica(): string
     {
