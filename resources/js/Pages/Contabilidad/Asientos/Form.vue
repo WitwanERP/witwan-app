@@ -4,7 +4,7 @@ import { Link, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import GrillaDebeHaber from './components/GrillaDebeHaber.vue'
 import GrillaFondos from './components/GrillaFondos.vue'
-import { formatearImporte, hoyIso } from '@/lib/formato'
+import { hoyIso } from '@/lib/formato'
 
 defineOptions({ layout: AppLayout })
 
@@ -38,10 +38,10 @@ const monedaInicial =
 const form = useForm({
   fecha: hoyIso(),
   fk_moneda_id: monedaInicial,
-  // El legacy arranca la cotización en 1 y ahí la deja (formasientocontable.php:60).
-  // Se mantiene el default, pero al lado se muestra la sugerida del día: cambiar
-  // el valor grabado en silencio revaluaría todo asiento en moneda extranjera, y
-  // esa decisión es del contador, no del port.
+  // El legacy arrancaba la cotización en 1 y ahí la dejaba
+  // (formasientocontable.php:60). Acá se completa sola con la del día apenas se
+  // elige moneda y fecha, igual que en la factura de proveedor; queda editable
+  // por si el contador tiene que forzar otra.
   cotizacion: 1,
   observaciones: '',
   descripcion: '',
@@ -53,39 +53,47 @@ const form = useForm({
 
 const grilla = ref(null)
 
-// --- Cotización sugerida -----------------------------------------------------
+// --- Cotización --------------------------------------------------------------
 
-const sugerida = reactive({ valor: null, cargando: false })
+const cotizacion = reactive({ cargando: false, sinDatos: false })
 
-async function traerSugerida() {
-  if (!esDebeHaber.value) return
+// Un pedido viejo que vuelve tarde no puede pisar la cotización de la moneda que
+// el usuario ya eligió después.
+let pedido = 0
 
-  const esBasica = props.opciones.monedas.find((m) => m.id === form.fk_moneda_id)?.basica
+async function traerCotizacion() {
+  if (!esDebeHaber.value || !form.fk_moneda_id) return
 
-  if (esBasica) {
-    sugerida.valor = 1
+  const mio = ++pedido
+
+  if (props.opciones.monedas.find((m) => m.id === form.fk_moneda_id)?.basica) {
+    cotizacion.cargando = false
+    cotizacion.sinDatos = false
+    form.cotizacion = 1
     return
   }
 
-  sugerida.cargando = true
+  cotizacion.cargando = true
   try {
-    const r = await fetch(
-      `${props.config.baseUrl}/cotizacion?moneda=${encodeURIComponent(form.fk_moneda_id)}&fecha=${form.fecha}`,
-      { headers: { Accept: 'application/json' } }
-    )
-    sugerida.valor = r.ok ? Number((await r.json()).cotizacion) : null
+    const params = new URLSearchParams({ moneda: form.fk_moneda_id })
+    if (form.fecha) params.set('fecha', form.fecha)
+
+    const r = await fetch(`${props.config.baseUrl}/cotizacion?${params}`, {
+      headers: { Accept: 'application/json' },
+    })
+    if (mio !== pedido) return
+
+    const valor = r.ok ? Number((await r.json()).cotizacion) : null
+    cotizacion.sinDatos = !valor
+    if (valor) form.cotizacion = valor
   } catch {
-    sugerida.valor = null
+    if (mio === pedido) cotizacion.sinDatos = false
   } finally {
-    sugerida.cargando = false
+    if (mio === pedido) cotizacion.cargando = false
   }
 }
 
-watch(() => [form.fk_moneda_id, form.fecha], traerSugerida, { immediate: true })
-
-const usarSugerida = () => {
-  if (sugerida.valor) form.cotizacion = sugerida.valor
-}
+watch(() => [form.fk_moneda_id, form.fecha], traerCotizacion, { immediate: true })
 
 // --- Validación de envío -----------------------------------------------------
 
@@ -151,13 +159,9 @@ const fieldBase =
             <label class="form-label">Cotización</label>
             <input v-model="form.cotizacion" type="number" step="0.00001" min="0" :class="fieldBase" required />
             <p v-if="form.errors.cotizacion" class="form-error">{{ form.errors.cotizacion }}</p>
-            <p v-else-if="sugerida.cargando" class="form-hint">Buscando la cotización del día…</p>
-            <p v-else-if="sugerida.valor === 0" class="form-error">
+            <p v-else-if="cotizacion.cargando" class="form-hint">Buscando la cotización del día…</p>
+            <p v-else-if="cotizacion.sinDatos" class="form-error">
               No hay cotización cargada para {{ form.fk_moneda_id }} a esa fecha.
-            </p>
-            <p v-else-if="sugerida.valor && Number(sugerida.valor) !== Number(form.cotizacion)" class="form-hint">
-              Sugerida: {{ formatearImporte(sugerida.valor, 5) }}
-              <button type="button" class="text-blue-600 hover:underline" @click="usarSugerida">usar</button>
             </p>
           </div>
 
