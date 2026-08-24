@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { Link, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import { useEnvio } from '@/lib/envio'
 
 defineOptions({ layout: AppLayout })
 
@@ -29,12 +30,16 @@ const inicial = {}
 for (const c of props.config.campos) inicial[c.campo] = valorInicial(c)
 const form = useForm(inicial)
 
+const { enviando, enviar } = useEnvio()
+
 const submit = () => {
-  if (esEdicion.value) {
-    form.put(`${props.config.baseUrl}/${registroId.value}`, { preserveScroll: true })
-  } else {
-    form.post(props.config.baseUrl, { preserveScroll: true })
-  }
+  enviar(
+    (opciones) =>
+      esEdicion.value
+        ? form.put(`${props.config.baseUrl}/${registroId.value}`, opciones)
+        : form.post(props.config.baseUrl, opciones),
+    { preserveScroll: true },
+  )
 }
 </script>
 
@@ -52,8 +57,8 @@ const submit = () => {
 
     <form @submit.prevent="submit">
       <div class="flex items-center gap-2 mb-4">
-        <button type="submit" :disabled="form.processing" class="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
-          {{ form.processing ? 'Guardando…' : 'Guardar' }}
+        <button type="submit" :disabled="enviando" class="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+          {{ enviando ? 'Guardando…' : 'Guardar' }}
         </button>
         <Link :href="config.baseUrl" class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancelar</Link>
       </div>
@@ -95,8 +100,8 @@ const submit = () => {
       </section>
 
       <div class="flex items-center gap-2 mb-10">
-        <button type="submit" :disabled="form.processing" class="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
-          {{ form.processing ? 'Guardando…' : 'Guardar' }}
+        <button type="submit" :disabled="enviando" class="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+          {{ enviando ? 'Guardando…' : 'Guardar' }}
         </button>
         <Link :href="config.baseUrl" class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancelar</Link>
       </div>

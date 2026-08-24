@@ -1,0 +1,1 @@
+import{y as f,H as n}from"./app2.js";function x(){const a=f(!1);return{enviando:a,enviar:(t,e={})=>{if(a.value)return;a.value=!0;let u=!1;t({...e,onSuccess:l=>{var r;u=!0,(r=e.onSuccess)==null||r.call(e,l)},onFinish:l=>{var r;u?n(()=>a.value=!1):a.value=!1,(r=e.onFinish)==null||r.call(e,l)}})},liberar:()=>a.value=!1}}export{x as u};

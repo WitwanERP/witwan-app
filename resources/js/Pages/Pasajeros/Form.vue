@@ -2,6 +2,7 @@
 import { computed, watch } from 'vue'
 import { Link, router, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import { useEnvio } from '@/lib/envio'
 
 defineOptions({ layout: AppLayout })
 
@@ -82,12 +83,16 @@ watch(
   },
 )
 
+const { enviando, enviar } = useEnvio()
+
 const submit = () => {
-  if (esEdicion.value) {
-    form.put(`/app/pasajeros/${pasajeroId}`, { preserveScroll: true })
-  } else {
-    form.post('/app/pasajeros', { preserveScroll: true })
-  }
+  enviar(
+    (opciones) =>
+      esEdicion.value
+        ? form.put(`/app/pasajeros/${pasajeroId}`, opciones)
+        : form.post('/app/pasajeros', opciones),
+    { preserveScroll: true },
+  )
 }
 </script>
 
@@ -111,8 +116,8 @@ const submit = () => {
     <form @submit.prevent="submit">
       <!-- Barra de acciones -->
       <div class="flex items-center gap-2 mb-4">
-        <button type="submit" :disabled="form.processing" class="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
-          {{ form.processing ? 'Guardando…' : 'Guardar' }}
+        <button type="submit" :disabled="enviando" class="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+          {{ enviando ? 'Guardando…' : 'Guardar' }}
         </button>
         <Link href="/app/pasajeros" class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
           Cancelar
@@ -338,8 +343,8 @@ const submit = () => {
       </section>
 
       <div class="flex items-center gap-2 mb-10">
-        <button type="submit" :disabled="form.processing" class="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
-          {{ form.processing ? 'Guardando…' : 'Guardar' }}
+        <button type="submit" :disabled="enviando" class="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+          {{ enviando ? 'Guardando…' : 'Guardar' }}
         </button>
         <Link href="/app/pasajeros" class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancelar</Link>
       </div>

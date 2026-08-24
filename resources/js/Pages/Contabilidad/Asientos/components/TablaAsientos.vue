@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import { formatearImporte, formatearFecha } from '@/lib/formato'
+import { useEnvio } from '@/lib/envio'
 
 const props = defineProps({
   registros: { type: Object, required: true },
@@ -30,6 +31,8 @@ const columnas = computed(() => {
  * `/anular/{id}`: un prefetch del navegador o un click accidental anulaban el
  * asiento sin preguntar nada.
  */
+const { enviando, enviar } = useEnvio()
+
 function anular(fila) {
   const ok = window.confirm(
     `¿Anular el asiento N° ${fila.numero} del ${formatearFecha(fila.fecha)} por ${fila.moneda} ${formatearImporte(fila.monto)}?`
@@ -37,7 +40,9 @@ function anular(fila) {
 
   if (!ok) return
 
-  router.post(`${props.config.baseUrl}/${fila.id}/anular`, {}, { preserveScroll: true })
+  enviar((opciones) => router.post(`${props.config.baseUrl}/${fila.id}/anular`, {}, opciones), {
+    preserveScroll: true,
+  })
 }
 </script>
 
@@ -101,7 +106,8 @@ function anular(fila) {
               <button
                 v-if="config.permisos.borrado && !fila.anulado"
                 type="button"
-                class="btn btn-sm btn-secondary ml-1 text-red-600"
+                class="btn btn-sm btn-secondary ml-1 text-red-600 disabled:opacity-50"
+                :disabled="enviando"
                 @click="anular(fila)"
               >
                 Anular

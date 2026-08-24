@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import { formatearImporte, formatearFecha } from '@/lib/formato'
+import { useEnvio } from '@/lib/envio'
 
 defineOptions({ layout: AppLayout })
 
@@ -46,6 +47,8 @@ function imprimir() {
   window.print()
 }
 
+const { enviando, enviar } = useEnvio()
+
 function anular() {
   const ok = window.confirm(
     `¿Anular el asiento N° ${props.asiento.numero} por ${props.asiento.moneda} ${formatearImporte(props.asiento.monto)}?`
@@ -53,7 +56,9 @@ function anular() {
 
   if (!ok) return
 
-  router.post(`${props.config.baseUrl}/${props.asiento.id}/anular`, {}, { preserveScroll: true })
+  enviar((opciones) => router.post(`${props.config.baseUrl}/${props.asiento.id}/anular`, {}, opciones), {
+    preserveScroll: true,
+  })
 }
 </script>
 
@@ -77,7 +82,9 @@ function anular() {
         <Link v-if="puedeEditar" :href="`${config.baseUrl}/${asiento.id}/edit`" class="btn btn-secondary">
           Editar
         </Link>
-        <button v-if="puedeAnular" type="button" class="btn btn-danger" @click="anular">Anular</button>
+        <button v-if="puedeAnular" type="button" class="btn btn-danger" :disabled="enviando" @click="anular">
+          {{ enviando ? 'Anulando…' : 'Anular' }}
+        </button>
       </div>
     </div>
 

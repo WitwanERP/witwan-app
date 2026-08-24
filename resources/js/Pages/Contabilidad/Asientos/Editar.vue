@@ -4,6 +4,7 @@ import { Link, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import BuscadorRemoto from '@/Components/BuscadorRemoto.vue'
 import { formatearImporte } from '@/lib/formato'
+import { useEnvio } from '@/lib/envio'
 
 defineOptions({ layout: AppLayout })
 
@@ -55,8 +56,12 @@ const celda =
 const fieldBase =
   'w-full rounded-lg border border-gray-300 bg-gray-50 py-2 px-3 text-sm text-gray-800 transition focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20'
 
+const { enviando, enviar: enviarBloqueando } = useEnvio()
+
 function enviar() {
-  form.put(`${props.config.baseUrl}/${props.asiento.id}`, { preserveScroll: true })
+  enviarBloqueando((opciones) => form.put(`${props.config.baseUrl}/${props.asiento.id}`, opciones), {
+    preserveScroll: true,
+  })
 }
 </script>
 
@@ -218,8 +223,8 @@ function enviar() {
     </div>
 
     <div class="mt-4 flex flex-wrap items-center gap-2">
-      <button type="submit" class="btn btn-primary" :disabled="form.processing">
-        {{ form.processing ? 'Guardando…' : 'Guardar cambios' }}
+      <button type="submit" class="btn btn-primary" :disabled="enviando">
+        {{ enviando ? 'Guardando…' : 'Guardar cambios' }}
       </button>
       <Link :href="`${config.baseUrl}/${asiento.id}`" class="btn btn-secondary">Cancelar</Link>
     </div>

@@ -9,6 +9,7 @@ import ImputacionAreas from './components/ImputacionAreas.vue'
 import PickerOcupaciones from './components/PickerOcupaciones.vue'
 import ResumenTotales from './components/ResumenTotales.vue'
 import { calcularTotales } from './calculo.js'
+import { useEnvio } from '@/lib/envio'
 
 defineOptions({ layout: AppLayout })
 
@@ -146,12 +147,16 @@ function cuentaSugerida(cuenta) {
   if (cuenta && !form.fk_plancuenta_id) form.fk_plancuenta_id = cuenta
 }
 
+const { enviando, enviar } = useEnvio()
+
 function guardar() {
-  if (esEdicion.value) {
-    form.put(`${props.baseUrl}/${props.registro.facturaproveedor_id}`, { preserveScroll: true })
-  } else {
-    form.post(props.baseUrl, { preserveScroll: true })
-  }
+  enviar(
+    (opciones) =>
+      esEdicion.value
+        ? form.put(`${props.baseUrl}/${props.registro.facturaproveedor_id}`, opciones)
+        : form.post(props.baseUrl, opciones),
+    { preserveScroll: true },
+  )
 }
 </script>
 
@@ -377,7 +382,7 @@ function guardar() {
         :totales="totales"
         :moneda="form.fk_moneda_id"
         :desvio="desvio"
-        :procesando="form.processing"
+        :procesando="enviando"
         :modo="modo"
         @guardar="guardar"
       />

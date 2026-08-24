@@ -4,6 +4,7 @@ import { Link, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import SelectorProveedor from './components/SelectorProveedor.vue'
 import { calcularTotales, formatearImporte } from './calculo.js'
+import { useEnvio } from '@/lib/envio'
 
 defineOptions({ layout: AppLayout })
 
@@ -81,8 +82,10 @@ function duplicar(i) {
   form.documentos.splice(i + 1, 0, { ...form.documentos[i], facturaproveedor_nro: '' })
 }
 
+const { enviando, enviar } = useEnvio()
+
 function guardar() {
-  form.post(`${props.baseUrl}/multiple`, { preserveScroll: true })
+  enviar((opciones) => form.post(`${props.baseUrl}/multiple`, opciones), { preserveScroll: true })
 }
 
 const columnasImporte = [
@@ -237,8 +240,8 @@ const columnasImporte = [
           <p class="text-sm text-gray-500">
             Se crean todos o ninguno: si un documento falla, no se guarda nada.
           </p>
-          <button type="submit" class="btn btn-primary ml-auto" :disabled="form.processing">
-            {{ form.processing ? 'Guardando…' : `Crear ${form.documentos.length} factura(s)` }}
+          <button type="submit" class="btn btn-primary ml-auto" :disabled="enviando">
+            {{ enviando ? 'Guardando…' : `Crear ${form.documentos.length} factura(s)` }}
           </button>
         </div>
       </div>

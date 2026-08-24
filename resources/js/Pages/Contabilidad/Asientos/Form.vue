@@ -5,6 +5,7 @@ import AppLayout from '@/Layouts/AppLayout.vue'
 import GrillaDebeHaber from './components/GrillaDebeHaber.vue'
 import GrillaFondos from './components/GrillaFondos.vue'
 import { hoyIso } from '@/lib/formato'
+import { useEnvio } from '@/lib/envio'
 
 defineOptions({ layout: AppLayout })
 
@@ -119,8 +120,10 @@ function quitar(i) {
   form.lineas.splice(i, 1)
 }
 
+const { enviando, enviar: enviarBloqueando } = useEnvio()
+
 function enviar() {
-  form.post(props.config.baseUrl, { preserveScroll: true })
+  enviarBloqueando((opciones) => form.post(props.config.baseUrl, opciones), { preserveScroll: true })
 }
 
 const fieldBase =
@@ -225,8 +228,8 @@ const fieldBase =
     />
 
     <div class="mt-4 flex flex-wrap items-center gap-2">
-      <button type="submit" class="btn btn-primary" :disabled="!puedeGuardar || form.processing">
-        {{ form.processing ? 'Guardando…' : 'Guardar' }}
+      <button type="submit" class="btn btn-primary" :disabled="!puedeGuardar || enviando">
+        {{ enviando ? 'Guardando…' : 'Guardar' }}
       </button>
       <Link :href="config.baseUrl" class="btn btn-secondary">Cancelar</Link>
 

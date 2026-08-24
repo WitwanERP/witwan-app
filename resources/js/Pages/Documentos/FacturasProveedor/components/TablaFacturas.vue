@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import { formatearImporte } from '../calculo.js'
+import { useEnvio } from '@/lib/envio'
 
 const props = defineProps({
   registros: { type: Object, required: true },
@@ -61,10 +62,12 @@ const columnas = computed(() =>
 
 const valor = (fila, key) => key.split('.').reduce((o, k) => (o == null ? null : o[k]), fila)
 
+const { enviando, enviar } = useEnvio()
+
 function eliminar(fila) {
   // La baja es física, igual que en el legacy: no hay estado "anulada".
   if (!window.confirm(`¿Eliminar la factura ${fila.numero}? Esta acción no se puede deshacer.`)) return
-  router.delete(`${props.config.baseUrl}/${fila.id}`, { preserveScroll: true })
+  enviar((opciones) => router.delete(`${props.config.baseUrl}/${fila.id}`, opciones), { preserveScroll: true })
 }
 </script>
 
@@ -108,7 +111,8 @@ function eliminar(fila) {
               <button
                 v-if="config.permisos.borrado"
                 type="button"
-                class="btn btn-sm btn-secondary ml-1 text-red-600"
+                class="btn btn-sm btn-secondary ml-1 text-red-600 disabled:opacity-50"
+                :disabled="enviando"
                 @click="eliminar(fila)"
               >
                 Eliminar

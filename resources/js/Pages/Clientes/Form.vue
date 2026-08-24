@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { Link, router, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import { useEnvio } from '@/lib/envio'
 
 defineOptions({ layout: AppLayout })
 
@@ -161,6 +162,8 @@ const addContacto = () =>
 const addTarjeta = () =>
   form.tarjetas.push({ cliente_tarjeta_num: '', cliente_tarjeta_banco: '', cliente_tarjeta_venc: '', cliente_tarjeta_cs: '', cliente_tarjeta_empresa: '' })
 
+const { enviando, enviar } = useEnvio()
+
 // Antes de guardar: si el CUIT existe y no se confirmó, mostramos el aviso y no enviamos.
 // El formato (CUIT/CUIL en AR, RUT en CL) lo valida el backend y vuelve como form.errors.cuit.
 const submit = async () => {
@@ -173,11 +176,13 @@ const submit = async () => {
     return // queda visible la advertencia + checkbox
   }
 
-  if (esEdicion.value) {
-    form.put(`/app/clientes/${clienteId}`, { preserveScroll: true })
-  } else {
-    form.post('/app/clientes', { preserveScroll: true })
-  }
+  enviar(
+    (opciones) =>
+      esEdicion.value
+        ? form.put(`/app/clientes/${clienteId}`, opciones)
+        : form.post('/app/clientes', opciones),
+    { preserveScroll: true },
+  )
 }
 </script>
 
@@ -202,9 +207,9 @@ const submit = async () => {
     <form @submit.prevent="submit">
       <!-- Barra de acciones -->
       <div class="flex items-center gap-2 mb-4">
-        <button type="submit" :disabled="form.processing || (cuitDuplicado && !form.cuit_confirmado)" class="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+        <button type="submit" :disabled="enviando || (cuitDuplicado && !form.cuit_confirmado)" class="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-          {{ form.processing ? 'Guardando…' : 'Guardar' }}
+          {{ enviando ? 'Guardando…' : 'Guardar' }}
         </button>
         <Link href="/app/clientes" class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
           Cancelar
@@ -539,8 +544,8 @@ const submit = async () => {
       </section>
 
       <div class="flex items-center gap-2 mb-10">
-        <button type="submit" :disabled="form.processing || (cuitDuplicado && !form.cuit_confirmado)" class="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
-          {{ form.processing ? 'Guardando…' : 'Guardar' }}
+        <button type="submit" :disabled="enviando || (cuitDuplicado && !form.cuit_confirmado)" class="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+          {{ enviando ? 'Guardando…' : 'Guardar' }}
         </button>
         <Link href="/app/clientes" class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancelar</Link>
       </div>

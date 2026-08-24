@@ -2,6 +2,7 @@
 import { reactive, watch, computed } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import { useEnvio } from '@/lib/envio'
 
 defineOptions({ layout: AppLayout })
 
@@ -51,9 +52,11 @@ function labelFiltro(campo) {
     .replace(/^\w/, (c) => c.toUpperCase())
 }
 
+const { enviando, enviar } = useEnvio()
+
 function eliminar(id) {
   if (!window.confirm(`¿Eliminar ${props.config.singular} #${id}? Esta acción no se puede deshacer.`)) return
-  router.delete(`${props.config.baseUrl}/${id}`, { preserveScroll: true })
+  enviar((opciones) => router.delete(`${props.config.baseUrl}/${id}`, opciones), { preserveScroll: true })
 }
 </script>
 
@@ -110,7 +113,7 @@ function eliminar(id) {
               <td v-for="col in config.columnas" :key="col.campo" class="px-4 py-3 text-sm text-gray-700">{{ mostrar(r[col.campo]) }}</td>
               <td class="px-4 py-3 text-right whitespace-nowrap">
                 <Link :href="`${config.baseUrl}/${r[config.pk]}/edit`" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Editar</Link>
-                <button type="button" @click="eliminar(r[config.pk])" class="ml-3 text-red-600 hover:text-red-800 text-sm font-medium">Eliminar</button>
+                <button type="button" :disabled="enviando" @click="eliminar(r[config.pk])" class="ml-3 text-red-600 hover:text-red-800 text-sm font-medium disabled:opacity-50">Eliminar</button>
               </td>
             </tr>
             <tr v-if="registros.data.length === 0">
