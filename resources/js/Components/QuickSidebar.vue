@@ -8,7 +8,7 @@ defineEmits(['close'])
 <template>
   <!-- page-quick-sidebar: panel de "Ayuda en línea" que abre el ícono de soporte. -->
   <div
-    class="fixed bottom-0 right-0 top-[42px] z-40 w-[280px] transform bg-mt-sub text-[13px] text-mt-text shadow-2xl transition-transform duration-300"
+    class="fixed bottom-0 right-0 top-header z-40 w-[280px] transform bg-mt-sub text-[13px] text-mt-text shadow-2xl transition-transform duration-300"
     :class="open ? 'translate-x-0' : 'translate-x-full'"
   >
     <button

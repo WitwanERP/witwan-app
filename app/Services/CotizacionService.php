@@ -31,6 +31,10 @@ class CotizacionService
             ->where('cotizacion_moneda', $moneda)
             ->where('cotizacion_fecha', '<=', $this->fecha($fecha))
             ->orderByDesc('cotizacion_fecha')
+            // Desempate por id: la unicidad de (moneda, fecha) no está garantizada
+            // en todos los tenants y sin esto MySQL elegiría cualquiera de las
+            // filas del mismo día. La última cargada es la que vale.
+            ->orderByDesc('cotizacion_id')
             ->first(['cotizacion_costo', 'cotizacion_relacion']);
 
         if ($fila === null) {
@@ -67,6 +71,7 @@ class CotizacionService
             ->where('cotizacion_moneda', $moneda)
             ->where('cotizacion_fecha', '<=', $this->fecha($fecha))
             ->orderByDesc('cotizacion_fecha')
+            ->orderByDesc('cotizacion_id')
             ->value('cotizacion_relacion');
 
         return (float) ($valor ?? 0);
@@ -89,6 +94,7 @@ class CotizacionService
             ->whereColumn('c.cotizacion_moneda', 'm.moneda_id')
             ->where('c.cotizacion_fecha', '<=', $dia)
             ->orderByDesc('c.cotizacion_fecha')
+            ->orderByDesc('c.cotizacion_id')
             ->limit(1);
 
         $monedas = DB::table('moneda as m')
@@ -97,6 +103,9 @@ class CotizacionService
             ->orderBy('m.orden')
             ->get();
 
+        // Indexado por moneda para no repetir las que estén duplicadas en la
+        // tabla `moneda` (no tiene índice único por `moneda_id`), igual que el
+        // array `monedas` del Admin_Controller.php:639.
         $lista = [];
         foreach ($monedas as $fila) {
             $moneda = (string) $fila->moneda_id;
@@ -106,12 +115,12 @@ class CotizacionService
                 continue;
             }
 
-            $lista[] = ['moneda' => $moneda, 'valor' => number_format($valor, 4, '.', '')];
+            $lista[$moneda] = ['moneda' => $moneda, 'valor' => number_format($valor, 4, '.', '')];
         }
 
         return [
             'fecha' => Carbon::parse($dia)->format('d/m/Y'),
-            'monedas' => $lista,
+            'monedas' => array_values($lista),
         ];
     }
 

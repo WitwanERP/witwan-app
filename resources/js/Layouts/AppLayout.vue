@@ -7,8 +7,9 @@ import QuickSidebar from '@/Components/QuickSidebar.vue'
 import FlashMessages from '@/Components/FlashMessages.vue'
 import { ArrowUpIcon } from '@heroicons/vue/24/outline'
 
-// Estructura del Metronic del CI: header fijo (42px), sidebar fijo debajo
-// (235px, o 45px colapsado), contenido corrido y footer al pie.
+// Estructura del Metronic del CI: header fijo (80px, --spacing-header en
+// app.css), sidebar fijo debajo (235px, o 45px colapsado), contenido corrido y
+// footer al pie.
 const STORAGE = 'witwan.sidebar.open'
 
 const sidebarOpen = ref(true)
@@ -47,7 +48,7 @@ function handleLogout() {
     />
 
     <!-- page-container -->
-    <div class="page-container pt-[42px]">
+    <div class="page-container pt-header">
       <Sidebar
         :open="sidebarOpen"
         :mobile-open="mobileMenuOpen"
@@ -56,7 +57,7 @@ function handleLogout() {
 
       <!-- page-content-wrapper -->
       <div
-        class="page-content-wrapper flex min-h-[calc(100vh-42px)] flex-col transition-all duration-200"
+        class="page-content-wrapper flex min-h-[calc(100vh-var(--spacing-header))] flex-col transition-all duration-200"
         :class="sidebarOpen ? 'lg:ml-[235px]' : 'lg:ml-[45px]'"
       >
         <main class="flex-1 p-4 lg:p-5">

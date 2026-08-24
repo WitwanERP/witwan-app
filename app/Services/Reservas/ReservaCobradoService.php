@@ -64,6 +64,7 @@ class ReservaCobradoService
                     ->where('cotizacion_moneda', $moneda)
                     ->where('cotizacion_fecha', '<=', $r->fecha_iso)
                     ->orderByDesc('cotizacion_fecha')
+                    ->orderByDesc('cotizacion_id')
                     ->value('cotizacion_relacion') ?? 0);
 
                 if ((string) $r->fk_moneda_id !== $monedabasica) {

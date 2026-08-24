@@ -126,7 +126,7 @@ class FacturaproveedorController extends Controller
             'modo' => 'crear',
             'registro' => null,
             'opciones' => $this->facturas->opcionesFormulario(),
-            'monedas' => $this->monedas(),
+            'monedas' => \App\Models\Moneda::opciones(),
             'baseUrl' => self::RUTA,
         ]);
     }
@@ -182,7 +182,7 @@ class FacturaproveedorController extends Controller
             'modo' => 'editar',
             'registro' => $registro,
             'opciones' => $this->facturas->opcionesFormulario(),
-            'monedas' => $this->monedas(),
+            'monedas' => \App\Models\Moneda::opciones(),
             'baseUrl' => self::RUTA,
             // El legacy deshabilita todo salvo estos campos.
             'editables' => ['fk_plancuenta_id', 'fk_proyecto_id', 'fk_itemgasto_id', 'facturaproveedor_nro', 'areaimputacion'],
@@ -322,23 +322,10 @@ class FacturaproveedorController extends Controller
     {
         return [
             'tiposDocumento' => (array) config('facturaproveedor.tipos_documento'),
-            'monedas' => $this->monedas(),
+            'monedas' => \App\Models\Moneda::opciones(),
             'proyectos' => \App\Models\Proyecto::orderByRaw('TRIM(proyecto_nombre)')
                 ->pluck('proyecto_nombre', 'proyecto_id'),
         ];
-    }
-
-    private function monedas(): array
-    {
-        return \App\Models\Moneda::query()
-            ->orderBy('moneda_id')
-            ->get(['moneda_id', 'moneda_nombre', 'moneda_basica'])
-            ->map(fn ($m) => [
-                'id' => $m->moneda_id,
-                'label' => $m->moneda_nombre ?: $m->moneda_id,
-                'basica' => $m->moneda_basica === 'Y',
-            ])
-            ->all();
     }
 
     /** Paginador vacío, para cuando todavía no se aplicó ningún filtro. */

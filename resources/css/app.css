@@ -9,6 +9,14 @@
 @theme {
     --font-sans: 'Open Sans', ui-sans-serif, system-ui, sans-serif;
 
+    /* Alto de la banda del header, el mismo que el .page-header del CI
+       (assets/admin/layout/css/layout.css:50). El logo va con alto máximo y
+       ancho automático: los 5px de padding vertical del .page-logo dejan 70px
+       libres. Cambiar acá alcanza: header, sidebar y quick sidebar cuelgan de
+       estas dos medidas. */
+    --spacing-header: 80px;
+    --spacing-logo: 70px;
+
     /* Paleta WitWan (consistencia con el sistema actual) */
     --color-ww-primary: #3b82f6;
     --color-ww-secondary: #6b7280;

@@ -301,7 +301,7 @@ class AsientoController extends Controller
     private function opcionesFiltro(TipoAsiento $tipo): array
     {
         return [
-            'monedas' => $this->monedas(),
+            'monedas' => Moneda::opciones(),
             'estados' => (array) config('asientos.estados'),
             'usuarios' => \App\Models\Usuario::query()
                 ->orderBy('usuario_apellido')
@@ -318,7 +318,7 @@ class AsientoController extends Controller
 
     private function opcionesFormulario(TipoAsiento $tipo, CotizacionService $cotizaciones): array
     {
-        $monedas = $this->monedas();
+        $monedas = Moneda::opciones();
         $basica = $cotizaciones->monedaBasica();
 
         return [
@@ -329,19 +329,6 @@ class AsientoController extends Controller
             'cuentas' => $tipo->esDebeHaber() ? [] : $this->asientos->cuentas(null, 2000),
             'proyectos' => $tipo->usaProyecto() ? $this->proyectos() : [],
         ];
-    }
-
-    private function monedas(): array
-    {
-        return Moneda::query()
-            ->orderBy('moneda_id')
-            ->get(['moneda_id', 'moneda_nombre', 'moneda_basica'])
-            ->map(fn ($m) => [
-                'id' => $m->moneda_id,
-                'label' => $m->moneda_nombre ?: $m->moneda_id,
-                'basica' => $m->moneda_basica === 'Y',
-            ])
-            ->all();
     }
 
     private function proyectos(): array

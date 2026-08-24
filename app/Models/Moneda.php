@@ -66,6 +66,33 @@ class Moneda extends Model
 		'publicaweb'
 	];
 
+	/**
+	 * Monedas para los desplegables, sin repetidos.
+	 *
+	 * `moneda.moneda_id` es sólo un KEY, no un índice único: la tabla legacy
+	 * admite filas repetidas de la misma moneda y en varios tenants las tiene. El
+	 * CI no las mostraba porque armaba el listado como array indexado por
+	 * `moneda_id` (Admin_Controller.php:639), que se queda con la última fila de
+	 * cada moneda. Acá se hace lo mismo con keyBy(), que también conserva la
+	 * última.
+	 *
+	 * @return array<int, array{id: string, label: string, basica: bool}>
+	 */
+	public static function opciones(): array
+	{
+		return static::query()
+			->orderBy('moneda_id')
+			->get(['moneda_id', 'moneda_nombre', 'moneda_basica'])
+			->keyBy('moneda_id')
+			->map(fn ($m) => [
+				'id' => $m->moneda_id,
+				'label' => $m->moneda_nombre ?: $m->moneda_id,
+				'basica' => $m->moneda_basica === 'Y',
+			])
+			->values()
+			->all();
+	}
+
 	public function alojamiento()
 	{
 		return $this->hasOne(Alojamiento::class, 'fk_moneda_id', 'moneda_id');

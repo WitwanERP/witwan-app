@@ -29,7 +29,7 @@ class FacturaproveedorMultipleController extends Controller
 
         return Inertia::render('Documentos/FacturasProveedor/CargaMultiple', [
             'opciones' => $facturas->opcionesFormulario(),
-            'monedas' => $this->monedas(),
+            'monedas' => \App\Models\Moneda::opciones(),
             'baseUrl' => self::RUTA,
         ]);
     }
@@ -80,18 +80,5 @@ class FacturaproveedorMultipleController extends Controller
 
         return redirect(self::RUTA)
             ->with('success', count($ids).' factura(s) de tercero creada(s).');
-    }
-
-    private function monedas(): array
-    {
-        return \App\Models\Moneda::query()
-            ->orderBy('moneda_id')
-            ->get(['moneda_id', 'moneda_nombre', 'moneda_basica'])
-            ->map(fn ($m) => [
-                'id' => $m->moneda_id,
-                'label' => $m->moneda_nombre ?: $m->moneda_id,
-                'basica' => $m->moneda_basica === 'Y',
-            ])
-            ->all();
     }
 }

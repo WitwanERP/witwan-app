@@ -49,19 +49,21 @@ function salir() {
 <template>
   <header
     ref="raiz"
-    class="page-header fixed inset-x-0 top-0 z-40 flex h-[42px] bg-mt-dark text-sm text-white"
+    class="page-header fixed inset-x-0 top-0 z-40 flex h-header bg-mt-dark text-sm text-white"
   >
     <!-- Logo + toggler del sidebar (page-logo) -->
     <div
-      class="hidden h-full shrink-0 items-center justify-between gap-2 pl-4 pr-3 transition-all duration-200 lg:flex"
+      class="hidden h-full shrink-0 items-center justify-between gap-2 py-[5px] pl-4 pr-3 transition-all duration-200 lg:flex"
       :class="sidebarOpen ? 'w-[235px]' : 'w-[45px] px-0 justify-center'"
     >
-      <a v-if="sidebarOpen" href="/app" class="flex min-w-0 items-center">
+      <a v-if="sidebarOpen" href="/app" class="flex min-w-0 items-center overflow-hidden">
+        <!-- Como el .logo-default del CI: sólo se limita el alto, el ancho lo
+             resuelve la imagen (los logos de cada licencia no son homogéneos). -->
         <img
           v-if="logo && !logoRoto"
           :src="logo"
           alt="logo"
-          class="max-h-[26px] max-w-[150px] object-contain"
+          class="max-h-logo w-auto object-contain"
           @error="logoRoto = true"
         />
         <span v-else class="truncate text-base font-bold tracking-wide">WITWAN</span>
@@ -70,7 +72,7 @@ function salir() {
       <!-- menu-toggler: las 3 rayitas del Metronic -->
       <button
         type="button"
-        class="flex h-[42px] w-[30px] shrink-0 flex-col items-center justify-center gap-[3px] text-mt-text hover:text-white"
+        class="flex h-full w-[30px] shrink-0 flex-col items-center justify-center gap-[3px] text-mt-text hover:text-white"
         :title="sidebarOpen ? 'Contraer menú' : 'Expandir menú'"
         @click="emit('toggleSidebar')"
       >
@@ -82,19 +84,19 @@ function salir() {
 
     <!-- Toggler responsive (el menú baja debajo del header, como en el CI) -->
     <div class="flex items-center gap-3 pl-4 lg:hidden">
-      <a href="/app" class="flex items-center">
+      <a href="/app" class="flex min-w-0 items-center overflow-hidden">
         <img
           v-if="logo && !logoRoto"
           :src="logo"
           alt="logo"
-          class="max-h-[24px] max-w-[130px] object-contain"
+          class="max-h-logo w-auto object-contain"
           @error="logoRoto = true"
         />
         <span v-else class="text-base font-bold tracking-wide">WITWAN</span>
       </a>
       <button
         type="button"
-        class="flex h-[42px] w-[30px] flex-col items-center justify-center gap-[3px] text-mt-text hover:text-white"
+        class="flex h-full w-[30px] shrink-0 flex-col items-center justify-center gap-[3px] text-mt-text hover:text-white"
         title="Menú"
         @click="emit('toggleMobileMenu')"
       >
@@ -121,7 +123,7 @@ function salir() {
 
         <ul
           v-if="abierto === 'user'"
-          class="absolute right-0 top-[42px] z-50 w-56 border border-mt-border bg-mt-dark py-1 shadow-lg"
+          class="absolute right-0 top-header z-50 w-56 border border-mt-border bg-mt-dark py-1 shadow-lg"
         >
           <li>
             <a
@@ -157,7 +159,7 @@ function salir() {
 
         <ul
           v-if="abierto === 'moneda'"
-          class="absolute right-0 top-[42px] z-50 w-52 border border-mt-border bg-mt-dark py-1 shadow-lg"
+          class="absolute right-0 top-header z-50 w-52 border border-mt-border bg-mt-dark py-1 shadow-lg"
         >
           <li class="px-4 py-2 text-white">{{ cotizaciones.fecha }}</li>
           <li

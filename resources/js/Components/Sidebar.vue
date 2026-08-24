@@ -62,12 +62,12 @@ const claveGrupo = (sistema, grupo) => sistema.sistema_id + ':' + grupo.grupo
 
 <template>
   <!--
-    page-sidebar: fijo bajo el header (42px). En desktop mide 235px, o 45px
+    page-sidebar: fijo bajo el header (80px). En desktop mide 235px, o 45px
     colapsado (solo íconos, con flyout al pasar el mouse). En mobile baja como
     panel debajo del header, igual que el navbar-collapse del CI.
   -->
   <aside
-    class="page-sidebar fixed bottom-0 left-0 top-[42px] z-30 overflow-y-auto overflow-x-hidden bg-mt-dark text-[13px] transition-all duration-200"
+    class="page-sidebar fixed bottom-0 left-0 top-header z-30 overflow-y-auto overflow-x-hidden bg-mt-dark text-[13px] transition-all duration-200"
     :class="[
       mobileOpen ? 'block w-full' : 'hidden',
       open ? 'lg:block lg:w-[235px]' : 'lg:block lg:w-[45px] lg:overflow-visible',
