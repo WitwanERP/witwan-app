@@ -28,6 +28,9 @@ class HandleInertiaRequests extends Middleware
             // Tenant resuelto por el middleware ResolveTenant (reemplaza LICENCIA/LICPAIS de CI).
             'tenant' => app()->bound('tenant') ? [
                 'licencia' => app('tenant')->licencia ?? null,
+                // Nombre comercial de la licencia: por ahora es el title de todas
+                // las páginas (ver app.blade.php / app.js).
+                'nombre' => app('tenant')->row->licencia_nombre ?? null,
                 'pais' => app('tenant')->pais ?? null,
                 'base' => app('tenant')->base ?? null,
                 // Logo de la licencia: lo sirve el CI desde el mismo dominio
