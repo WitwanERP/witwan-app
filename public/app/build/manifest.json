@@ -398,6 +398,107 @@
       "_AppLayout.js"
     ]
   },
+  "resources/js/Pages/Productos/Cupos/Calendario.vue": {
+    "file": "assets/Calendario.js",
+    "name": "Calendario",
+    "src": "resources/js/Pages/Productos/Cupos/Calendario.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "_envio.js",
+      "_formato.js"
+    ]
+  },
+  "resources/js/Pages/Productos/Form.vue": {
+    "file": "assets/Form6.js",
+    "name": "Form",
+    "src": "resources/js/Pages/Productos/Form.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "_envio.js",
+      "_formato.js",
+      "resources/js/Pages/Productos/components/CampoProducto.vue",
+      "resources/js/Pages/Productos/components/Habitaciones.vue"
+    ]
+  },
+  "resources/js/Pages/Productos/Index.vue": {
+    "file": "assets/Index6.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Productos/Index.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "_envio.js"
+    ]
+  },
+  "resources/js/Pages/Productos/Vigencia/Form.vue": {
+    "file": "assets/Form7.js",
+    "name": "Form",
+    "src": "resources/js/Pages/Productos/Vigencia/Form.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "_envio.js",
+      "_formato.js",
+      "resources/js/Pages/Productos/Vigencia/GrillaAlojamiento.vue",
+      "resources/js/Pages/Productos/Vigencia/GrillaTramos.vue"
+    ]
+  },
+  "resources/js/Pages/Productos/Vigencia/GrillaAlojamiento.vue": {
+    "file": "assets/GrillaAlojamiento.js",
+    "name": "GrillaAlojamiento",
+    "src": "resources/js/Pages/Productos/Vigencia/GrillaAlojamiento.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_formato.js"
+    ]
+  },
+  "resources/js/Pages/Productos/Vigencia/GrillaTramos.vue": {
+    "file": "assets/GrillaTramos.js",
+    "name": "GrillaTramos",
+    "src": "resources/js/Pages/Productos/Vigencia/GrillaTramos.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_formato.js"
+    ]
+  },
+  "resources/js/Pages/Productos/Vigencia/Index.vue": {
+    "file": "assets/Index7.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Productos/Vigencia/Index.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "_envio.js",
+      "_formato.js"
+    ]
+  },
+  "resources/js/Pages/Productos/components/CampoProducto.vue": {
+    "file": "assets/CampoProducto.js",
+    "name": "CampoProducto",
+    "src": "resources/js/Pages/Productos/components/CampoProducto.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "resources/js/Pages/Productos/components/Habitaciones.vue": {
+    "file": "assets/Habitaciones.js",
+    "name": "Habitaciones",
+    "src": "resources/js/Pages/Productos/components/Habitaciones.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
   "resources/js/Pages/Reservas/Listado.vue": {
     "file": "assets/Listado.js",
     "name": "Listado",
@@ -448,6 +549,29 @@
       "resources/js/app.js"
     ]
   },
+  "resources/js/Pages/Tarifarios/Form.vue": {
+    "file": "assets/Form8.js",
+    "name": "Form",
+    "src": "resources/js/Pages/Tarifarios/Form.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "_envio.js"
+    ]
+  },
+  "resources/js/Pages/Tarifarios/Index.vue": {
+    "file": "assets/Index8.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Tarifarios/Index.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "_envio.js",
+      "_formato.js"
+    ]
+  },
   "resources/js/app.js": {
     "file": "assets/app2.js",
     "name": "app",
@@ -485,11 +609,22 @@
       "resources/js/Pages/Documentos/FacturasProveedor/components/TotalesPorTipo.vue",
       "resources/js/Pages/Pasajeros/Form.vue",
       "resources/js/Pages/Pasajeros/Index.vue",
+      "resources/js/Pages/Productos/Cupos/Calendario.vue",
+      "resources/js/Pages/Productos/Form.vue",
+      "resources/js/Pages/Productos/Index.vue",
+      "resources/js/Pages/Productos/Vigencia/Form.vue",
+      "resources/js/Pages/Productos/Vigencia/GrillaAlojamiento.vue",
+      "resources/js/Pages/Productos/Vigencia/GrillaTramos.vue",
+      "resources/js/Pages/Productos/Vigencia/Index.vue",
+      "resources/js/Pages/Productos/components/CampoProducto.vue",
+      "resources/js/Pages/Productos/components/Habitaciones.vue",
       "resources/js/Pages/Reservas/Listado.vue",
       "resources/js/Pages/Reservas/components/FiltrosReserva.vue",
       "resources/js/Pages/Reservas/components/ModalResumen.vue",
       "resources/js/Pages/Reservas/components/TablaReservas.vue",
-      "resources/js/Pages/Reservas/components/TotalesMoneda.vue"
+      "resources/js/Pages/Reservas/components/TotalesMoneda.vue",
+      "resources/js/Pages/Tarifarios/Form.vue",
+      "resources/js/Pages/Tarifarios/Index.vue"
     ]
   }
 }

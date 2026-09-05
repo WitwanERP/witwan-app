@@ -23,6 +23,7 @@ trait CreaEsquemaProductos
         'tarifariocomision', 'tarifarioarchivo', 'tarifacategoria', 'alojamientohabitacion', 'rel_productobase',
         'rel_productociudad', 'rel_productoalojamientofacilidad', 'productogaleria', 'cupo', 'soldout', 'iva',
         'ciudad', 'proveedor', 'regimen', 'cotizacion', 'moneda', 'reserva', 'servicio',
+        'submodulo', 'pais', 'alojamientofacilidad', 'alojamientotipo', 'region', 'usuario', 'tipousuario', 'permisogrupo', 'permiso',
     ];
 
     protected function crearEsquemaProductos(): void
@@ -310,6 +311,57 @@ trait CreaEsquemaProductos
             $t->string('tipocodigo', 3)->default('');
             $t->string('codigo', 20)->default('');
             $t->string('fk_filestatus_id', 3)->default('');
+        });
+
+        // Catálogos y usuario que consultan los controllers Inertia.
+        Schema::create('submodulo', function (Blueprint $t) {
+            $t->string('tipoproducto_id', 3)->primary();
+            $t->string('tipoproducto_nombre', 100)->default('');
+            $t->integer('submodulo_orden')->default(10);
+        });
+        Schema::create('pais', function (Blueprint $t) {
+            $t->increments('pais_id');
+            $t->string('pais_nombre', 100)->default('');
+        });
+        Schema::create('alojamientofacilidad', function (Blueprint $t) {
+            $t->increments('alojamientofacilidad_id');
+            $t->string('alojamientofacilidad_nombre', 100)->default('');
+        });
+        Schema::create('alojamientotipo', function (Blueprint $t) {
+            $t->increments('alojamientotipo_id');
+            $t->string('alojamientotipo_nombre', 64)->default('');
+        });
+        Schema::create('region', function (Blueprint $t) {
+            $t->increments('region_id');
+            $t->string('region_nombre', 100)->default('');
+        });
+        Schema::create('tipousuario', function (Blueprint $t) {
+            $t->string('tipousuario_id', 3)->primary();
+            $t->string('tipousuario_nombre', 100)->default('');
+        });
+        Schema::create('usuario', function (Blueprint $t) {
+            $t->increments('usuario_id');
+            $t->string('usuario_nombre', 100)->default('');
+            $t->string('usuario_apellido', 100)->default('');
+            $t->string('usuario_mail', 150)->default('');
+            $t->string('usuario_login', 100)->default('');
+            $t->string('fk_tipousuario_id', 3)->default('');
+            $t->string('usuario_interno', 1)->default('N');
+            $t->integer('fk_proveedor_id')->default(0);
+            $t->integer('fk_cliente_id')->default(0);
+            $t->integer('fk_cadenacliente_id')->default(0);
+        });
+        Schema::create('permisogrupo', function (Blueprint $t) {
+            $t->string('fk_tipousuario_id', 3);
+            $t->integer('fk_seccion_id');
+            $t->string('permisogrupo_nombre', 50);
+            $t->integer('permisogrupo_valor')->default(0);
+        });
+        Schema::create('permiso', function (Blueprint $t) {
+            $t->integer('fk_usuario_id');
+            $t->integer('fk_seccion_id');
+            $t->string('permiso_nombre', 50);
+            $t->integer('permiso_valor')->default(0);
         });
 
         Schema::create('servicio', function (Blueprint $t) {

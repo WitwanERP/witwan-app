@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\TenantManager;
 use App\Support\Productos\DiasSemana;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +24,8 @@ class VigenciasReconciliarDias extends Command
     protected $signature = 'vigencias:reconciliar-dias
         {--aplicar : Escribe la fuente elegida en las dos representaciones}
         {--fuente=weekdays : weekdays (lo que usa el tarifador) o rel (lo que muestra el form del CI)}
-        {--producto= : Limitar a un producto}';
+        {--producto= : Limitar a un producto}
+        {--host= : Dominio del tenant (ej. rays.witwan.com); sin él usa la BD por defecto del .env}';
 
     protected $description = 'Lista (y opcionalmente corrige) las vigencias cuyos días difieren entre weekdays y rel_vigenciadia';
 
@@ -34,6 +36,17 @@ class VigenciasReconciliarDias extends Command
             $this->error('--fuente debe ser weekdays o rel');
 
             return self::INVALID;
+        }
+
+        if ($this->option('host')) {
+            $licencia = TenantManager::resolveFromHost((string) $this->option('host'));
+            if (! $licencia) {
+                $this->error("No se resolvió tenant para '{$this->option('host')}'.");
+
+                return self::FAILURE;
+            }
+            TenantManager::configure($licencia);
+            $this->info("Tenant: {$licencia->licencia_base}");
         }
 
         $q = DB::table('vigencia')->select('vigencia.vigencia_id', 'vigencia.fk_producto_id', 'vigencia.vigencia_ini', 'vigencia.vigencia_fin', DiasSemana::columnaSelect('bits'));

@@ -69,6 +69,18 @@ return [
         'administracion/asientocontable' => '/app/contabilidad/asientos/contable',
         'administracion/asientocta' => '/app/contabilidad/asientos/cuenta-corriente',
         'administracion/fondos' => '/app/contabilidad/asientos/fondos',
+
+        // Productos / vigencias / tarifarios / cupos: las pantallas Inertia ya
+        // existen (Web\Productos\*). Se dejan SIN mapear a propósito hasta que
+        // se prueben con datos reales en el tenant: al descomentar, el menú del
+        // CI pasa a abrir /app y los usuarios dejan de ver el legacy. Verificar
+        // los seccion_uri exactos en brain.seccion antes de activar.
+        // 'productos/hotel/lista/receptivo' => '/app/productos/receptivo/hotel',
+        // 'productos/hotel/lista/mayorista' => '/app/productos/mayorista/hotel',
+        // 'productos/excursion/lista/receptivo' => '/app/productos/receptivo/excursion',
+        // 'productos/circuito/lista/receptivo' => '/app/productos/receptivo/circuito',
+        // 'tarifario/lista/receptivo' => '/app/tarifarios/receptivo',
+        // 'tarifario/lista/mayorista' => '/app/tarifarios/mayorista',
     ],
 
     // Cache del menú armado, en segundos (clave por licencia+rol). 0 = sin cache.

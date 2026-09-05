@@ -51,6 +51,8 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
+                // Avisos no bloqueantes (ej. solapes de vigencias): lista de strings.
+                'avisos' => fn () => $request->session()->get('avisos', []),
             ],
         ]);
     }
