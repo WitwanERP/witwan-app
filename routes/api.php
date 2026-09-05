@@ -45,8 +45,6 @@ use App\Http\Controllers\Admin\General\TarjetacreditoController;
 use App\Http\Controllers\Admin\Monedas\CotizacionController;
 use App\Http\Controllers\Admin\Monedas\MonedaController;
 use App\Http\Controllers\Api\AdvancePaymentController;
-use App\Http\Controllers\Api\TariffController;
-use App\Http\Controllers\Api\TestPricingController;
 use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Banner\BannerController;
@@ -562,38 +560,12 @@ Route::group(['middleware' => 'jwt.auth'], function () {
 
     /*
     |--------------------------------------------------------------------------
-    | PRICING/TARIFF ROUTES
+    | PRICING (en cuarentena)
     |--------------------------------------------------------------------------
+    | Las rutas tariff/*, quote/* y pricing/* apuntaban a app/Domain/Pricing,
+    | que no compilaba. El código quedó en _cuarentena/pricing (fase 0 de
+    | docs/PRODUCTOS_VIGENCIAS_TARIFAS.md); el reemplazo es App\Services\Pricing.
     */
-    Route::group(['prefix' => 'tariff'], function () {
-        Route::post('calculate', [TariffController::class, 'calculate']);
-        Route::post('calculate-bulk', [TariffController::class, 'calculateBulk']);
-        Route::post('legacy', [TariffController::class, 'legacy']); // Compatibilidad con método obsoleto
-    });
-
-    /*
-    |--------------------------------------------------------------------------
-    | QUOTE ROUTES - Búsqueda + Tarifación Unificada
-    |--------------------------------------------------------------------------
-    */
-    Route::group(['prefix' => 'quote'], function () {
-        Route::post('search', [App\Http\Controllers\Api\QuoteController::class, 'search']);
-        Route::post('search-by-id', [App\Http\Controllers\Api\QuoteController::class, 'searchById']);
-        Route::post('calculate', [App\Http\Controllers\Api\QuoteController::class, 'calculate']);
-        Route::post('calculate-multiple', [App\Http\Controllers\Api\QuoteController::class, 'calculateMultiple']);
-        Route::post('availability', [App\Http\Controllers\Api\QuoteController::class, 'availability']);
-    });
-
-    /*
-    |--------------------------------------------------------------------------
-    | TEST PRICING ROUTES (Temporal)
-    |--------------------------------------------------------------------------
-    */
-    Route::group(['prefix' => 'pricing'], function () {
-        Route::get('status', [TestPricingController::class, 'status']);
-        Route::post('test', [TestPricingController::class, 'test']);
-        Route::post('mock', [TestPricingController::class, 'mock']);
-    });
 
     /*
     |--------------------------------------------------------------------------
