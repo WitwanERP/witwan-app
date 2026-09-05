@@ -112,8 +112,9 @@ final class VigenciaReglas
 
     /**
      * Solapes con otras vigencias del mismo producto y residente. Dice cuál gana
-     * según la prioridad (a igual prioridad el tarifador toma el costo más bajo:
-     * ORDER BY vigencia_prioridad DESC, tarifa.costo).
+     * según la prioridad. A igual prioridad el CI recorre ORDER BY prioridad DESC,
+     * costo ASC pisando por día, así que gana la última fila (la de mayor costo):
+     * conviene asignar prioridades distintas.
      *
      * @return list<string>
      */
@@ -151,7 +152,7 @@ final class VigenciaReglas
             } elseif ($oPrioridad < $prioridad) {
                 $gana = "gana esta vigencia (prioridad {$prioridad} > {$oPrioridad})";
             } else {
-                $gana = "misma prioridad ({$prioridad}): el tarifador toma el costo más bajo";
+                $gana = "misma prioridad ({$prioridad}): el tarifador toma la última fila por costo (asigne prioridades distintas)";
             }
 
             $avisos[] = "Se solapa con \"{$nombre}\" ({$rango}): {$gana}.";

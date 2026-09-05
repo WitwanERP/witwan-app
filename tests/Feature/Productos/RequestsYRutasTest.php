@@ -91,6 +91,7 @@ class RequestsYRutasTest extends TestCase
             'vigencias.create' => ['GET', 'app/productos/{producto}/vigencias/create'],
             'vigencias.store' => ['POST', 'app/productos/{producto}/vigencias'],
             'vigencias.preview-venta' => ['POST', 'app/productos/{producto}/vigencias/preview-venta'],
+            'productos.cotizar' => ['POST', 'app/productos/{producto}/cotizar'],
             'vigencias.edit' => ['GET', 'app/productos/{producto}/vigencias/{vigencia}/edit'],
             'vigencias.update' => ['PUT', 'app/productos/{producto}/vigencias/{vigencia}'],
             'vigencias.clonar' => ['POST', 'app/productos/{producto}/vigencias/{vigencia}/clonar'],

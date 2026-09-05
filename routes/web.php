@@ -174,6 +174,7 @@ Route::prefix('app')->group(function () {
         Route::get('/vigencias/create', [VigenciaController::class, 'create'])->name('vigencias.create');
         Route::post('/vigencias', [VigenciaController::class, 'store'])->name('vigencias.store');
         Route::post('/vigencias/preview-venta', [VigenciaController::class, 'previewVenta'])->name('vigencias.preview-venta');
+        Route::post('/cotizar', [VigenciaController::class, 'cotizar'])->name('productos.cotizar');
         Route::get('/vigencias/{vigencia}/edit', [VigenciaController::class, 'edit'])->whereNumber('vigencia')->name('vigencias.edit');
         Route::put('/vigencias/{vigencia}', [VigenciaController::class, 'update'])->whereNumber('vigencia')->name('vigencias.update');
         Route::post('/vigencias/{vigencia}/clonar', [VigenciaController::class, 'clonar'])->whereNumber('vigencia')->name('vigencias.clonar');

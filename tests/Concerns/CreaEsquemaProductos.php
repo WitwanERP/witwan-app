@@ -24,6 +24,7 @@ trait CreaEsquemaProductos
         'rel_productociudad', 'rel_productoalojamientofacilidad', 'productogaleria', 'cupo', 'soldout', 'iva',
         'ciudad', 'proveedor', 'regimen', 'cotizacion', 'moneda', 'reserva', 'servicio',
         'submodulo', 'pais', 'alojamientofacilidad', 'alojamientotipo', 'region', 'usuario', 'tipousuario', 'permisogrupo', 'permiso',
+        'sistema', 'rel_clientesistema',
     ];
 
     protected function crearEsquemaProductos(): void
@@ -362,6 +363,18 @@ trait CreaEsquemaProductos
             $t->integer('fk_seccion_id');
             $t->string('permiso_nombre', 50);
             $t->integer('permiso_valor')->default(0);
+        });
+
+        Schema::create('sistema', function (Blueprint $t) {
+            $t->increments('sistema_id');
+            $t->string('sistema_nombre', 150)->default('');
+            $t->decimal('extra1', 10, 5)->default(0);
+            $t->decimal('extra2', 10, 5)->default(0);
+        });
+        Schema::create('rel_clientesistema', function (Blueprint $t) {
+            $t->integer('fk_cliente_id');
+            $t->integer('fk_sistema_id');
+            $t->integer('fk_tarifario_id');
         });
 
         Schema::create('servicio', function (Blueprint $t) {

@@ -6,6 +6,7 @@ use App\Exceptions\Productos\VigenciaException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Productos\VigenciaRequest;
 use App\Models\Moneda;
+use App\Services\Pricing\Tarifador;
 use App\Services\Pricing\VentaPreview;
 use App\Services\Productos\ProductoFormulario;
 use App\Services\Productos\ProductoService;
@@ -138,6 +139,30 @@ class VigenciaController extends Controller
             $p, $datos['moneda_costo'], (string) ($datos['residente'] ?? ''), (string) ($datos['redondeo'] ?? ' '),
             $this->vigencias->tarifarios($p), $datos['costos'],
         ));
+    }
+
+    /**
+     * JSON: cotización completa de una estadía (Tarifador, port parcial de tarifar()).
+     * Payload: { fecha_ini, fecha_fin?, adultos, menores?: [edades], residente?: R|N, tarifario_id?, cliente_id?, categoria_id? }.
+     */
+    public function cotizar(int $producto, Request $request, Tarifador $tarifador)
+    {
+        $this->autorizar('acceso');
+        $this->producto($producto);
+
+        $datos = $request->validate([
+            'fecha_ini' => 'required|date_format:Y-m-d',
+            'fecha_fin' => 'nullable|date_format:Y-m-d',
+            'adultos' => 'required|integer|min:1|max:20',
+            'menores' => 'nullable|array|max:9',
+            'menores.*' => 'integer|min:0|max:17',
+            'residente' => 'nullable|string|in:,R,N',
+            'tarifario_id' => 'nullable|integer|min:0',
+            'cliente_id' => 'nullable|integer|min:0',
+            'categoria_id' => 'nullable|integer|min:0',
+        ]);
+
+        return response()->json($tarifador->cotizar($datos + ['producto_id' => $producto]));
     }
 
     // ------------------------------------------------------------------

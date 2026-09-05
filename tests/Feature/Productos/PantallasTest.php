@@ -54,7 +54,7 @@ class PantallasTest extends TestCase
 
         $this->hotel = $this->productoDePrueba(['producto_nombre' => 'Hotel Centro', 'fk_proveedor_id' => 10], ['edad_infoa' => 2, 'edad_menor1' => 11]);
         DB::table('rel_productociudad')->insert(['fk_producto_id' => $this->hotel, 'fk_ciudad_id' => 1]);
-        DB::table('alojamientohabitacion')->insert(['fk_producto_id' => $this->hotel, 'fk_tarifacategoria_id' => 7, 'max_child' => 1, 'habilitar' => 1]);
+        DB::table('alojamientohabitacion')->insert(['fk_producto_id' => $this->hotel, 'fk_tarifacategoria_id' => 7, 'max_child' => 1, 'capacidad' => 3, 'max_adultos' => 2, 'max_adultos_child' => 2, 'habilitar' => 1]);
     }
 
     // ------------------------------------------------------------------ productos
@@ -194,6 +194,15 @@ class PantallasTest extends TestCase
             ->assertOk()
             ->assertJsonPath('tarifarios.3.divisor_markup', 0.8)
             ->assertJsonPath('celdas.7_1.3.venta', 125);
+
+        DB::table('sistema')->insert(['sistema_id' => 1, 'extra1' => 0, 'extra2' => 0]);
+        $this->postJson("/app/productos/{$this->hotel}/cotizar", ['fecha_ini' => '2026-10-05', 'fecha_fin' => '2026-10-07', 'adultos' => 1, 'tarifario_id' => 3])
+            ->assertOk()
+            ->assertJsonPath('ok', true)
+            ->assertJsonPath('params.noches', 2)
+            ->assertJsonPath('mejor.categoria', 7)
+            ->assertJsonPath('mejor.costoadt', 220);
+        $this->postJson("/app/productos/{$this->hotel}/cotizar", ['fecha_ini' => '2026-10-05', 'adultos' => 0])->assertStatus(422);
 
         $this->post("/app/productos/{$this->hotel}/vigencias/{$vid}/clonar", ['desplazar_meses' => 12]);
         $this->assertSame(2, DB::table('vigencia')->count());
