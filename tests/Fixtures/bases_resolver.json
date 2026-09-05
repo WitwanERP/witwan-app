@@ -1,0 +1,72 @@
+[
+  {
+    "nombre": "hotel sin menores: solo bases numericas",
+    "tipo": "HOT", "bases": ["1", "2", "3"], "edades": {}, "max_child": 2,
+    "esperado": ["1", "2", "3"]
+  },
+  {
+    "nombre": "sin bases cargadas cae al default 1,2,3 (vigencia.php:279)",
+    "tipo": "HOT", "bases": [], "edades": {}, "max_child": 0,
+    "esperado": ["1", "2", "3"]
+  },
+  {
+    "nombre": "bases desordenadas y repetidas se normalizan como producto_model.php:937",
+    "tipo": "HOT", "bases": ["3", "1", "2", "1"], "edades": {}, "max_child": 0,
+    "esperado": ["1", "2", "3"]
+  },
+  {
+    "nombre": "max_child 0: las edades cargadas no generan ninguna base de menor",
+    "tipo": "HOT", "bases": ["1", "2"], "edades": {"edad_infoa": 2, "edad_menor1": 11, "edad_menor2": 15, "edad_junior": 17}, "max_child": 0,
+    "esperado": ["1", "2"]
+  },
+  {
+    "nombre": "un menor con infante y menor 1",
+    "tipo": "HOT", "bases": ["1", "2"], "edades": {"edad_infoa": 2, "edad_menor1": 11}, "max_child": 1,
+    "esperado": ["1", "2", "INF", "MN"]
+  },
+  {
+    "nombre": "dos menores: INF una sola vez, MN y MN2",
+    "tipo": "HOT", "bases": ["1", "2", "3"], "edades": {"edad_infoa": 2, "edad_menor1": 11}, "max_child": 2,
+    "esperado": ["1", "2", "3", "INF", "MN", "MN2"]
+  },
+  {
+    "nombre": "tres menores con menor 2: M2, M22, M23 van despues de todos los MN",
+    "tipo": "HOT", "bases": ["1", "2"], "edades": {"edad_menor1": 8, "edad_menor2": 12}, "max_child": 3,
+    "esperado": ["1", "2", "MN", "MN2", "MN3", "M2", "M22", "M23"]
+  },
+  {
+    "nombre": "junior aparece una vez al final si hay al menos un menor admitido",
+    "tipo": "HOT", "bases": ["1", "2"], "edades": {"edad_infoa": 2, "edad_menor1": 11, "edad_menor2": 14, "edad_junior": 17}, "max_child": 2,
+    "esperado": ["1", "2", "INF", "MN", "MN2", "M2", "M22", "JNR"]
+  },
+  {
+    "nombre": "solo infante sin menor 1: INF pero ningun MN",
+    "tipo": "HOT", "bases": ["1"], "edades": {"edad_infoa": 2}, "max_child": 2,
+    "esperado": ["1", "INF"]
+  },
+  {
+    "nombre": "solo menor 2 sin menor 1",
+    "tipo": "MSC", "bases": ["1", "2"], "edades": {"edad_menor2": 12}, "max_child": 2,
+    "esperado": ["1", "2", "M2", "M22"]
+  },
+  {
+    "nombre": "PAQ fuerza max_child = 1 aunque la categoria admita mas (vigencia.php:289)",
+    "tipo": "PAQ", "bases": ["1", "2", "3"], "edades": {"edad_infoa": 2, "edad_menor1": 11, "edad_junior": 17}, "max_child": 3,
+    "esperado": ["1", "2", "3", "INF", "MN", "JNR"]
+  },
+  {
+    "nombre": "PAQ sin habitaciones (max_child 0) igual tiene una columna de menor",
+    "tipo": "PAQ", "bases": ["1", "2"], "edades": {"edad_menor1": 11}, "max_child": 0,
+    "esperado": ["1", "2", "MN"]
+  },
+  {
+    "nombre": "AEL con menor 1 y dos menores",
+    "tipo": "AEL", "bases": ["1", "2"], "edades": {"edad_infoa": 1, "edad_menor1": 11}, "max_child": 2,
+    "esperado": ["1", "2", "INF", "MN", "MN2"]
+  },
+  {
+    "nombre": "edades como string desde producto_extra",
+    "tipo": "HOT", "bases": ["1", "2"], "edades": {"edad_infoa": "2", "edad_menor1": "11", "edad_junior": "0"}, "max_child": 1,
+    "esperado": ["1", "2", "INF", "MN"]
+  }
+]

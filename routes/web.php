@@ -16,6 +16,10 @@ use App\Http\Controllers\Web\Documentos\DteChileController;
 use App\Http\Controllers\Web\Documentos\FacturaproveedorController as FacturaproveedorWebController;
 use App\Http\Controllers\Web\Documentos\FacturaproveedorMultipleController;
 use App\Http\Controllers\Web\PasajeroController;
+use App\Http\Controllers\Web\Productos\CupoController;
+use App\Http\Controllers\Web\Productos\ProductoController;
+use App\Http\Controllers\Web\Productos\TarifarioController;
+use App\Http\Controllers\Web\Productos\VigenciaController;
 use App\Http\Controllers\Web\Reservas\ReservaListadoController;
 use App\Services\CiSessionReader;
 use App\Services\CiUserResolver;
@@ -151,6 +155,60 @@ Route::prefix('app')->group(function () {
             Route::put('/{id}', [AsientoController::class, 'update'])->whereNumber('id')->name('asientos.update');
             Route::post('/{id}/anular', [AsientoController::class, 'anular'])->whereNumber('id')->name('asientos.anular');
         });
+
+    /*
+    |----------------------------------------------------------------------
+    | Productos, vigencias/tarifas, tarifarios y cupos
+    |----------------------------------------------------------------------
+    | Reemplaza a /productos/{tipo}/{accion}/{sistema}, /vigencia/*,
+    | /tarifario/* y /producto/vercupo del CI (docs/PRODUCTOS_VIGENCIAS_TARIFAS.md).
+    | {sistema} y {tipo} son los slugs del legacy (receptivo/hotel...) y se
+    | validan contra config/productos.php. Las rutas fijas van ANTES de /{id}.
+    */
+    $sistemas = implode('|', array_keys((array) config('productos.sistemas')));
+    $tipos = implode('|', array_column((array) config('productos.tipos'), 'slug'));
+
+    // Vigencias y cupos cuelgan del id de producto (el tipo/sistema sale de la fila).
+    Route::prefix('productos/{producto}')->whereNumber('producto')->group(function () {
+        Route::get('/vigencias', [VigenciaController::class, 'index'])->name('vigencias.index');
+        Route::get('/vigencias/create', [VigenciaController::class, 'create'])->name('vigencias.create');
+        Route::post('/vigencias', [VigenciaController::class, 'store'])->name('vigencias.store');
+        Route::post('/vigencias/preview-venta', [VigenciaController::class, 'previewVenta'])->name('vigencias.preview-venta');
+        Route::get('/vigencias/{vigencia}/edit', [VigenciaController::class, 'edit'])->whereNumber('vigencia')->name('vigencias.edit');
+        Route::put('/vigencias/{vigencia}', [VigenciaController::class, 'update'])->whereNumber('vigencia')->name('vigencias.update');
+        Route::post('/vigencias/{vigencia}/clonar', [VigenciaController::class, 'clonar'])->whereNumber('vigencia')->name('vigencias.clonar');
+        Route::delete('/vigencias/{vigencia}', [VigenciaController::class, 'destroy'])->whereNumber('vigencia')->name('vigencias.destroy');
+
+        Route::prefix('cupos/{categoria}')->whereNumber('categoria')->group(function () {
+            Route::get('/', [CupoController::class, 'calendario'])->name('cupos.calendario');
+            Route::get('/mes', [CupoController::class, 'mes'])->name('cupos.mes');
+            Route::post('/cupo', [CupoController::class, 'storeCupo'])->name('cupos.cupo.store');
+            Route::post('/soldout', [CupoController::class, 'storeSoldout'])->name('cupos.soldout.store');
+            Route::post('/bloqueo', [CupoController::class, 'bloqueo'])->name('cupos.bloqueo');
+            Route::post('/cupo/eliminar', [CupoController::class, 'destroyCupos'])->name('cupos.cupo.eliminar');
+            Route::post('/soldout/eliminar', [CupoController::class, 'destroySoldouts'])->name('cupos.soldout.eliminar');
+        });
+    });
+
+    Route::prefix('productos/{sistema}/{tipo}')->where(['sistema' => $sistemas, 'tipo' => $tipos])->group(function () {
+        Route::get('/', [ProductoController::class, 'index'])->name('productos.index');
+        Route::get('/create', [ProductoController::class, 'create'])->name('productos.create');
+        Route::post('/', [ProductoController::class, 'store'])->name('productos.store');
+        Route::get('/{id}/edit', [ProductoController::class, 'edit'])->whereNumber('id')->name('productos.edit');
+        Route::put('/{id}', [ProductoController::class, 'update'])->whereNumber('id')->name('productos.update');
+        Route::post('/{id}/clonar', [ProductoController::class, 'clonar'])->whereNumber('id')->name('productos.clonar');
+        Route::delete('/{id}', [ProductoController::class, 'destroy'])->whereNumber('id')->name('productos.destroy');
+        Route::get('/{id}/habitaciones', [ProductoController::class, 'habitaciones'])->whereNumber('id')->name('productos.habitaciones');
+    });
+
+    Route::prefix('tarifarios/{sistema}')->where(['sistema' => $sistemas])->group(function () {
+        Route::get('/', [TarifarioController::class, 'index'])->name('tarifarios.index');
+        Route::get('/create', [TarifarioController::class, 'create'])->name('tarifarios.create');
+        Route::post('/', [TarifarioController::class, 'store'])->name('tarifarios.store');
+        Route::get('/{id}/edit', [TarifarioController::class, 'edit'])->whereNumber('id')->name('tarifarios.edit');
+        Route::put('/{id}', [TarifarioController::class, 'update'])->whereNumber('id')->name('tarifarios.update');
+        Route::delete('/{id}', [TarifarioController::class, 'destroy'])->whereNumber('id')->name('tarifarios.destroy');
+    });
 
     // ABMs de configuración (config-driven, controllers que extienden Abm\AbmController).
     // Helper local: registra las 6 rutas REST de un ABM bajo un slug dado.

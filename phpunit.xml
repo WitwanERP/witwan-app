@@ -22,8 +22,22 @@
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_STORE" value="array"/>
-        <env name="DB_CONNECTION" value="sqlite"/>
-        <env name="DB_DATABASE" value=":memory:"/>
+        <!--
+            Tests con base: MariaDB/MySQL local, base dedicada `witwan_test`
+            (CREATE DATABASE witwan_test; usuario witwan_test/witwan_test con permisos sobre esa base). No hay migraciones de las tablas
+            legacy: cada test que toca la base crea su esquema con
+            Tests\Concerns\CreaEsquemaProductos. Se usa MySQL y no SQLite porque
+            el módulo depende de `bit(7)`, `LPAD(BIN())` y del sql_mode no
+            estricto de la BD del tenant, y porque este entorno no trae pdo_sqlite.
+            Los tests que sólo compilan SQL (toSql) no abren conexión.
+        -->
+        <env name="DB_CONNECTION" value="mysql"/>
+        <env name="DB_HOST" value="127.0.0.1"/>
+        <env name="DB_PORT" value="3306"/>
+        <env name="DB_DATABASE" value="witwan_test"/>
+        <env name="DB_USERNAME" value="witwan_test"/>
+        <env name="DB_PASSWORD" value="witwan_test"/>
+        <env name="DB_SOCKET" value=""/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="QUEUE_CONNECTION" value="sync"/>

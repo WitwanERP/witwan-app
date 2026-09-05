@@ -1,0 +1,52 @@
+[
+  {
+    "nombre": "sin iva, misma moneda, sin markup: la venta es el costo",
+    "costo": 100, "iva_costo": 0, "cotizacion": 1, "divisor": 0, "redondeo": " ", "comision": 0,
+    "esperado": {"venta": 100, "comision": 0, "neto": 100}
+  },
+  {
+    "nombre": "divisor de markup 0.8 (25% sobre costo)",
+    "costo": 100, "iva_costo": 0, "cotizacion": 1, "divisor": 0.8, "redondeo": " ", "comision": 0,
+    "esperado": {"venta": 125, "costo_en_moneda": 100}
+  },
+  {
+    "nombre": "iva de costo se suma antes del markup",
+    "costo": 100, "iva_costo": 21, "cotizacion": 1, "divisor": 0.8, "redondeo": " ", "comision": 0,
+    "esperado": {"costo_con_iva": 121, "venta": 151.25}
+  },
+  {
+    "nombre": "cotizacion convierte a la moneda del tarifario antes del markup",
+    "costo": 100, "iva_costo": 0, "cotizacion": 1000, "divisor": 0.8, "redondeo": " ", "comision": 0,
+    "esperado": {"costo_en_moneda": 100000, "venta": 125000}
+  },
+  {
+    "nombre": "sin redondeo deja 2 decimales",
+    "costo": 100, "iva_costo": 0, "cotizacion": 1, "divisor": 0.7, "redondeo": " ", "comision": 0,
+    "esperado": {"venta": 142.86}
+  },
+  {
+    "nombre": "redondeo R: entero por aproximacion",
+    "costo": 100, "iva_costo": 0, "cotizacion": 1, "divisor": 0.7, "redondeo": "R", "comision": 0,
+    "esperado": {"venta": 143}
+  },
+  {
+    "nombre": "redondeo C: siempre para arriba",
+    "costo": 100, "iva_costo": 0, "cotizacion": 1, "divisor": 0.9, "redondeo": "C", "comision": 0,
+    "esperado": {"venta": 112}
+  },
+  {
+    "nombre": "redondeo C sobre un entero exacto no suma uno",
+    "costo": 100, "iva_costo": 0, "cotizacion": 1, "divisor": 0.8, "redondeo": "C", "comision": 0,
+    "esperado": {"venta": 125}
+  },
+  {
+    "nombre": "comision sobre la venta ya redondeada",
+    "costo": 100, "iva_costo": 0, "cotizacion": 1, "divisor": 0.8, "redondeo": " ", "comision": 10,
+    "esperado": {"venta": 125, "comision": 12.5, "neto": 112.5}
+  },
+  {
+    "nombre": "cotizacion 0 no anula el precio",
+    "costo": 100, "iva_costo": 0, "cotizacion": 0, "divisor": 0.8, "redondeo": " ", "comision": 0,
+    "esperado": {"venta": 125}
+  }
+]
