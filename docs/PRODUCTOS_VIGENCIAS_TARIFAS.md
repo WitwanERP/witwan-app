@@ -254,3 +254,23 @@ Backend, config y tests de las fases 0 a 3 y el preview de venta de la fase 4 es
 | Comando | `php artisan vigencias:reconciliar-dias [--aplicar --fuente=weekdays|rel] [--producto=N]` |
 | Cuarentena | `_cuarentena/pricing/` (fase 0) |
 | Tests con base | MariaDB local `witwan_test` (ver `phpunit.xml`); esquema en `tests/Concerns/CreaEsquemaProductos.php` |
+
+---
+
+## 5. Estado de implementación (2026-09-05)
+
+Commits en `witwan-app`: `aceec7b` (fase 0), `cea09e2` (backend + tests), `86de36d` (pantallas Inertia), y el del Tarifador. Suite: 300 tests en verde contra MariaDB `witwan_test` (`phpunit.xml`; el esquema legacy lo crea `tests/Concerns/CreaEsquemaProductos`).
+
+| Fase | Estado | Dónde |
+|---|---|---|
+| 0 Cuarentena | hecha | `_cuarentena/pricing/` |
+| 1 Productos | hecha (backend + `Productos/Index.vue`, `Form.vue`) | `Services/Productos`, `Web/Productos/ProductoController`, `config/productos.php` |
+| 2 Vigencias | hecha (backend + `Vigencia/Form.vue` con grillas, clonar, `vigencias:reconciliar-dias --host=`) | `Services/Vigencias` |
+| 3 Tarifarios y cupos | hecha (backend + `Tarifarios/*.vue`, `Cupos/Calendario.vue`) | `Services/Tarifarios`, `Services/Cupos` |
+| 4 Pricing | `MarkupCalculadora`, `ScopeResolver`, `VentaPreview` y `Tarifador` (port parcial, endpoint `POST /app/productos/{id}/cotizar`). Falta validar contra fixtures del CI e importación Excel | `Services/Pricing` |
+
+Decisiones §4.8 resueltas o con datos:
+- 4.8.2: `vigencias:reconciliar-dias --host=rays.witwan.com` no encontró diferencias entre `weekdays` y `rel_vigenciadia` en `witwan_rays`. Correr en los demás tenants antes de activar el menú.
+- Aviso de solape a igual prioridad: el CI se queda con la última fila del `ORDER BY prioridad DESC, costo ASC` (la de mayor costo), no con la más barata. `VigenciaReglas` lo dice así y el `Tarifador` lo replica.
+
+Pendiente: activar `rutas_migradas` en `config/menu.php` (están comentadas), fixtures del CI para el `Tarifador`, ramas por licencia (4.8.4), upload de adjuntos de tarifario y galería (hoy siguen en el CI), importación Excel.
