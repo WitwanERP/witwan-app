@@ -32,6 +32,7 @@ Cómo verificar: `php vendor/bin/phpunit` (no `php artisan test`). Build de asse
 | 20 | Contabilidad: IVA venta | ver `git log` | port de `administracion/ivacredito` (UNION facturas/NC/ND con alícuotas 21/10,5, RG 3819/5272, IVA TUR, tipo de cambio USD), agrupado por tipo. 1 test |
 | 21 | Balance 8 columnas y estado de cuenta | ver `git log` | port de `administracion/Balance` (árbol de cuentas, deudor/acreedor y columnas patrimoniales, SUMAS/RESULTADO) y de `cuentas/micuenta` (files del cliente con documentos, recibos e hijos). 2 tests |
 | 22 | Caja: cartera y arqueo del día; solicitudes de alta | ver `git log` | port de `cartera/lista` (con quitar de cartera), `caja/arqueos` (saldo inicial, movimientos del día, saldo final) y `configuracion/solicitud` (listado; aprobar/rechazar al legacy). 3 tests |
+| 23 | Cierre contable | ver `git log` | ABM de `cierrecaja` (port de `libros/cierrecontable`). 1 test |
 
 Suite completa al cierre del bloque 16: **397 tests OK**. Publicado en `origin/main`.
 
@@ -39,7 +40,7 @@ Suite completa al cierre del bloque 16: **397 tests OK**. Publicado en `origin/m
 
 ## En curso
 
-Nada en curso: bloque 22 cerrado. Quedan: analítico de cuentas (con conciliación), cierre contable, rentabilidad (depende de `reserva_model::listar`), reportes `porboletear` / ventas por cliente / por proveedor / gasto e ingreso, cobranzas y pagos (transaccionales), cierre de arqueo, consolidador/BSP, destacados.
+Nada en curso: bloque 23 cerrado. Quedan: analítico de cuentas (con conciliación), rentabilidad (depende de `reserva_model::listar`), reportes `porboletear` / ventas por cliente / por proveedor / gasto e ingreso, cobranzas y pagos (transaccionales), cierre de arqueo, consolidador/BSP, destacados.
 
 ---
 

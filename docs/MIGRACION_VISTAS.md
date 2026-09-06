@@ -43,6 +43,7 @@ Tests: cada lote tiene su Feature test sobre el esquema real en MySQL (`tests/Co
 | administracion/{factura,notacredito,notadebito,recibo,ordenpago,ordenservicio,mfondos} | /app/documentos/… | modo lectura; imprimir/anular/editar linkean al legacy |
 | administracion/factura3ero (+ subdiario) | /app/facturas-proveedor | previa |
 | administracion/{asientocontable,asientocta,fondos} | /app/contabilidad/asientos/… | previas |
+| administracion/libros/cierrecontable | /app/contabilidad/cierres | ABM de `cierrecaja` (crear = cerrar, eliminar = abrir) |
 | administracion/libros/{diario,mayor} | /app/contabilidad/libro-{diario,mayor} | sólo la base del tenant (el CI unía las de secontur); el saldo del mayor es del período, con fila de saldo anterior |
 | administracion/Balance | /app/contabilidad/balance-8 | balance de 8 columnas; raíces por `sysconfig` activo/pasivo/ganancia/perdida; cruce de columna por signo como el CI |
 | administracion/cuentas/micuenta | /app/cuentas/estado | los internos eligen cliente (el CI sólo servía a usuarios cliente) |
@@ -86,7 +87,7 @@ Tests: cada lote tiene su Feature test sobre el esquema real en MySQL (`tests/Co
 Listado tomado de `brain.seccion` para la licencia (script en el historial de esta migración). Se agrupan por tipo de trabajo pendiente:
 
 - **Flujos transaccionales pesados** (emiten comprobantes o mueven dinero): `administracion/cobranzas`, `administracion/pagos` (pagos a procesar), `administracion/cartera/pagodirecto` (y `guardar`), `administracion/ordenservicio/acuenta`, `administracion/caja/arqueo` (cierre), `administracion/conciliacion/conciliar`, `administracion/banco/` (conciliación automática), `administracion/autorizar` (e-voucher), `administracion/factura/prebcn`.
-- **Contabilidad**: `administracion/libros/cierrecontable`, `administracion/ctacliente/analitico` (conciliación con `ctaaplicada`/`nubeanalitico`).
+- **Contabilidad**: `administracion/ctacliente/analitico` (conciliación con `ctaaplicada`/`nubeanalitico`).
 - **Rentabilidad**: `administracion/renta/{mirenta,rentabilidad}`, `administracion/rentamt/{payroll,mayorista,desestimados,crearasiento}`.
 - **Reportes grandes** (dependen de `reserva_model` del CI, 500–1500 líneas cada uno): `administracion/reportes/{porboletear,cliente,proveedor,reportegastosingreso}`.
 - **Consolidador / BSP**: `consolidador/*`, `administracion/bsp/*`, `administracion/Bspmt/link`.

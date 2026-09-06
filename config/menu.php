@@ -71,6 +71,7 @@ return [
         'administracion/asientocta' => '/app/contabilidad/asientos/cuenta-corriente',
         'administracion/fondos' => '/app/contabilidad/asientos/fondos',
         'administracion/libros/diario' => '/app/contabilidad/libro-diario',
+        'administracion/libros/cierrecontable' => '/app/contabilidad/cierres',
         'administracion/libros/mayor' => '/app/contabilidad/libro-mayor',
         'administracion/libros/balance' => '/app/contabilidad/balance',
         'administracion/libros/ventascl' => '/app/contabilidad/libro-ventas',

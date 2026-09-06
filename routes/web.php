@@ -6,6 +6,7 @@ use App\Http\Controllers\Web\Abm\BancoController;
 use App\Http\Controllers\Web\Abm\CadenaclienteController;
 use App\Http\Controllers\Web\Abm\CadenahoteleraController;
 use App\Http\Controllers\Web\Abm\CentrocostoController;
+use App\Http\Controllers\Web\Abm\CierreContableController;
 use App\Http\Controllers\Web\Abm\CiudadController;
 use App\Http\Controllers\Web\Abm\CotizacionController;
 use App\Http\Controllers\Web\Abm\FacilidadController;
@@ -429,6 +430,7 @@ Route::prefix('app')->group(function () {
     // Configuración > Usuarios / Proveedores
     $abm('config/tipos-usuario', TipousuarioController::class, false);
     $abm('config/usuarios', UsuarioController::class);
+    $abm('contabilidad/cierres', CierreContableController::class);
     Route::post('/config/usuarios/{id}/apikey', [UsuarioController::class, 'apikey'])->whereNumber('id')->name('config.usuarios.apikey');
     $abm('config/proveedores', ProveedorController::class);
     $abm('config/prestadores', PrestadorController::class);
