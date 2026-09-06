@@ -76,7 +76,7 @@ class CatalogosService
     public function proveedores(): array
     {
         return $this->memo[__FUNCTION__] ??= DB::table('proveedor')
-            ->where('eliminar', 0)
+            ->where('eliminar', '<>', 'Y')
             ->orderBy('proveedor_nombre')
             ->get(['proveedor_id', 'proveedor_nombre'])
             ->map(fn ($r) => ['value' => (int) $r->proveedor_id, 'label' => $r->proveedor_nombre])

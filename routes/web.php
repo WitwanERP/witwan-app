@@ -22,7 +22,9 @@ use App\Http\Controllers\Web\Abm\MonedaController;
 use App\Http\Controllers\Web\Abm\NegocioController;
 use App\Http\Controllers\Web\Abm\PaisController;
 use App\Http\Controllers\Web\Abm\PlancuentaController;
+use App\Http\Controllers\Web\Abm\PrestadorController;
 use App\Http\Controllers\Web\Abm\ProgramaFidelidadController;
+use App\Http\Controllers\Web\Abm\ProveedorController;
 use App\Http\Controllers\Web\Abm\ProyectoController;
 use App\Http\Controllers\Web\Abm\PuntoInteresController;
 use App\Http\Controllers\Web\Abm\RegimenController;
@@ -35,6 +37,8 @@ use App\Http\Controllers\Web\Abm\UsuariocomisionController;
 use App\Http\Controllers\Web\Admin\ParametrosContablesController;
 use App\Http\Controllers\Web\Admin\TipoCambioController;
 use App\Http\Controllers\Web\ClienteController;
+use App\Http\Controllers\Web\Config\TipousuarioController;
+use App\Http\Controllers\Web\Config\UsuarioController;
 use App\Http\Controllers\Web\Contabilidad\AsientoController;
 use App\Http\Controllers\Web\Documentos\DteChileController;
 use App\Http\Controllers\Web\Documentos\FacturaproveedorController as FacturaproveedorWebController;
@@ -283,6 +287,13 @@ Route::prefix('app')->group(function () {
     Route::post('/admin/tipo-cambio', [TipoCambioController::class, 'guardar'])->name('admin.tipo-cambio.guardar');
     Route::get('/admin/parametros-contables', [ParametrosContablesController::class, 'index'])->name('admin.parametros-contables');
     Route::post('/admin/parametros-contables', [ParametrosContablesController::class, 'guardar'])->name('admin.parametros-contables.guardar');
+
+    // Configuración > Usuarios / Proveedores
+    $abm('config/tipos-usuario', TipousuarioController::class, false);
+    $abm('config/usuarios', UsuarioController::class);
+    Route::post('/config/usuarios/{id}/apikey', [UsuarioController::class, 'apikey'])->whereNumber('id')->name('config.usuarios.apikey');
+    $abm('config/proveedores', ProveedorController::class);
+    $abm('config/prestadores', PrestadorController::class);
 
     // Configuración > Productos
     $abm('config/tipos-alojamiento', AlojamientotipoController::class);

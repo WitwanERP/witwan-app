@@ -99,6 +99,12 @@ return [
         'configuracion/regimen' => '/app/config/regimenes',
         'configuracion/guia' => '/app/config/guias',
 
+        // Configuración > Usuarios / Proveedores.
+        'configuracion/tipousuario' => '/app/config/tipos-usuario',
+        'configuracion/usuario' => '/app/config/usuarios',
+        'configuracion/proveedor' => '/app/config/proveedores',
+        'configuracion/Prestador' => '/app/config/prestadores',
+
         // Administración: monedas, contabilidad, fee y comisión.
         'administracion/moneda' => '/app/admin/monedas',
         'administracion/cambio/ultimas' => '/app/admin/tipo-cambio',

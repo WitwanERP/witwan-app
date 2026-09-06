@@ -24,7 +24,7 @@ trait CreaEsquemaConfiguracion
         'tarifacategoria', 'alojamientofacilidad', 'tag', 'formapago', 'guia', 'interfases', 'ciudad', 'pais', 'filearchivo',
         'reserva', 'usuario', 'tipousuario', 'submodulo', 'plancuenta', 'proveedor', 'permisogrupo', 'permiso', 'moneda',
         'cotizacion', 'iva', 'modoivaventa', 'producto', 'sysconfig', 'rel_usuariomodelocomision', 'modelocomision',
-        'modelofee', 'region', 'cliente', 'rel_usuariousuario', 'sistema',
+        'modelofee', 'region', 'cliente', 'rel_usuariousuario', 'sistema', 'condicioniva', 'idioma',
     ];
 
     protected function crearEsquemaConfiguracion(): void
@@ -94,8 +94,50 @@ trait CreaEsquemaConfiguracion
         ]);
         $nombre('pais', 'pais');
         $nombre('proveedor', 'proveedor', [
-            fn (Blueprint $t) => $t->integer('eliminar')->default(0),
+            fn (Blueprint $t) => $t->string('eliminar', 1)->default('N'),
+            fn (Blueprint $t) => $t->integer('fk_cadenahotelera_id')->default(0),
+            fn (Blueprint $t) => $t->string('razonsocial', 150)->default(''),
+            fn (Blueprint $t) => $t->integer('fk_condicioniva_id')->default(0),
+            fn (Blueprint $t) => $t->string('proveedor_legajo', 50)->default(''),
+            fn (Blueprint $t) => $t->string('proveedor_telefono', 50)->default(''),
+            fn (Blueprint $t) => $t->string('proveedor_telefonoemergencia', 100)->default(''),
+            fn (Blueprint $t) => $t->string('proveedor_direccion', 255)->default(''),
+            fn (Blueprint $t) => $t->string('proveedor_email', 100)->default(''),
+            fn (Blueprint $t) => $t->string('proveedor_emailreservas', 100)->default(''),
+            fn (Blueprint $t) => $t->string('proveedor_provincia', 200)->default(''),
+            fn (Blueprint $t) => $t->integer('fk_pais_id')->default(0),
+            fn (Blueprint $t) => $t->integer('fk_ciudad_id')->default(0),
+            fn (Blueprint $t) => $t->string('cuit', 20)->default(''),
+            fn (Blueprint $t) => $t->string('iata', 20)->default(''),
+            fn (Blueprint $t) => $t->string('edita_tarifa', 1)->default('N'),
+            fn (Blueprint $t) => $t->text('comentario')->nullable(),
+            fn (Blueprint $t) => $t->string('habilita', 1)->default('Y'),
+            fn (Blueprint $t) => $t->integer('fk_usuario_id')->default(0),
+            fn (Blueprint $t) => $t->string('fechacarga', 19)->default('2020-01-01 00:00:00'),
+            fn (Blueprint $t) => $t->string('um', 19)->default('2020-01-01 00:00:00'),
+            fn (Blueprint $t) => $t->string('proveedor_codigopostal', 15)->default(''),
+            fn (Blueprint $t) => $t->text('proveedor_infobanco')->nullable(),
+            fn (Blueprint $t) => $t->string('moneda_extra', 3)->default(''),
+            fn (Blueprint $t) => $t->string('tipo_extra', 2)->default(''),
+            fn (Blueprint $t) => $t->decimal('costo_extra', 15, 2)->default(0),
+            fn (Blueprint $t) => $t->integer('prestador')->default(0),
+            fn (Blueprint $t) => $t->integer('gastoacliente')->default(0),
+            fn (Blueprint $t) => $t->integer('voucherpropio')->default(0),
+            fn (Blueprint $t) => $t->decimal('porcentaje_extra', 15, 2)->default(0),
+            fn (Blueprint $t) => $t->integer('enviadocumentos')->default(0),
+            fn (Blueprint $t) => $t->integer('cartaemision')->default(0),
+            fn (Blueprint $t) => $t->integer('vencimiento_dias')->default(0),
+            fn (Blueprint $t) => $t->string('vencimiento_tipo', 3)->default(''),
+            fn (Blueprint $t) => $t->integer('fk_cliente_id')->default(0),
+            fn (Blueprint $t) => $t->integer('proveedor_oc')->default(0),
+            fn (Blueprint $t) => $t->string('codigo_travelc', 100)->default(''),
         ]);
+        $nombre('condicioniva', 'condicioniva');
+        Schema::create('idioma', function (Blueprint $t) {
+            $t->string('idioma_id', 2)->primary();
+            $t->string('idioma_nombre', 50)->default('');
+            $t->integer('orden')->default(0);
+        });
         $nombre('modoivaventa', 'modoivaventa');
         $nombre('modelocomision', 'modelocomision', [
             fn (Blueprint $t) => $t->string('fk_moneda_id', 3)->default(''),
@@ -216,6 +258,29 @@ trait CreaEsquemaConfiguracion
             $t->integer('fk_proveedor_id')->default(0);
             $t->integer('fk_cliente_id')->default(0);
             $t->integer('fk_cadenacliente_id')->default(0);
+            $t->integer('fk_operador_id')->default(0);
+            $t->string('usuario_password', 255)->default('');
+            $t->string('usuario_clave', 30)->default('');
+            $t->string('usuario_key', 100)->default('');
+            $t->string('usuario_apikey', 100)->default('');
+            $t->string('habilitar', 1)->default('Y');
+            $t->string('solocotiza', 1)->default('N');
+            $t->string('fk_idioma_id', 2)->default('es');
+            $t->string('usuario_telefono', 50)->default('');
+            $t->string('usuario_celular', 50)->default('');
+            $t->string('usuario_fax', 50)->default('');
+            $t->string('usuario_domicilio', 255)->default('');
+            $t->string('usuario_sexo', 1)->default('M');
+            $t->string('nacimiento', 10)->default('0000-00-00');
+            $t->string('ciudad', 100)->default('');
+            $t->text('notas')->nullable();
+            $t->integer('agente')->default(0);
+            $t->integer('eliminar')->default(0);
+            $t->integer('usuario_promo')->default(0);
+            $t->integer('usuario_responsable')->default(0);
+            $t->string('firma_amadeus', 50)->default('');
+            $t->string('firma_sabre', 50)->default('');
+            $t->integer('fk_modelocomision_id')->default(0);
         });
         Schema::create('permisogrupo', function (Blueprint $t) {
             $t->increments('permisogrupo_id');

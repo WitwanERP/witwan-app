@@ -105,6 +105,28 @@
       "_AppLayout.js"
     ]
   },
+  "resources/js/Pages/Config/TipousuarioForm.vue": {
+    "file": "assets/TipousuarioForm.js",
+    "name": "TipousuarioForm",
+    "src": "resources/js/Pages/Config/TipousuarioForm.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "_envio.js"
+    ]
+  },
+  "resources/js/Pages/Config/UsuarioForm.vue": {
+    "file": "assets/UsuarioForm.js",
+    "name": "UsuarioForm",
+    "src": "resources/js/Pages/Config/UsuarioForm.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "_envio.js"
+    ]
+  },
   "resources/js/Pages/Contabilidad/Asientos/Editar.vue": {
     "file": "assets/Editar.js",
     "name": "Editar",
@@ -606,6 +628,8 @@
       "resources/js/Pages/Admin/TipoCambio.vue",
       "resources/js/Pages/Clientes/Form.vue",
       "resources/js/Pages/Clientes/Index.vue",
+      "resources/js/Pages/Config/TipousuarioForm.vue",
+      "resources/js/Pages/Config/UsuarioForm.vue",
       "resources/js/Pages/Contabilidad/Asientos/Editar.vue",
       "resources/js/Pages/Contabilidad/Asientos/Form.vue",
       "resources/js/Pages/Contabilidad/Asientos/Index.vue",

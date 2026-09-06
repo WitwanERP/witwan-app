@@ -20,7 +20,7 @@ const colorArea = computed(() => COLOR_AREA[props.config.area] || '#FF9900')
 
 const acciones = computed(() => props.config.acciones || ['crear', 'editar', 'eliminar'])
 const puede = (a) => acciones.value.includes(a)
-const hayAccionesFila = computed(() => puede('editar') || puede('eliminar'))
+const hayAccionesFila = computed(() => puede('editar') || puede('eliminar') || (props.config.extras || []).length > 0)
 
 const form = reactive({})
 for (const c of props.config.filtrosLike) form[c] = props.filtros[c] ?? ''
@@ -60,6 +60,12 @@ function labelFiltro(campo) {
 }
 
 const { enviando, enviar } = useEnvio()
+
+// Acción extra por fila que escribe (POST), con confirmación opcional.
+function accionExtra(x, id) {
+  if (x.confirmar && !window.confirm(x.confirmar.replace('{id}', id))) return
+  enviar((opciones) => router.post(x.href.replace('{id}', id), {}, opciones), { preserveScroll: true })
+}
 
 function eliminar(id) {
   if (!window.confirm(`¿Eliminar ${props.config.singular} #${id}? Esta acción no se puede deshacer.`)) return
@@ -127,6 +133,10 @@ function eliminar(id) {
             <tr v-for="r in registros.data" :key="r[config.pk]" class="hover:bg-gray-50">
               <td v-for="col in config.columnas" :key="col.campo" class="px-4 py-3 text-sm text-gray-700">{{ mostrar(r[col.campo]) }}</td>
               <td v-if="hayAccionesFila" class="px-4 py-3 text-right whitespace-nowrap">
+                <template v-for="x in config.extras || []" :key="x.label">
+                  <button v-if="x.method === 'post'" type="button" :disabled="enviando" @click="accionExtra(x, r[config.pk])" class="mr-3 text-gray-600 hover:text-gray-900 text-sm font-medium disabled:opacity-50">{{ x.label }}</button>
+                  <Link v-else :href="x.href.replace('{id}', r[config.pk])" class="mr-3 text-gray-600 hover:text-gray-900 text-sm font-medium">{{ x.label }}</Link>
+                </template>
                 <Link v-if="puede('editar')" :href="`${config.baseUrl}/${r[config.pk]}/edit`" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Editar</Link>
                 <button v-if="puede('eliminar')" type="button" :disabled="enviando" @click="eliminar(r[config.pk])" class="ml-3 text-red-600 hover:text-red-800 text-sm font-medium disabled:opacity-50">Eliminar</button>
               </td>
