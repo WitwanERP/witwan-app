@@ -26,7 +26,7 @@ trait CreaEsquemaConfiguracion
         'cotizacion', 'iva', 'modoivaventa', 'producto', 'sysconfig', 'rel_usuariomodelocomision', 'modelocomision',
         'modelofee', 'region', 'cliente', 'rel_usuariousuario', 'sistema', 'condicioniva', 'idioma', 'servicio', 'negocio', 'pnraereo', 'aerolinea', 'servicio_extra', 'reserva_extra',
         'facturaproveedor', 'movimiento', 'factura', 'rel_serviciofactura', 'reservain', 'rel_facturaproveedorocupacion',
-        'rel_ordenadminocupacion', 'ordenadmin', 'rel_facturarecibo', 'rel_filefactura', 'recibo', 'rel_filerecibo', 'servicio_nomina', 'vigencia', 'notacredito', 'notadebito', 'ctz', 'servicioctz', 'imputacion', 'precompra', 'canje', 'sysnotification', 'pasajero', 'cliente_extra', 'pasajero_extra', 'rel_clientetag', 'rel_pasajerotag', 'rel_clientesistema', 'tarifario', 'tipofactura', 'tipoclavefiscal', 'creditoextra', 'rel_servicio', 'filestatus',
+        'rel_ordenadminocupacion', 'ordenadmin', 'rel_facturarecibo', 'rel_filefactura', 'recibo', 'rel_filerecibo', 'servicio_nomina', 'vigencia', 'notacredito', 'notadebito', 'ctz', 'servicioctz', 'imputacion', 'precompra', 'canje', 'sysnotification', 'pasajero', 'cliente_extra', 'pasajero_extra', 'rel_clientetag', 'rel_pasajerotag', 'rel_clientesistema', 'tarifario', 'tipofactura', 'tipoclavefiscal', 'creditoextra', 'feriado', 'historialfile', 'auditoria', 'rel_servicio', 'filestatus',
     ];
 
     protected function crearEsquemaConfiguracion(): void
@@ -254,6 +254,35 @@ trait CreaEsquemaConfiguracion
             $t->integer('fk_servicio_id')->default(0);
             $t->string('nombre', 100)->default('');
             $t->string('apellido', 100)->default('');
+            foreach (['email', 'documento', 'nacionalidad', 'telefono', 'cuit', 'tipopax', 'edad', 'nacimiento'] as $c) {
+                $t->string($c, 100)->default('');
+            }
+        });
+        Schema::create('feriado', function (Blueprint $t) {
+            $t->increments('feriado_id');
+            $t->date('feriado_fecha');
+        });
+        Schema::create('historialfile', function (Blueprint $t) {
+            $t->increments('historial_id');
+            $t->timestamp('historial_date')->nullable();
+            $t->string('historial_campo', 150)->default('');
+            $t->text('historial_valor')->nullable();
+            $t->text('historial_actual')->nullable();
+            $t->integer('fk_reserva_id')->default(0);
+            $t->integer('fk_servicio_id')->default(0);
+            $t->integer('fk_usuario_id')->default(0);
+            $t->string('historial_ip', 50)->default('');
+        });
+        Schema::create('auditoria', function (Blueprint $t) {
+            $t->increments('auditoria_id');
+            $t->string('tabla_relacionada', 150);
+            $t->integer('id_relacionado');
+            $t->string('accion', 50);
+            $t->integer('usuario_id')->default(0);
+            $t->text('valor_antiguo')->nullable();
+            $t->text('valor_nuevo')->nullable();
+            $t->string('usuario_ip', 50)->default('');
+            $t->timestamp('regdate')->nullable();
         });
         Schema::create('vigencia', function (Blueprint $t) {
             $t->increments('vigencia_id');
@@ -343,6 +372,18 @@ trait CreaEsquemaConfiguracion
             $t->decimal('gastos', 15, 2)->default(0);
             $t->integer('fk_agrupado_id')->default(0);
             $t->string('codigo_externo', 50)->default('');
+            $t->integer('facturar_a')->default(0);
+            $t->integer('fk_filepadre_id')->default(0);
+            $t->integer('cliente_usuario')->default(0);
+            $t->string('titular_email', 50)->default('');
+            $t->string('titular_celular', 50)->default('');
+            $t->string('moneda_factura', 3)->default('');
+            $t->dateTime('regdate')->nullable();
+            $t->integer('escotizacion')->default(0);
+            $t->decimal('totalservicios', 15, 2)->default(0);
+            $t->decimal('iva', 15, 2)->default(0);
+            $t->decimal('ivacosto', 15, 2)->default(0);
+            $t->decimal('comision', 15, 2)->default(0);
         });
 
         Schema::create('servicio', function (Blueprint $t) {
@@ -378,6 +419,8 @@ trait CreaEsquemaConfiguracion
             $t->decimal('cotventa', 15, 4)->default(0);
             $t->decimal('renta', 15, 4)->default(0);
             $t->string('origen', 5)->default('');
+            $t->date('vencimiento_proveedor')->nullable();
+            $t->decimal('totalservicio', 15, 2)->default(0);
             $t->decimal('comisionproveedor_porcentaje', 7, 5)->default(0);
             $t->text('info')->nullable();
             $t->decimal('impuestos', 15, 2)->default(0);
@@ -649,6 +692,7 @@ trait CreaEsquemaConfiguracion
             $t->string('submodulo_id', 3)->default('');
             $t->string('tipoproducto_tipo', 1)->default('S');
             $t->integer('fk_plancuenta_id')->default(0);
+            $t->integer('tipoproducto_activo')->default(1);
         });
 
         Schema::create('plancuenta', function (Blueprint $t) {

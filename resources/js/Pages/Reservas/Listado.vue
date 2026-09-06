@@ -1,6 +1,6 @@
 <script setup>
 import { reactive, ref } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { Link, router } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import FiltrosReserva from './components/FiltrosReserva.vue'
 import TablaReservas from './components/TablaReservas.vue'
@@ -107,6 +107,7 @@ function exportarUrl() {
         </p>
       </div>
       <div class="flex items-center gap-2">
+        <Link v-if="config.area !== 'all'" :href="`${config.baseUrl}/nueva`" class="btn btn-primary btn-sm">Nueva reserva</Link>
         <a :href="exportarUrl()" class="btn btn-secondary btn-sm">Exportar CSV</a>
       </div>
     </div>

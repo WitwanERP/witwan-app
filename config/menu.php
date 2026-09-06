@@ -55,6 +55,7 @@ return [
         'reserva/lista/nacional' => '/app/reservas/nacional',
         'reserva/lista/minorista' => '/app/reservas/minorista',
         'reserva/lista/consolidador' => '/app/reservas/consolidador',
+        'reserva/lista/all' => '/app/reservas/all',
 
         // Administración > Documentos. El seccion_uri en brain es
         // '/administracion/factura3ero' (sección 72); MenuService::url() compara

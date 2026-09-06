@@ -653,6 +653,18 @@
       "resources/js/Pages/Reservas/components/ModalResumen.vue"
     ]
   },
+  "resources/js/Pages/Reservas/Nueva.vue": {
+    "file": "assets/Nueva.js",
+    "name": "Nueva",
+    "src": "resources/js/Pages/Reservas/Nueva.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "_FilasRepetibles.js",
+      "_envio.js"
+    ]
+  },
   "resources/js/Pages/Reservas/components/FiltrosReserva.vue": {
     "file": "assets/FiltrosReserva.js",
     "name": "FiltrosReserva",
@@ -771,6 +783,7 @@
       "resources/js/Pages/Productos/components/Habitaciones.vue",
       "resources/js/Pages/Reportes/Listado.vue",
       "resources/js/Pages/Reservas/Listado.vue",
+      "resources/js/Pages/Reservas/Nueva.vue",
       "resources/js/Pages/Reservas/components/FiltrosReserva.vue",
       "resources/js/Pages/Reservas/components/ModalResumen.vue",
       "resources/js/Pages/Reservas/components/TablaReservas.vue",

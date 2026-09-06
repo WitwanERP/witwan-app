@@ -87,6 +87,7 @@ use App\Http\Controllers\Web\Reportes\ServiciosSinFacturaController;
 use App\Http\Controllers\Web\Reportes\VentasNetasController;
 use App\Http\Controllers\Web\Reservas\BuscarPaxController;
 use App\Http\Controllers\Web\Reservas\CotizacionesListadoController;
+use App\Http\Controllers\Web\Reservas\NuevaReservaController;
 use App\Http\Controllers\Web\Reservas\ReservaListadoController;
 use App\Services\CiSessionReader;
 use App\Services\CiUserResolver;
@@ -135,6 +136,9 @@ Route::prefix('app')->group(function () {
 
         Route::get('/{area}', [ReservaListadoController::class, 'index'])->where('area', $areas)->name('reservas.index');
         Route::get('/{area}/export', [ReservaListadoController::class, 'exportar'])->where('area', $areas)->name('reservas.export');
+        Route::get('/{area}/nueva', [NuevaReservaController::class, 'create'])->where('area', $areas)->name('reservas.nueva');
+        Route::post('/{area}/nueva', [NuevaReservaController::class, 'store'])->where('area', $areas)->name('reservas.nueva.store');
+        Route::post('/{area}/nueva/validar', [NuevaReservaController::class, 'validar'])->where('area', $areas)->name('reservas.nueva.validar');
         Route::get('/{area}/resumen/{id}', [ReservaListadoController::class, 'resumen'])->where('area', $areas)->whereNumber('id')->name('reservas.resumen');
         Route::get('/{area}/clientes', [ReservaListadoController::class, 'clientesAutocomplete'])->where('area', $areas)->name('reservas.clientes');
         Route::post('/{area}/eliminar', [ReservaListadoController::class, 'eliminar'])->where('area', $areas)->name('reservas.eliminar');
