@@ -380,6 +380,7 @@ trait CreaEsquemaConfiguracion
             $t->string('moneda_factura', 3)->default('');
             $t->dateTime('regdate')->nullable();
             $t->integer('escotizacion')->default(0);
+            $t->integer('reserva_mayorista')->default(0);
             $t->decimal('totalservicios', 15, 2)->default(0);
             $t->decimal('iva', 15, 2)->default(0);
             $t->decimal('ivacosto', 15, 2)->default(0);

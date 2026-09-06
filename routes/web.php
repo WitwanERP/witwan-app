@@ -83,6 +83,7 @@ use App\Http\Controllers\Web\Reportes\PendientesFacturaController;
 use App\Http\Controllers\Web\Reportes\ProductosPorOrigenController;
 use App\Http\Controllers\Web\Reportes\ProvisionDeudaController;
 use App\Http\Controllers\Web\Reportes\ReporteDeudaController;
+use App\Http\Controllers\Web\Reportes\ReservasAFacturarController;
 use App\Http\Controllers\Web\Reportes\ServiciosSinFacturaController;
 use App\Http\Controllers\Web\Reportes\VentasNetasController;
 use App\Http\Controllers\Web\Reservas\BuscarPaxController;
@@ -353,6 +354,8 @@ Route::prefix('app')->group(function () {
     Route::post('/admin/reportes/control-credito/{cliente}/extra', [ControlCreditoController::class, 'extra'])->whereNumber('cliente');
     $reporte('admin/reportes/pendientes-factura', PendientesFacturaController::class);
     $reporte('admin/reportes/facturados', FacturadosController::class);
+    $reporte('admin/reportes/reservas-a-facturar', ReservasAFacturarController::class);
+    $reporte('admin/reportes/facturacion-acumulada', ReservasAFacturarController::class);
 
     // Configuración > Usuarios > Escritorios (sólo POW).
     Route::get('/config/escritorios', [EscritoriosController::class, 'index'])->name('config.escritorios');

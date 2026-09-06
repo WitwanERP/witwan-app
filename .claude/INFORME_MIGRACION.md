@@ -2,7 +2,7 @@
 
 Origen: proyecto CodeIgniter `witwan-ci-svn/witwan/produccion/application` (copia de producción). Destino: `witwan-app` (Laravel 12, montado en `/app`), misma base del tenant. Cada bloque replica la lógica del controlador/vista del CI; los desvíos están anotados. Este archivo se actualiza al cierre de cada bloque. Detalle técnico completo en `docs/MIGRACION_VISTAS.md`.
 
-Cómo verificar: `php vendor/bin/phpunit` (no `php artisan test`). Build de assets commiteado (`npm run build`). Rama `main`, sin push todavía (se publica al final, según lo acordado).
+Cómo verificar: `php vendor/bin/phpunit` (no `php artisan test`). Build de assets commiteado (`npm run build`). Rama `main`, publicada en `origin/main` al cierre del bloque 16.
 
 ---
 
@@ -25,18 +25,19 @@ Cómo verificar: `php vendor/bin/phpunit` (no `php artisan test`). Build de asse
 | 13 | Reportes de facturación | ec80352 | control de crédito (crédito extra diario), pendientes de factura, facturados (códigos SII, estado de cobro, renta); acciones POST en listados |
 | 14 | Documentación | (junto con 15) | `docs/MIGRACION_VISTAS.md`: motores, mapeo CI→/app, desvíos, lo que queda en el legacy, cómo agregar pantallas |
 | 15 | Generador de reservas v1 | ver `git log` | `/app/reservas/{área}/nueva`: file + N servicios con nómina, código atómico, transacción única, totales en servidor, validaciones de dominio, límite de crédito con forzado auditado, validación previa. Análisis en `docs/GENERADOR_RESERVAS.md`. 7 tests |
+| 16 | Reservas a facturar / facturación acumulada | ver `git log` | port de `administracion/reportes/afacturar` y `afacturarpp` con flags `facturapracial`/`factura_vertodos`, facturas/NC por servicio y botón FACTURAR al legacy. 3 tests |
 
-Suite completa al cierre del bloque 13: **387 tests OK**.
+Suite completa al cierre del bloque 16: **397 tests OK**. Publicado en `origin/main`.
 
 ---
 
 ## En curso
 
-Nada en curso: bloque 15 cerrado. Próximo paso: push y, si hay tiempo, enganchar el Tarifador al generador y portar `afacturar`.
+Nada en curso: bloque 16 cerrado y publicado. Candidatos siguientes: enganchar el Tarifador al generador de reservas; reportes `porboletear`, ventas por cliente/proveedor; libros contables.
 
 ---
 
 ## Pendiente después
 
-- Push (`git push`) de todo: al ser deploy por `git pull`, activa los mapeos de menú nuevos para los usuarios.
+- El deploy es `git pull` en el servidor: al hacerlo, los mapeos nuevos de `config/menu.php` pasan a abrir /app para los usuarios (se puede revertir sección por sección quitando la clave).
 - Lo que queda en el legacy (detalle en `docs/MIGRACION_VISTAS.md` §4): cobranzas/pagos/cartera/arqueo, libros contables, rentabilidad, reportes grandes (afacturar, porboletear, ventas por cliente/proveedor, gasto e ingreso), consolidador/BSP, productos por tipo.

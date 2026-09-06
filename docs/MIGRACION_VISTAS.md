@@ -48,6 +48,8 @@ Tests: cada lote tiene su Feature test sobre el esquema real en MySQL (`tests/Co
 | administracion/{ventasnetas,reportedeuda,productopororigen} y administracion/reportes/{canjes,r14,r12,honorarios,provisiondeuda,pagos,gastos,facturasaldo,reportedifcambio,analiticovta,reportegastosreserva,opnacionales} | /app/admin/reportes/… | motor de reportes |
 | reportes/controlcredito | /app/admin/reportes/control-credito | crédito extra diario (`creditoextra`) |
 | dashboard/afacturarmt, dashboard/facturadosmt | /app/admin/reportes/{pendientes-factura,facturados} | el legacy sólo bajaba CSV; ahora listado + CSV |
+| administracion/reportes/afacturar, afacturarpp | /app/admin/reportes/{reservas-a-facturar,facturacion-acumulada} | flags `sysconfig.facturapracial` / `factura_vertodos`; FACTURAR linkea al legacy |
+| reserva/nueva (v1 manual, sin mapear en menú) | /app/reservas/{área}/nueva | ver `docs/GENERADOR_RESERVAS.md` |
 | reserva/lista/{área,all} | /app/reservas/{área} | previa |
 | reserva/cotizaciones/{área} | /app/cotizaciones/{área} | |
 | operaciones/{autorizar,guardia,trafico}/lista/{área} | /app/operaciones/… | |
@@ -78,7 +80,7 @@ Listado tomado de `brain.seccion` para la licencia (script en el historial de es
 - **Flujos transaccionales pesados** (emiten comprobantes o mueven dinero): `administracion/cobranzas`, `administracion/pagos` (pagos a procesar), `administracion/cartera/{lista,pagodirecto}`, `administracion/ordenservicio/acuenta`, `administracion/caja/arqueo`, `administracion/conciliacion/conciliar`, `administracion/banco/` (conciliación automática), `administracion/autorizar` (e-voucher), `administracion/factura/prebcn`.
 - **Contabilidad**: `administracion/libros/{diario,mayor,balance,ventascl,comprascl,cierrecontable}`, `administracion/Balance` (8 columnas), `administracion/ivacredito`, `administracion/ctacliente/analitico`, `administracion/cuentas/micuenta`.
 - **Rentabilidad**: `administracion/renta/{mirenta,rentabilidad}`, `administracion/rentamt/{payroll,mayorista,desestimados,crearasiento}`.
-- **Reportes grandes** (dependen de `reserva_model` del CI, 500–1500 líneas cada uno): `administracion/reportes/{afacturar,afacturarpp,porboletear,cliente,proveedor,reportegastosingreso}`.
+- **Reportes grandes** (dependen de `reserva_model` del CI, 500–1500 líneas cada uno): `administracion/reportes/{porboletear,cliente,proveedor,reportegastosingreso}`.
 - **Consolidador / BSP**: `consolidador/*`, `administracion/bsp/*`, `administracion/Bspmt/link`.
 - **Productos por tipo**: las pantallas Inertia de productos/tarifarios existen pero sus `seccion_uri` quedan sin mapear a propósito hasta probarlas con datos reales (ver comentario en `config/menu.php`). Los tipos auto/asistencia/crucero/ctk/cae/guia/motorhome/misc/dinamicos no tienen pantalla nueva.
 - **Varios**: `configuracion/solicitud`, `configuracion/destacado/lista`, `configuracion/reporte/vista` (marketing), `dashboard/backup`, `productos/vistarapidahotel/`, `tarifario/mayorista/{lista,vista}`, `reserva/reservamayorista/minorista`.

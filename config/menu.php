@@ -174,6 +174,8 @@ return [
         'reportes/controlcredito' => '/app/admin/reportes/control-credito',
         'dashboard/afacturarmt' => '/app/admin/reportes/pendientes-factura',
         'dashboard/facturadosmt' => '/app/admin/reportes/facturados',
+        'administracion/reportes/afacturar' => '/app/admin/reportes/reservas-a-facturar',
+        'administracion/reportes/afacturarpp' => '/app/admin/reportes/facturacion-acumulada',
         'administracion/escritorios' => '/app/config/escritorios',
 
         // Productos / vigencias / tarifarios / cupos: las pantallas Inertia ya
