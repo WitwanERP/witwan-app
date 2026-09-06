@@ -50,7 +50,11 @@ use App\Http\Controllers\Web\Documentos\Listados\FacturasListadoController;
 use App\Http\Controllers\Web\Documentos\Listados\NotasCreditoListadoController;
 use App\Http\Controllers\Web\Documentos\Listados\NotasDebitoListadoController;
 use App\Http\Controllers\Web\Documentos\Listados\OrdenesPagoListadoController;
+use App\Http\Controllers\Web\Documentos\Listados\MovimientosFondosListadoController;
 use App\Http\Controllers\Web\Documentos\Listados\OrdenesServicioListadoController;
+use App\Http\Controllers\Web\Proveedores\CanjesListadoController;
+use App\Http\Controllers\Web\Proveedores\CreditoProveedorListadoController;
+use App\Http\Controllers\Web\Proveedores\PrecomprasListadoController;
 use App\Http\Controllers\Web\Documentos\Listados\RecibosListadoController;
 use App\Http\Controllers\Web\Operaciones\AutorizarController;
 use App\Http\Controllers\Web\Operaciones\CierreGrupoController;
@@ -356,6 +360,12 @@ Route::prefix('app')->group(function () {
     $reporte('documentos/recibos', RecibosListadoController::class);
     $reporte('documentos/ordenes-pago', OrdenesPagoListadoController::class);
     $reporte('documentos/ordenes-servicio', OrdenesServicioListadoController::class);
+    $reporte('documentos/movimientos-fondos', MovimientosFondosListadoController::class);
+
+    // Administración > Proveedores (canjes, pre-compras, crédito).
+    $reporte('proveedores/canjes', CanjesListadoController::class);
+    $reporte('proveedores/precompras', PrecomprasListadoController::class);
+    $reporte('proveedores/creditos', CreditoProveedorListadoController::class);
     Route::get('/cotizaciones/{area}', [CotizacionesListadoController::class, 'index'])->where('area', OperacionesController::patronDeArea().'|all')->name('cotizaciones.index');
     Route::get('/cotizaciones/{area}/export', [CotizacionesListadoController::class, 'exportar'])->where('area', OperacionesController::patronDeArea().'|all')->name('cotizaciones.export');
 

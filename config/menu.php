@@ -116,6 +116,12 @@ return [
         'administracion/recibo' => '/app/documentos/recibos',
         'administracion/ordenpago' => '/app/documentos/ordenes-pago',
         'administracion/ordenservicio' => '/app/documentos/ordenes-servicio',
+        'administracion/mfondos' => '/app/documentos/movimientos-fondos',
+
+        // Administración > Proveedores.
+        'administracion/canje' => '/app/proveedores/canjes',
+        'administracion/precompra' => '/app/proveedores/precompras',
+        'administracion/creditoproveedor' => '/app/proveedores/creditos',
 
         // Reservas > Cotizaciones por área.
         'reserva/cotizaciones/receptivo' => '/app/cotizaciones/receptivo',

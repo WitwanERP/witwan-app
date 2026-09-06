@@ -26,7 +26,7 @@ trait CreaEsquemaConfiguracion
         'cotizacion', 'iva', 'modoivaventa', 'producto', 'sysconfig', 'rel_usuariomodelocomision', 'modelocomision',
         'modelofee', 'region', 'cliente', 'rel_usuariousuario', 'sistema', 'condicioniva', 'idioma', 'servicio', 'negocio', 'pnraereo', 'aerolinea', 'servicio_extra', 'reserva_extra',
         'facturaproveedor', 'movimiento', 'factura', 'rel_serviciofactura', 'reservain', 'rel_facturaproveedorocupacion',
-        'rel_ordenadminocupacion', 'ordenadmin', 'rel_facturarecibo', 'rel_filefactura', 'recibo', 'rel_filerecibo', 'servicio_nomina', 'vigencia', 'notacredito', 'notadebito', 'ctz', 'servicioctz', 'imputacion', 'precompra', 'sysnotification', 'rel_servicio', 'filestatus',
+        'rel_ordenadminocupacion', 'ordenadmin', 'rel_facturarecibo', 'rel_filefactura', 'recibo', 'rel_filerecibo', 'servicio_nomina', 'vigencia', 'notacredito', 'notadebito', 'ctz', 'servicioctz', 'imputacion', 'precompra', 'canje', 'sysnotification', 'rel_servicio', 'filestatus',
     ];
 
     protected function crearEsquemaConfiguracion(): void
@@ -288,6 +288,7 @@ trait CreaEsquemaConfiguracion
             $t->decimal('iva_costo', 15, 2)->default(0);
             $t->decimal('total', 15, 2)->default(0);
             $t->string('nro_confirmacion', 200)->default('');
+            $t->integer('id_devolucion')->default(0);
             $t->text('comentarios')->nullable();
             $t->string('retira_voucher', 255)->default('');
             $t->text('autoriza_evoucher')->nullable();
@@ -457,6 +458,7 @@ trait CreaEsquemaConfiguracion
             $t->decimal('cotizacion', 15, 4)->default(0);
             $t->decimal('monto', 15, 2)->default(0);
             $t->string('status', 2)->default('OK');
+            $t->text('observaciones')->nullable();
         });
         Schema::create('rel_facturarecibo', function (Blueprint $t) {
             $t->increments('rel_facturarecibo_id');
@@ -487,7 +489,35 @@ trait CreaEsquemaConfiguracion
         });
         Schema::create('precompra', function (Blueprint $t) {
             $t->increments('precompra_id');
+            $t->string('precompra_tipo', 1)->default('P');
+            $t->integer('fk_sistema_id')->default(0);
+            $t->integer('fk_producto_id')->default(0);
+            $t->string('fk_moneda_id', 3)->default('');
+            $t->integer('fk_file_id')->default(0);
+            $t->date('precompra_inicio')->nullable();
+            $t->integer('fk_proveedor_id')->default(0);
+            $t->decimal('precompra_dinero', 10, 2)->default(0);
+            $t->decimal('precompra_utilizado', 10, 2)->default(0);
+            $t->date('precompra_fin')->nullable();
+            $t->integer('fk_usuario_id')->default(0);
             $t->text('observaciones')->nullable();
+        });
+        Schema::create('canje', function (Blueprint $t) {
+            $t->increments('canje_id');
+            $t->integer('fk_sistema_id')->default(0);
+            $t->integer('fk_producto_id')->default(0);
+            $t->string('fk_moneda_id', 3)->default('');
+            $t->string('canje_contrato', 50)->default('');
+            $t->date('canje_inicio')->nullable();
+            $t->integer('fk_proveedor_id')->default(0);
+            $t->integer('fk_ciudad_id')->default(0);
+            $t->integer('fk_factura_id')->default(0);
+            $t->integer('canje_noches')->default(0);
+            $t->decimal('canje_dinero', 10, 2)->default(0);
+            $t->decimal('canje_utilizado', 10, 2)->default(0);
+            $t->date('canje_fin')->nullable();
+            $t->text('observaciones')->nullable();
+            $t->integer('fk_usuario_id')->default(0);
         });
         Schema::create('rel_filerecibo', function (Blueprint $t) {
             $t->integer('fk_file_id');
