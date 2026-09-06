@@ -105,6 +105,17 @@
       "_AppLayout.js"
     ]
   },
+  "resources/js/Pages/Config/Escritorios.vue": {
+    "file": "assets/Escritorios.js",
+    "name": "Escritorios",
+    "src": "resources/js/Pages/Config/Escritorios.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "_envio.js"
+    ]
+  },
   "resources/js/Pages/Config/TipousuarioForm.vue": {
     "file": "assets/TipousuarioForm.js",
     "name": "TipousuarioForm",
@@ -704,6 +715,7 @@
       "resources/js/Pages/Admin/TipoCambio.vue",
       "resources/js/Pages/Clientes/Form.vue",
       "resources/js/Pages/Clientes/Index.vue",
+      "resources/js/Pages/Config/Escritorios.vue",
       "resources/js/Pages/Config/TipousuarioForm.vue",
       "resources/js/Pages/Config/UsuarioForm.vue",
       "resources/js/Pages/Contabilidad/Asientos/Editar.vue",

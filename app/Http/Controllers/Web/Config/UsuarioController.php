@@ -191,7 +191,7 @@ class UsuarioController extends Controller
             'nacimiento' => '0000-00-00',
             'notas' => '',
             'agente' => 0,
-            'eliminar' => 0,
+            'eliminar' => 'N',
             'usuario_apikey' => '',
             'fk_modelocomision_id' => 0,
         ];

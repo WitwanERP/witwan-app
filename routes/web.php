@@ -37,6 +37,7 @@ use App\Http\Controllers\Web\Abm\UsuariocomisionController;
 use App\Http\Controllers\Web\Admin\ParametrosContablesController;
 use App\Http\Controllers\Web\Admin\TipoCambioController;
 use App\Http\Controllers\Web\ClienteController;
+use App\Http\Controllers\Web\Config\EscritoriosController;
 use App\Http\Controllers\Web\Config\TipousuarioController;
 use App\Http\Controllers\Web\Config\UsuarioController;
 use App\Http\Controllers\Web\Contabilidad\AsientoController;
@@ -61,17 +62,23 @@ use App\Http\Controllers\Web\Productos\CupoController;
 use App\Http\Controllers\Web\Productos\ProductoController;
 use App\Http\Controllers\Web\Productos\TarifarioController;
 use App\Http\Controllers\Web\Productos\VigenciaController;
+use App\Http\Controllers\Web\Reportes\AnaliticoVentasController;
 use App\Http\Controllers\Web\Reportes\CanjesReporteController;
+use App\Http\Controllers\Web\Reportes\DiferenciaCambioController;
 use App\Http\Controllers\Web\Reportes\FacturasImpagasController;
 use App\Http\Controllers\Web\Reportes\GastosAdministrativosController;
 use App\Http\Controllers\Web\Reportes\GastosBancariosController;
 use App\Http\Controllers\Web\Reportes\GastosPorAreaController;
+use App\Http\Controllers\Web\Reportes\GastosReservaController;
 use App\Http\Controllers\Web\Reportes\HonorariosController;
+use App\Http\Controllers\Web\Reportes\OpNacionalesController;
 use App\Http\Controllers\Web\Reportes\PagosProveedoresController;
 use App\Http\Controllers\Web\Reportes\ProductosPorOrigenController;
 use App\Http\Controllers\Web\Reportes\ProvisionDeudaController;
 use App\Http\Controllers\Web\Reportes\ReporteDeudaController;
+use App\Http\Controllers\Web\Reportes\ServiciosSinFacturaController;
 use App\Http\Controllers\Web\Reportes\VentasNetasController;
+use App\Http\Controllers\Web\Reservas\BuscarPaxController;
 use App\Http\Controllers\Web\Reservas\CotizacionesListadoController;
 use App\Http\Controllers\Web\Reservas\ReservaListadoController;
 use App\Services\CiSessionReader;
@@ -325,6 +332,17 @@ Route::prefix('app')->group(function () {
     $reporte('admin/reportes/pagos', PagosProveedoresController::class);
     $reporte('admin/reportes/gastos-area', GastosPorAreaController::class);
     $reporte('admin/reportes/facturas-impagas', FacturasImpagasController::class);
+    $reporte('admin/reportes/servicios-sin-factura', ServiciosSinFacturaController::class);
+    $reporte('admin/reportes/diferencia-cambio', DiferenciaCambioController::class);
+    $reporte('admin/reportes/analitico-ventas', AnaliticoVentasController::class);
+    $reporte('admin/reportes/gastos-reserva', GastosReservaController::class);
+    $reporte('admin/reportes/op-nacionales', OpNacionalesController::class);
+    $reporte('reservas-buscar', BuscarPaxController::class);
+
+    // Configuración > Usuarios > Escritorios (sólo POW).
+    Route::get('/config/escritorios', [EscritoriosController::class, 'index'])->name('config.escritorios');
+    Route::post('/config/escritorios/agregar', [EscritoriosController::class, 'agregar'])->name('config.escritorios.agregar');
+    Route::post('/config/escritorios/quitar', [EscritoriosController::class, 'quitar'])->name('config.escritorios.quitar');
     $reporte('operaciones/cierre-grupo', CierreGrupoController::class);
 
     // Administración > Cuentas.

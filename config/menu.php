@@ -157,6 +157,12 @@ return [
         'administracion/reportes/pagos' => '/app/admin/reportes/pagos',
         'administracion/reportes/gastos' => '/app/admin/reportes/gastos-area',
         'administracion/reportes/facturasaldo' => '/app/admin/reportes/facturas-impagas',
+        'administracion/reportes/reportedifcambio' => '/app/admin/reportes/diferencia-cambio',
+        'administracion/reportes/analiticovta' => '/app/admin/reportes/analitico-ventas',
+        'administracion/reportes/reportegastosreserva' => '/app/admin/reportes/gastos-reserva',
+        'administracion/reportes/opnacionales' => '/app/admin/reportes/op-nacionales',
+        'dashboard/buscarpax' => '/app/reservas-buscar',
+        'administracion/escritorios' => '/app/config/escritorios',
 
         // Productos / vigencias / tarifarios / cupos: las pantallas Inertia ya
         // existen (Web\Productos\*). Se dejan SIN mapear a propósito hasta que

@@ -26,7 +26,7 @@ trait CreaEsquemaConfiguracion
         'cotizacion', 'iva', 'modoivaventa', 'producto', 'sysconfig', 'rel_usuariomodelocomision', 'modelocomision',
         'modelofee', 'region', 'cliente', 'rel_usuariousuario', 'sistema', 'condicioniva', 'idioma', 'servicio', 'negocio', 'pnraereo', 'aerolinea', 'servicio_extra', 'reserva_extra',
         'facturaproveedor', 'movimiento', 'factura', 'rel_serviciofactura', 'reservain', 'rel_facturaproveedorocupacion',
-        'rel_ordenadminocupacion', 'ordenadmin', 'rel_facturarecibo', 'rel_filefactura', 'recibo', 'rel_filerecibo', 'servicio_nomina', 'vigencia', 'notacredito', 'notadebito', 'ctz', 'servicioctz', 'imputacion', 'precompra', 'sysnotification',
+        'rel_ordenadminocupacion', 'ordenadmin', 'rel_facturarecibo', 'rel_filefactura', 'recibo', 'rel_filerecibo', 'servicio_nomina', 'vigencia', 'notacredito', 'notadebito', 'ctz', 'servicioctz', 'imputacion', 'precompra', 'sysnotification', 'rel_servicio', 'filestatus',
     ];
 
     protected function crearEsquemaConfiguracion(): void
@@ -162,6 +162,7 @@ trait CreaEsquemaConfiguracion
 
         $nombre('region', 'region');
         $nombre('cliente', 'cliente', [
+            fn (Blueprint $t) => $t->string('cliente_razonsocial', 150)->default(''),
             fn (Blueprint $t) => $t->string('cliente_telefono', 50)->default(''),
             fn (Blueprint $t) => $t->integer('fk_cadenacliente_id')->default(0),
             fn (Blueprint $t) => $t->string('cuit', 20)->default(''),
@@ -257,6 +258,8 @@ trait CreaEsquemaConfiguracion
             $t->decimal('costo', 15, 2)->default(0);
             $t->decimal('renta', 15, 2)->default(0);
             $t->decimal('impuestos', 15, 2)->default(0);
+            $t->decimal('gastos', 15, 2)->default(0);
+            $t->integer('fk_agrupado_id')->default(0);
             $t->string('codigo_externo', 50)->default('');
         });
 
@@ -294,6 +297,8 @@ trait CreaEsquemaConfiguracion
             $t->string('origen', 5)->default('');
             $t->decimal('comisionproveedor_porcentaje', 7, 5)->default(0);
             $t->text('info')->nullable();
+            $t->decimal('impuestos', 15, 2)->default(0);
+            $t->string('regdate', 19)->default('2020-01-01 00:00:00');
             $t->integer('fk_prestador_id')->default(0);
             $t->decimal('extra1', 15, 2)->default(0);
             $t->decimal('extra2', 15, 2)->default(0);
@@ -313,6 +318,7 @@ trait CreaEsquemaConfiguracion
             $t->decimal('montototal', 15, 2)->default(0);
             $t->string('tipomovimiento', 50)->default('');
             $t->text('imputacion')->nullable();
+            $t->string('fechacarga', 19)->default('2020-01-01 00:00:00');
         });
         Schema::create('movimiento', function (Blueprint $t) {
             $t->increments('movimiento_id');
@@ -508,6 +514,20 @@ trait CreaEsquemaConfiguracion
             $t->increments('pnraereo_id');
             $t->integer('fk_ocupacion_id')->default(0);
             $t->integer('fk_aerolinea_id')->default(0);
+            $t->text('pnraereo_ruta')->nullable();
+            $t->string('pnraereo_reemision', 50)->default('');
+            $t->string('pnraereo_nombre', 100)->default('');
+            $t->string('pnraereo_apellido', 100)->default('');
+            $t->string('codigo_recloc', 20)->default('');
+            $t->date('pnraereo_fechaemision')->nullable();
+        });
+        Schema::create('rel_servicio', function (Blueprint $t) {
+            $t->integer('servicio_madre');
+            $t->integer('servicio_hijo');
+        });
+        Schema::create('filestatus', function (Blueprint $t) {
+            $t->string('filestatus_id', 2)->primary();
+            $t->string('filestatus_nombre', 100)->default('');
         });
 
         Schema::create('submodulo', function (Blueprint $t) {
@@ -569,7 +589,7 @@ trait CreaEsquemaConfiguracion
             $t->string('ciudad', 100)->default('');
             $t->text('notas')->nullable();
             $t->integer('agente')->default(0);
-            $t->integer('eliminar')->default(0);
+            $t->string('eliminar', 1)->default('N');
             $t->integer('usuario_promo')->default(0);
             $t->integer('usuario_responsable')->default(0);
             $t->string('firma_amadeus', 50)->default('');
