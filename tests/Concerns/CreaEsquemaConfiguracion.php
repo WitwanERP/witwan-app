@@ -26,7 +26,7 @@ trait CreaEsquemaConfiguracion
         'cotizacion', 'iva', 'modoivaventa', 'producto', 'sysconfig', 'rel_usuariomodelocomision', 'modelocomision',
         'modelofee', 'region', 'cliente', 'rel_usuariousuario', 'sistema', 'condicioniva', 'idioma', 'servicio', 'negocio', 'pnraereo', 'aerolinea', 'servicio_extra', 'reserva_extra',
         'facturaproveedor', 'movimiento', 'factura', 'rel_serviciofactura', 'reservain', 'rel_facturaproveedorocupacion',
-        'rel_ordenadminocupacion', 'ordenadmin', 'rel_facturarecibo', 'rel_filefactura', 'recibo', 'rel_filerecibo', 'servicio_nomina', 'vigencia', 'notacredito', 'notadebito', 'ctz', 'servicioctz', 'imputacion', 'precompra',
+        'rel_ordenadminocupacion', 'ordenadmin', 'rel_facturarecibo', 'rel_filefactura', 'recibo', 'rel_filerecibo', 'servicio_nomina', 'vigencia', 'notacredito', 'notadebito', 'ctz', 'servicioctz', 'imputacion', 'precompra', 'sysnotification',
     ];
 
     protected function crearEsquemaConfiguracion(): void
@@ -254,6 +254,9 @@ trait CreaEsquemaConfiguracion
             $t->string('fk_moneda_id', 3)->default('');
             $t->decimal('total', 15, 2)->default(0);
             $t->decimal('cobrado', 15, 2)->default(0);
+            $t->decimal('costo', 15, 2)->default(0);
+            $t->decimal('renta', 15, 2)->default(0);
+            $t->decimal('impuestos', 15, 2)->default(0);
             $t->string('codigo_externo', 50)->default('');
         });
 
@@ -396,6 +399,17 @@ trait CreaEsquemaConfiguracion
             $t->string('titular_apellido', 150)->default('');
             $t->string('fk_moneda_id', 3)->default('');
             $t->decimal('total', 15, 2)->default(0);
+            $t->string('fk_filestatus_id', 2)->default('');
+            $t->date('fecha_vencimiento')->nullable();
+        });
+        Schema::create('sysnotification', function (Blueprint $t) {
+            $t->increments('sysnotification_id');
+            $t->integer('fk_usuario_id')->default(0);
+            $t->string('sysnotification_date', 19)->default('2020-01-01 00:00:00');
+            $t->string('sysnotification_nombre', 255)->default('');
+            $t->string('sysnotification_url', 255)->default('');
+            $t->string('sysnotification_type', 16)->default('');
+            $t->string('sysnotification_icon', 16)->default('');
         });
         Schema::create('servicioctz', function (Blueprint $t) {
             $t->increments('servicio_id');
@@ -472,6 +486,8 @@ trait CreaEsquemaConfiguracion
         Schema::create('rel_filerecibo', function (Blueprint $t) {
             $t->integer('fk_file_id');
             $t->integer('fk_recibo_id');
+            $t->date('fecha')->nullable();
+            $t->string('fk_moneda_id', 3)->default('');
             $t->decimal('monto', 15, 2)->default(0);
         });
         Schema::create('servicio_extra', function (Blueprint $t) {

@@ -41,6 +41,7 @@ use App\Http\Controllers\Web\Config\TipousuarioController;
 use App\Http\Controllers\Web\Config\UsuarioController;
 use App\Http\Controllers\Web\Contabilidad\AsientoController;
 use App\Http\Controllers\Web\Cuentas\CuentaCorrienteController;
+use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\Documentos\DteChileController;
 use App\Http\Controllers\Web\Documentos\FacturaproveedorController as FacturaproveedorWebController;
 use App\Http\Controllers\Web\Documentos\FacturaproveedorMultipleController;
@@ -93,15 +94,10 @@ use Inertia\Inertia;
 
 Route::prefix('app')->group(function () {
 
-    // Dashboard (maqueta). Las stats reales saldrán de un Service más adelante.
-    Route::get('/', fn () => Inertia::render('Dashboard', [
-        'stats' => [
-            'reservasHoy' => 0,
-            'reservasPendientes' => 0,
-            'facturacionMes' => 0,
-            'clientesActivos' => 0,
-        ],
-    ]))->name('dashboard');
+    // Inicio (réplica de dashboard.php): widgets por permiso + gráficos por JSON.
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/reservas', [DashboardController::class, 'reservas'])->name('dashboard.reservas');
+    Route::get('/dashboard/cobranzas', [DashboardController::class, 'cobranzas'])->name('dashboard.cobranzas');
 
     // Clientes
     Route::get('/clientes', [ClienteController::class, 'index'])->name('clientes.index');
