@@ -42,12 +42,14 @@ use App\Http\Controllers\Web\Config\TipousuarioController;
 use App\Http\Controllers\Web\Config\UsuarioController;
 use App\Http\Controllers\Web\Contabilidad\AsientoController;
 use App\Http\Controllers\Web\Contabilidad\BalanceController;
+use App\Http\Controllers\Web\Contabilidad\BalanceOchoController;
 use App\Http\Controllers\Web\Contabilidad\IvaVentaController;
 use App\Http\Controllers\Web\Contabilidad\LibroComprasClController;
 use App\Http\Controllers\Web\Contabilidad\LibroDiarioController;
 use App\Http\Controllers\Web\Contabilidad\LibroMayorController;
 use App\Http\Controllers\Web\Contabilidad\LibroVentasClController;
 use App\Http\Controllers\Web\Cuentas\CuentaCorrienteController;
+use App\Http\Controllers\Web\Cuentas\EstadoCuentaController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\Documentos\DteChileController;
 use App\Http\Controllers\Web\Documentos\FacturaproveedorController as FacturaproveedorWebController;
@@ -371,6 +373,8 @@ Route::prefix('app')->group(function () {
     $reporte('contabilidad/libro-ventas', LibroVentasClController::class);
     $reporte('contabilidad/libro-compras', LibroComprasClController::class);
     $reporte('contabilidad/iva-venta', IvaVentaController::class);
+    $reporte('contabilidad/balance-8', BalanceOchoController::class);
+    $reporte('cuentas/estado', EstadoCuentaController::class);
 
     // Configuración > Usuarios > Escritorios (sólo POW).
     Route::get('/config/escritorios', [EscritoriosController::class, 'index'])->name('config.escritorios');

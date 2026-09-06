@@ -76,6 +76,8 @@ return [
         'administracion/libros/ventascl' => '/app/contabilidad/libro-ventas',
         'administracion/libros/comprascl' => '/app/contabilidad/libro-compras',
         'administracion/ivacredito' => '/app/contabilidad/iva-venta',
+        'administracion/Balance' => '/app/contabilidad/balance-8',
+        'administracion/cuentas/micuenta' => '/app/cuentas/estado',
 
         // Configuración: ABMs config-driven (Web\Abm\*). Los seccion_uri de
         // brain vienen con y sin barra inicial ('configuracion/tag' vs

@@ -30,6 +30,7 @@ Cómo verificar: `php vendor/bin/phpunit` (no `php artisan test`). Build de asse
 | 18 | Contabilidad: libro diario y libro mayor | ver `git log` | port de `libros::diario` y `libros::mayor` (clasificación debe/haber por documento, conversión de moneda, cuentas de recibos de sysconfig, saldo anterior, exclusión de anulados). 2 tests |
 | 19 | Contabilidad: balance de sumas y saldos, libro de ventas y compras (SII) | ver `git log` | port de `libros::balance/ventascl/comprascl`; totalización a cuentas padre, acumulado anterior, códigos SII 30/33/34/55/56/60, tipos de transacción. 3 tests |
 | 20 | Contabilidad: IVA venta | ver `git log` | port de `administracion/ivacredito` (UNION facturas/NC/ND con alícuotas 21/10,5, RG 3819/5272, IVA TUR, tipo de cambio USD), agrupado por tipo. 1 test |
+| 21 | Balance 8 columnas y estado de cuenta | ver `git log` | port de `administracion/Balance` (árbol de cuentas, deudor/acreedor y columnas patrimoniales, SUMAS/RESULTADO) y de `cuentas/micuenta` (files del cliente con documentos, recibos e hijos). 2 tests |
 
 Suite completa al cierre del bloque 16: **397 tests OK**. Publicado en `origin/main`.
 
@@ -37,7 +38,7 @@ Suite completa al cierre del bloque 16: **397 tests OK**. Publicado en `origin/m
 
 ## En curso
 
-Nada en curso: bloque 20 cerrado. Candidatos siguientes: Balance 8 columnas, analítico de cuentas (`ctacliente/analitico`, con conciliación), estado de cuenta (`cuentas/micuenta`), rentabilidad, reportes `porboletear` y ventas por cliente/proveedor.
+Nada en curso: bloque 21 cerrado. Quedan: analítico de cuentas (con conciliación), cierre contable, rentabilidad (depende de `reserva_model::listar`), reportes `porboletear` / ventas por cliente / por proveedor / gasto e ingreso, caja y cobranzas (transaccionales), consolidador/BSP.
 
 ---
 
