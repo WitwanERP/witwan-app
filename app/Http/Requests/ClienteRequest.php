@@ -134,6 +134,16 @@ class ClienteRequest extends FormRequest
             'tarjetas.*.cliente_tarjeta_venc' => 'nullable|string|max:10',
             'tarjetas.*.cliente_tarjeta_cs' => 'nullable|string|max:10',
             'tarjetas.*.cliente_tarjeta_empresa' => 'nullable|string|max:50',
+
+            // Tags y relaciones (rel_clientetag / cliente_extra)
+            'tags' => 'sometimes|nullable|array',
+            'tags.*' => 'integer',
+            'pax_relacionados' => 'sometimes|nullable|array',
+            'pax_relacionados.*.paxrel_id' => 'nullable|integer',
+            'pax_relacionados.*.paxrel_vinculo' => 'nullable|string|max:50',
+            'cliente_relacionados' => 'sometimes|nullable|array',
+            'cliente_relacionados.*.clienterel_id' => 'nullable|integer',
+            'cliente_relacionados.*.clienterel_vinculo' => 'nullable|string|max:50',
         ];
     }
 

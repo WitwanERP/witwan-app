@@ -104,6 +104,8 @@ return [
         'configuracion/usuario' => '/app/config/usuarios',
         'configuracion/proveedor' => '/app/config/proveedores',
         'configuracion/Prestador' => '/app/config/prestadores',
+        'configuracion/ruc' => '/app/clientes',
+        'configuracion/rup' => '/app/pasajeros',
 
         // Administración > Cuentas.
         'administracion/cuentas/cliente' => '/app/cuentas/cliente',

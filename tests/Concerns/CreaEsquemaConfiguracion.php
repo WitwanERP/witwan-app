@@ -26,7 +26,7 @@ trait CreaEsquemaConfiguracion
         'cotizacion', 'iva', 'modoivaventa', 'producto', 'sysconfig', 'rel_usuariomodelocomision', 'modelocomision',
         'modelofee', 'region', 'cliente', 'rel_usuariousuario', 'sistema', 'condicioniva', 'idioma', 'servicio', 'negocio', 'pnraereo', 'aerolinea', 'servicio_extra', 'reserva_extra',
         'facturaproveedor', 'movimiento', 'factura', 'rel_serviciofactura', 'reservain', 'rel_facturaproveedorocupacion',
-        'rel_ordenadminocupacion', 'ordenadmin', 'rel_facturarecibo', 'rel_filefactura', 'recibo', 'rel_filerecibo', 'servicio_nomina', 'vigencia', 'notacredito', 'notadebito', 'ctz', 'servicioctz', 'imputacion', 'precompra', 'canje', 'sysnotification', 'rel_servicio', 'filestatus',
+        'rel_ordenadminocupacion', 'ordenadmin', 'rel_facturarecibo', 'rel_filefactura', 'recibo', 'rel_filerecibo', 'servicio_nomina', 'vigencia', 'notacredito', 'notadebito', 'ctz', 'servicioctz', 'imputacion', 'precompra', 'canje', 'sysnotification', 'pasajero', 'cliente_extra', 'pasajero_extra', 'rel_clientetag', 'rel_pasajerotag', 'rel_clientesistema', 'tarifario', 'tipofactura', 'tipoclavefiscal', 'rel_servicio', 'filestatus',
     ];
 
     protected function crearEsquemaConfiguracion(): void
@@ -162,11 +162,85 @@ trait CreaEsquemaConfiguracion
 
         $nombre('region', 'region');
         $nombre('cliente', 'cliente', [
-            fn (Blueprint $t) => $t->string('cliente_razonsocial', 150)->default(''),
+            fn (Blueprint $t) => $t->string('cliente_razonsocial', 200)->default(''),
             fn (Blueprint $t) => $t->string('cliente_telefono', 50)->default(''),
             fn (Blueprint $t) => $t->integer('fk_cadenacliente_id')->default(0),
             fn (Blueprint $t) => $t->string('cuit', 20)->default(''),
+            function (Blueprint $t) {
+                foreach (['cliente_legajo', 'cliente_fax', 'cliente_email', 'cliente_email2', 'cliente_emailadmin', 'cliente_ciudad', 'cliente_provincia',
+                    'cliente_direccionfiscal', 'cliente_codigopostal', 'nro_clavefiscal', 'iata', 'cliente_logo', 'gastos_fijo_moneda', 'autorizaws',
+                    'nombre_representante', 'cuit_internacional', 'tipo_fce', 'idtravelc'] as $c) {
+                    $t->string($c, 255)->default('');
+                }
+                foreach (['fk_tarifario1_id', 'fk_tarifario2_id', 'fk_tarifario3_id', 'clienteminorista', 'facturacion_periodo', 'fk_tipofactura_id',
+                    'fk_condicioniva_id', 'fk_pais_id', 'fk_ciudad_id', 'fk_tipoclavefiscal_id', 'fk_usuario_id', 'fk_usuario_promotor1', 'fk_usuario_promotor2',
+                    'fk_usuario_promotor3', 'fk_usuario_promotor4', 'fk_usuario_vendedor', 'cliente_promo', 'cliente_web', 'cliente_pasajerodirecto',
+                    'plazo_pago', 'idnemo', 'tipofacturacion', 'licencia_id', 'credito_habilitado', 'factura_automatica'] as $c) {
+                    $t->integer($c)->default(0);
+                }
+                foreach (['limite_credito', 'credito_utilizado', 'gastos_porcentaje_1', 'gastos_porcentaje_2', 'gastos_porcentaje_3', 'gastos_fijo_1', 'gastos_fijo_2', 'gastos_fijo_3', 'gastos_iva'] as $c) {
+                    $t->decimal($c, 15, 2)->default(0);
+                }
+                foreach (['consolidador', 'usar_logo', 'habilita', 'freelance', 'representante_geografico'] as $c) {
+                    $t->string($c, 1)->default('Y');
+                }
+                $t->string('fk_idioma_id', 2)->default('es');
+                $t->string('fk_moneda_id', 3)->default('');
+                $t->text('comentarios')->nullable();
+            },
         ]);
+        Schema::create('pasajero', function (Blueprint $t) {
+            $t->increments('pasajero_id');
+            foreach (['pasajero_nombre', 'pasajero_apellido', 'pasajero_apodo', 'pasajero_nacionalidad', 'pasajero_nacimiento', 'pasajero_email', 'pasajero_clave',
+                'pasajero_password', 'cargo', 'pasajero_foto', 'tipodoc', 'nrodoc', 'emisorfecha', 'vencimientodoc', 'pasajero_direccionfiscal',
+                'pasajero_codigopostal', 'pasajero_ciudad', 'nro_clavefiscal', 'fk_usuario_promotor1'] as $c) {
+                $t->string($c, 150)->default('');
+            }
+            foreach (['fk_cliente_id', 'mostrar_ficha', 'fk_usuario_vendedor', 'emisordoc', 'fk_pais_id', 'fk_ciudad_id', 'fk_tipoclavefiscal_id', 'fk_condicioniva_id', 'fk_tarifario1_id', 'fk_tarifario2_id'] as $c) {
+                $t->integer($c)->default(0);
+            }
+            foreach (['gastos_iva', 'gastos_fijo_1', 'gastos_porcentaje_1'] as $c) {
+                $t->decimal($c, 15, 2)->default(0);
+            }
+            $t->string('pasajero_sexo', 1)->default('');
+            $t->string('freelance', 1)->default('');
+            $t->string('habilita', 1)->default('Y');
+            $t->string('fk_moneda_id', 3)->default('');
+            $t->text('cliente_asociado')->nullable();
+            $t->text('fotodoc')->nullable();
+            $t->text('observaciones')->nullable();
+            $t->date('ultimo_mail')->nullable();
+        });
+        foreach (['cliente_extra' => 'fk_cliente_id', 'pasajero_extra' => 'fk_pasajero_id'] as $tabla => $fk) {
+            Schema::create($tabla, function (Blueprint $t) use ($fk) {
+                $t->integer($fk);
+                $t->string('extra_nombre', 50);
+                $t->text('extra_valor');
+            });
+        }
+        Schema::create('rel_clientetag', function (Blueprint $t) {
+            $t->integer('fk_cliente_id');
+            $t->integer('fk_tag_id');
+        });
+        Schema::create('rel_pasajerotag', function (Blueprint $t) {
+            $t->integer('fk_pasajero_id');
+            $t->integer('fk_tag_id');
+        });
+        Schema::create('rel_clientesistema', function (Blueprint $t) {
+            $t->integer('fk_cliente_id');
+            $t->integer('fk_sistema_id');
+            $t->integer('fk_tarifario_id');
+        });
+        $nombre('tarifario', 'tarifario', [
+            fn (Blueprint $t) => $t->integer('fk_sistema_id')->default(1),
+            fn (Blueprint $t) => $t->integer('interno')->default(0),
+            fn (Blueprint $t) => $t->integer('orden')->default(0),
+            fn (Blueprint $t) => $t->string('fk_moneda_id', 3)->default('USD'),
+        ]);
+        $nombre('tipofactura', 'tipofactura');
+        if (! Schema::hasTable('tipoclavefiscal')) {
+            $nombre('tipoclavefiscal', 'tipoclavefiscal');
+        }
         Schema::create('servicio_nomina', function (Blueprint $t) {
             $t->increments('servicio_nomina_id');
             $t->integer('fk_servicio_id')->default(0);

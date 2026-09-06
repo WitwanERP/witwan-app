@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { Link, router, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import FilasRepetibles from '@/Components/FilasRepetibles.vue'
 import { useEnvio } from '@/lib/envio'
 
 defineOptions({ layout: AppLayout })
@@ -94,6 +95,10 @@ const defaults = {
   // Repetibles
   contactos: [],
   tarjetas: [],
+  // Tags y relaciones (rel_clientetag / cliente_extra)
+  tags: [],
+  pax_relacionados: [],
+  cliente_relacionados: [],
 }
 
 function valoresIniciales() {
@@ -108,6 +113,9 @@ function valoresIniciales() {
   }
   base.contactos = Array.isArray(props.cliente.contactos) ? props.cliente.contactos : []
   base.tarjetas = Array.isArray(props.cliente.tarjetas) ? props.cliente.tarjetas : []
+  base.tags = Array.isArray(props.cliente.tags) ? props.cliente.tags.map(Number) : []
+  base.pax_relacionados = Array.isArray(props.cliente.pax_relacionados) ? props.cliente.pax_relacionados : []
+  base.cliente_relacionados = Array.isArray(props.cliente.cliente_relacionados) ? props.cliente.cliente_relacionados : []
   return base
 }
 
@@ -161,6 +169,16 @@ const addContacto = () =>
   form.contactos.push({ cliente_cont_nombre: '', cliente_cont_cargo: '', cliente_email: '', cliente_telefono: '', cliente_cont_emailsend: 0 })
 const addTarjeta = () =>
   form.tarjetas.push({ cliente_tarjeta_num: '', cliente_tarjeta_banco: '', cliente_tarjeta_venc: '', cliente_tarjeta_cs: '', cliente_tarjeta_empresa: '' })
+
+const vinculos = ['Titular', 'Cónyuge', 'Hijo/a', 'Padre/Madre', 'Empleado', 'Socio', 'Otro'].map((v) => ({ value: v, label: v }))
+const colPax = [
+  { campo: 'paxrel_id', label: 'Pasajero', tipo: 'select', opciones: (props.opciones.pasajeros || []).map((p) => ({ value: p.pasajero_id, label: p.nombre })) },
+  { campo: 'paxrel_vinculo', label: 'Vínculo', tipo: 'select', opciones: vinculos, ancho: '180px' },
+]
+const colCli = [
+  { campo: 'clienterel_id', label: 'Cliente', tipo: 'select', opciones: (props.opciones.clientes || []).filter((c) => c.cliente_id !== clienteId).map((c) => ({ value: c.cliente_id, label: c.cliente_nombre })) },
+  { campo: 'clienterel_vinculo', label: 'Vínculo', tipo: 'select', opciones: vinculos, ancho: '180px' },
+]
 
 const { enviando, enviar } = useEnvio()
 
@@ -540,6 +558,23 @@ const submit = async () => {
             <div><label class="block text-xs text-gray-500 mb-1">Empresa</label><input v-model="t.cliente_tarjeta_empresa" type="text" :class="inputCls" /></div>
             <button type="button" @click="form.tarjetas.splice(i, 1)" class="text-sm text-red-600 hover:text-red-800 pb-2">Quitar</button>
           </div>
+        </div>
+      </section>
+
+      <!-- Tags y relaciones (réplica de las solapas del ruc.php de CI) -->
+      <section class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+        <div class="px-5 py-3 border-b border-gray-200"><h2 class="font-semibold text-gray-800 uppercase">Tags y relaciones</h2></div>
+        <div class="p-5 space-y-6">
+          <div>
+            <h3 class="text-sm font-semibold text-gray-800 mb-2">Tags</h3>
+            <div class="flex flex-wrap gap-3 text-sm">
+              <label v-for="t in opciones.tags || []" :key="t.tag_id" class="flex items-center gap-1"><input type="checkbox" :value="Number(t.tag_id)" v-model="form.tags" /> {{ t.tag_nombre }}</label>
+              <span v-if="!(opciones.tags || []).length" class="text-gray-400 text-xs">No hay tags de cliente (Configuración > Tags, tildar "cliente").</span>
+            </div>
+          </div>
+          <FilasRepetibles v-model="form.pax_relacionados" :columnas="colPax" titulo="Pasajeros relacionados" agregar-label="Relacionar pasajero" />
+          <FilasRepetibles v-model="form.cliente_relacionados" :columnas="colCli" titulo="Clientes relacionados" agregar-label="Relacionar cliente" />
+          <p class="text-xs text-gray-400">Las relaciones son recíprocas: el pasajero o cliente relacionado también queda apuntando a este cliente.</p>
         </div>
       </section>
 

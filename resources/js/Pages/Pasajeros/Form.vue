@@ -2,6 +2,7 @@
 import { computed, watch } from 'vue'
 import { Link, router, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import FilasRepetibles from '@/Components/FilasRepetibles.vue'
 import { useEnvio } from '@/lib/envio'
 
 defineOptions({ layout: AppLayout })
@@ -58,7 +59,18 @@ const defaults = {
   gastos_fijo_1: 0,
   // Tilde crear cliente
   es_cliente: 0,
+  // Tags, extras JSON (pasajero_extra) y relaciones
+  tags: [],
+  documentos: [],
+  domicilios: [],
+  visas: [],
+  telefonos: [],
+  emails: [],
+  frecuentes: [],
+  pax_relacionados: [],
+  cliente_relacionados: [],
 }
+const LISTAS = ['documentos', 'domicilios', 'visas', 'telefonos', 'emails', 'frecuentes', 'pax_relacionados', 'cliente_relacionados']
 
 function valoresIniciales() {
   const base = { ...defaults }
@@ -69,6 +81,8 @@ function valoresIniciales() {
       base[k] = typeof defaults[k] === 'number' ? Number(v) : v
     }
   }
+  base.tags = Array.isArray(props.pasajero.tags) ? props.pasajero.tags.map(Number) : []
+  for (const k of LISTAS) base[k] = Array.isArray(props.pasajero[k]) ? props.pasajero[k] : []
   return base
 }
 
@@ -82,6 +96,55 @@ watch(
     router.reload({ only: ['ciudades'], data: { pais_id: pais }, preserveState: true, preserveScroll: true })
   },
 )
+
+const op = (xs) => xs.map((v) => ({ value: v, label: v }))
+const paises = (props.opciones.paises || []).map((p) => ({ value: p.pais_id, label: p.pais_nombre }))
+const vinculos = op(['Titular', 'Cónyuge', 'Hijo/a', 'Padre/Madre', 'Empleado', 'Socio', 'Otro'])
+const colDocs = [
+  { campo: 'pasajero_doc_tipo', label: 'Tipo documento', tipo: 'select', opciones: op(['DNI', 'PASAPORTE', 'CI', 'LC', 'LE', 'RUT', 'OTRO']), ancho: '140px' },
+  { campo: 'pasajero_doc_nro', label: 'Número documento' },
+  { campo: 'pasajero_doc_paisemisor', label: 'País emisor', tipo: 'select', opciones: paises },
+  { campo: 'pasajero_doc_emisorfecha', label: 'Fecha emisión', tipo: 'date' },
+  { campo: 'pasajero_doc_vencimiento', label: 'Vencimiento', tipo: 'date' },
+]
+const colVisas = [
+  { campo: 'visa_nro', label: 'Número' },
+  { campo: 'visa_pais', label: 'País', tipo: 'select', opciones: paises },
+  { campo: 'visa_fecha', label: 'Fecha', tipo: 'date' },
+  { campo: 'visa_vence', label: 'Vence', tipo: 'date' },
+]
+const colDom = [
+  { campo: 'pasajero_dom_tipo', label: 'Tipo domicilio', tipo: 'select', opciones: op(['Particular', 'Laboral', 'Fiscal', 'Otro']), ancho: '130px' },
+  { campo: 'pasajero_direccion', label: 'Dirección' },
+  { campo: 'pasajero_codigopostal', label: 'Código postal', ancho: '110px' },
+  { campo: 'pasajero_dom_pais', label: 'País', tipo: 'select', opciones: paises },
+  { campo: 'pasajero_provincia', label: 'Provincia' },
+  { campo: 'pasajero_ciudad', label: 'Ciudad' },
+]
+const colTel = [
+  { campo: 'pasajero_tel_tipo', label: 'Tipo teléfono', tipo: 'select', opciones: op(['celular', 'fijo', 'trabajo']), ancho: '120px' },
+  { campo: 'pasajero_tel_codpais', label: 'Código país', ancho: '100px' },
+  { campo: 'pasajero_tel_codarea', label: 'Código área', ancho: '100px' },
+  { campo: 'pasajero_telefono', label: 'Número de teléfono' },
+]
+const colMail = [
+  { campo: 'pasajero_correo_tipo', label: 'Tipo correo', tipo: 'select', opciones: op(['personal', 'laboral', 'otro']), ancho: '120px' },
+  { campo: 'pasajero_email', label: 'Casilla email' },
+  { campo: 'pasajero_correo_noenviar', label: 'No enviar', tipo: 'checkbox', ancho: '80px' },
+]
+const colFrec = [
+  { campo: 'paxfrec_nombre', label: 'Programa / aerolínea' },
+  { campo: 'paxfrec_num', label: 'Número de socio' },
+  { campo: 'paxfrec_pin', label: 'PIN' },
+]
+const colPax = [
+  { campo: 'paxrel_id', label: 'Pasajero', tipo: 'select', opciones: (props.opciones.pasajeros || []).filter((p) => p.pasajero_id !== pasajeroId).map((p) => ({ value: p.pasajero_id, label: p.nombre })) },
+  { campo: 'paxrel_vinculo', label: 'Vínculo', tipo: 'select', opciones: vinculos, ancho: '180px' },
+]
+const colCli = [
+  { campo: 'clienterel_id', label: 'Cliente', tipo: 'select', opciones: (props.opciones.clientes || []).map((c) => ({ value: c.cliente_id, label: c.cliente_nombre })) },
+  { campo: 'clienterel_vinculo', label: 'Vínculo', tipo: 'select', opciones: vinculos, ancho: '180px' },
+]
 
 const { enviando, enviar } = useEnvio()
 
@@ -322,6 +385,42 @@ const submit = () => {
             <label class="block text-sm mb-1">Gasto fijo 1</label>
             <input v-model.number="form.gastos_fijo_1" type="number" step="0.01" :class="inputCls" />
           </div>
+        </div>
+      </section>
+
+      <!-- Extras JSON de pasajero_extra (réplica de las solapas del rup.php de CI) -->
+      <section class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+        <div class="px-5 py-3 border-b border-gray-200"><h2 class="font-semibold text-gray-800 uppercase">Documentos y visas</h2></div>
+        <div class="p-5 space-y-6">
+          <FilasRepetibles v-model="form.documentos" :columnas="colDocs" titulo="Documentos" agregar-label="Agregar documento" />
+          <FilasRepetibles v-model="form.visas" :columnas="colVisas" titulo="Visas" agregar-label="Agregar visa" />
+          <p class="text-xs text-gray-400">Las fotos de documentos se cargan desde el legacy.</p>
+        </div>
+      </section>
+
+      <section class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+        <div class="px-5 py-3 border-b border-gray-200"><h2 class="font-semibold text-gray-800 uppercase">Domicilios y contacto</h2></div>
+        <div class="p-5 space-y-6">
+          <FilasRepetibles v-model="form.domicilios" :columnas="colDom" titulo="Domicilios" agregar-label="Agregar domicilio" />
+          <FilasRepetibles v-model="form.telefonos" :columnas="colTel" titulo="Teléfonos" agregar-label="Agregar teléfono" />
+          <FilasRepetibles v-model="form.emails" :columnas="colMail" titulo="Emails" agregar-label="Agregar email" />
+        </div>
+      </section>
+
+      <section class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+        <div class="px-5 py-3 border-b border-gray-200"><h2 class="font-semibold text-gray-800 uppercase">Tags, relaciones y viajero frecuente</h2></div>
+        <div class="p-5 space-y-6">
+          <div>
+            <h3 class="text-sm font-semibold text-gray-800 mb-2">Tags</h3>
+            <div class="flex flex-wrap gap-3 text-sm">
+              <label v-for="t in opciones.tags || []" :key="t.tag_id" class="flex items-center gap-1"><input type="checkbox" :value="Number(t.tag_id)" v-model="form.tags" /> {{ t.tag_nombre }}</label>
+              <span v-if="!(opciones.tags || []).length" class="text-gray-400 text-xs">No hay tags de pasajero (Configuración > Tags, tildar "pasajero").</span>
+            </div>
+          </div>
+          <FilasRepetibles v-model="form.pax_relacionados" :columnas="colPax" titulo="Pasajeros relacionados" agregar-label="Relacionar pasajero" />
+          <FilasRepetibles v-model="form.cliente_relacionados" :columnas="colCli" titulo="Clientes relacionados" agregar-label="Relacionar cliente" />
+          <FilasRepetibles v-model="form.frecuentes" :columnas="colFrec" titulo="Viajero frecuente" agregar-label="Agregar programa" />
+          <p class="text-xs text-gray-400">Las relaciones son recíprocas: el pasajero o cliente relacionado también queda apuntando a este pasajero.</p>
         </div>
       </section>
 

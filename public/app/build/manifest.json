@@ -13,6 +13,13 @@
       "resources/js/app.js"
     ]
   },
+  "_FilasRepetibles.js": {
+    "file": "assets/FilasRepetibles.js",
+    "name": "FilasRepetibles",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
   "_RangoFechas.js": {
     "file": "assets/RangoFechas.js",
     "name": "RangoFechas",
@@ -92,6 +99,7 @@
     "imports": [
       "resources/js/app.js",
       "_AppLayout.js",
+      "_FilasRepetibles.js",
       "_envio.js"
     ]
   },
@@ -505,6 +513,7 @@
     "imports": [
       "resources/js/app.js",
       "_AppLayout.js",
+      "_FilasRepetibles.js",
       "_envio.js"
     ]
   },

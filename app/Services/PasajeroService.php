@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Services\Empresas\RelacionesService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
@@ -16,7 +17,7 @@ class PasajeroService
     /** CUIT/documentos "dummy" que CI no considera para detectar duplicados. */
     private const FISCALES_DUMMY = ['555555555', '55555555', '5555555555'];
 
-    public function __construct(private ClienteService $clientes) {}
+    public function __construct(private ClienteService $clientes, private RelacionesService $relaciones) {}
 
     /** Listado paginado de pasajeros (columnas y filtros fieles a CI/rup). */
     public function listar(array $filtros = [], int $perPage = 80): LengthAwarePaginator
@@ -55,7 +56,7 @@ class PasajeroService
     {
         $pasajero = DB::table('pasajero')->where('pasajero_id', $id)->first();
 
-        return $pasajero === null ? null : (array) $pasajero;
+        return $pasajero === null ? null : (array) $pasajero + $this->relaciones->leerPasajero($id);
     }
 
     /**
@@ -70,13 +71,18 @@ class PasajeroService
         return DB::transaction(function () use ($data, $usuarioId, $licenciaId) {
             $esCliente = ! empty($data['es_cliente']);
             unset($data['es_cliente']);
+            $relaciones = array_intersect_key($data, array_flip(RelacionesService::CLAVES_PASAJERO));
+            $data = array_diff_key($data, $relaciones);
 
             if ($esCliente) {
                 $data['fk_cliente_id'] = $this->crearOVincularCliente($data, $usuarioId, $licenciaId);
                 $data['mostrar_ficha'] = 1;
             }
 
-            return (int) DB::table('pasajero')->insertGetId($this->fila($data), 'pasajero_id');
+            $id = (int) DB::table('pasajero')->insertGetId($this->fila($data), 'pasajero_id');
+            $this->relaciones->sincronizarPasajero($id, $relaciones);
+
+            return $id;
         });
     }
 
@@ -91,6 +97,8 @@ class PasajeroService
         DB::transaction(function () use ($id, $data, $usuarioId, $licenciaId) {
             $esCliente = ! empty($data['es_cliente']);
             unset($data['es_cliente']);
+            $relaciones = array_intersect_key($data, array_flip(RelacionesService::CLAVES_PASAJERO));
+            $data = array_diff_key($data, $relaciones);
 
             $yaVinculado = (int) DB::table('pasajero')->where('pasajero_id', $id)->value('fk_cliente_id');
 
@@ -103,6 +111,7 @@ class PasajeroService
             if (! empty($fila)) {
                 DB::table('pasajero')->where('pasajero_id', $id)->update($fila);
             }
+            $this->relaciones->sincronizarPasajero($id, $relaciones);
         });
     }
 

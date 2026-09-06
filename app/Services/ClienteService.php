@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Cliente;
+use App\Services\Empresas\RelacionesService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
@@ -16,6 +17,8 @@ use Illuminate\Support\Facades\DB;
  */
 class ClienteService
 {
+    public function __construct(private RelacionesService $relaciones) {}
+
     /**
      * Expresión SQL para comparar CUIT ignorando separadores. Los datos legacy de
      * CI guardan el CUIT con guiones/puntos (ej. "30-68225896-5") y el alta nueva
@@ -117,7 +120,8 @@ class ClienteService
         return DB::transaction(function () use ($data, $usuarioId, $licenciaId) {
             $contactos = $data['contactos'] ?? null;
             $tarjetas = $data['tarjetas'] ?? null;
-            unset($data['contactos'], $data['tarjetas']);
+            $relaciones = array_intersect_key($data, array_flip(RelacionesService::CLAVES_CLIENTE)) + array_intersect_key($data, array_flip(['fk_tarifario1_id', 'fk_tarifario2_id', 'fk_tarifario3_id']));
+            unset($data['contactos'], $data['tarjetas'], $data['tags'], $data['pax_relacionados'], $data['cliente_relacionados']);
 
             // Campos que pone el servidor, no el form.
             $data['fk_usuario_id'] = $usuarioId;
@@ -129,6 +133,7 @@ class ClienteService
 
             $this->guardarExtra($clienteId, 'contactos', $contactos);
             $this->guardarExtra($clienteId, 'tarjetas', $tarjetas);
+            $this->relaciones->sincronizarCliente($clienteId, $relaciones);
 
             return $clienteId;
         });
@@ -153,7 +158,7 @@ class ClienteService
         $data['contactos'] = $this->leerExtra($id, 'contactos');
         $data['tarjetas'] = $this->leerExtra($id, 'tarjetas');
 
-        return $data;
+        return $data + $this->relaciones->leerCliente($id);
     }
 
     /**
@@ -169,7 +174,8 @@ class ClienteService
         DB::transaction(function () use ($id, $data) {
             $contactos = $data['contactos'] ?? null;
             $tarjetas = $data['tarjetas'] ?? null;
-            unset($data['contactos'], $data['tarjetas']);
+            $relaciones = array_intersect_key($data, array_flip(RelacionesService::CLAVES_CLIENTE)) + array_intersect_key($data, array_flip(['fk_tarifario1_id', 'fk_tarifario2_id', 'fk_tarifario3_id']));
+            unset($data['contactos'], $data['tarjetas'], $data['tags'], $data['pax_relacionados'], $data['cliente_relacionados']);
 
             $data['um'] = now();
 
@@ -182,6 +188,7 @@ class ClienteService
             DB::table('cliente_extra')->where('fk_cliente_id', $id)->whereIn('extra_nombre', ['contactos', 'tarjetas'])->delete();
             $this->guardarExtra($id, 'contactos', $contactos);
             $this->guardarExtra($id, 'tarjetas', $tarjetas);
+            $this->relaciones->sincronizarCliente($id, $relaciones);
         });
     }
 

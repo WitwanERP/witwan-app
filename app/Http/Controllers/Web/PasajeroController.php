@@ -119,6 +119,10 @@ class PasajeroController extends Controller
             'tiposClaveFiscal' => DB::table('tipoclavefiscal')->orderBy('tipoclavefiscal_nombre')->get(['tipoclavefiscal_id', 'tipoclavefiscal_nombre']),
             'tarifarios' => DB::table('tarifario')->orderBy('orden')->orderBy('tarifario_nombre')->get(['tarifario_id', 'tarifario_nombre', 'fk_sistema_id']),
             'monedas' => DB::table('moneda')->orderBy('moneda_nombre')->get(['moneda_id', 'moneda_nombre']),
+            'tags' => DB::table('tag')->where('tag_rup', 1)->orderBy('tag_nombre')->get(['tag_id', 'tag_nombre']),
+            'pasajeros' => DB::table('pasajero')->orderBy('pasajero_apellido')->orderBy('pasajero_nombre')->limit(5000)
+                ->selectRaw("pasajero_id, TRIM(CONCAT(pasajero_apellido, ' ', pasajero_nombre)) AS nombre")->get(),
+            'clientes' => DB::table('cliente')->orderBy('cliente_nombre')->limit(5000)->get(['cliente_id', 'cliente_nombre']),
         ];
     }
 }
