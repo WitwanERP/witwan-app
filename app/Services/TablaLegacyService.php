@@ -3,12 +3,14 @@
 namespace App\Services;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Helpers genéricos para ABMs sobre las tablas legacy de CI, que tienen casi
  * todas las columnas NOT NULL sin default y, en algunos casos, una PK que NO es
- * auto_increment (hay que asignar el id a mano con MAX+1).
+ * auto_increment (hay que asignar el id a mano con MAX+1) o que directamente es
+ * una cadena (moneda_id 'ARS', tipousuario_id 'POW').
  *
  * Centraliza el patrón que ClienteService/PasajeroService aplican a mano para
  * que los ABMs de configuración (geo, negocios, banco, etc.) no lo repitan.
@@ -19,11 +21,14 @@ class TablaLegacyService
      * Listado paginado genérico: filtros de texto (LIKE %valor%) y match exacto
      * por id, con orden por whitelist.
      *
-     * @param  list<string>  $columnas      columnas a seleccionar
-     * @param  list<string>  $filtrosLike   columnas que filtran por LIKE
-     * @param  array<string,mixed>  $filtros valores de filtro (incluye sort/dir)
+     * @param  list<string>  $columnas  columnas a seleccionar
+     * @param  list<string>  $filtrosLike  columnas que filtran por LIKE
+     * @param  array<string,mixed>  $filtros  valores de filtro (incluye sort/dir)
+     * @param  list<string>  $filtrosExactos  columnas que filtran por igualdad (selects/FK)
+     * @param  (callable(Builder):void)|null  $modificar  hook para agregar where fijos
+     *                                                    (réplica de `_filters['where']` del CI)
      */
-    public function listar(string $tabla, array $columnas, array $filtrosLike, array $filtros, string $pk, string $sortDefault, int $perPage = 50, array $filtrosExactos = []): LengthAwarePaginator
+    public function listar(string $tabla, array $columnas, array $filtrosLike, array $filtros, string $pk, string $sortDefault, int $perPage = 50, array $filtrosExactos = [], ?callable $modificar = null): LengthAwarePaginator
     {
         $query = DB::table($tabla)->select($columnas);
 
@@ -47,6 +52,10 @@ class TablaLegacyService
             $query->where($pk, (int) $id);
         }
 
+        if ($modificar !== null) {
+            $modificar($query);
+        }
+
         $sort = in_array($filtros['sort'] ?? '', $columnas, true) ? $filtros['sort'] : $sortDefault;
         $dir = strtolower((string) ($filtros['dir'] ?? 'asc')) === 'desc' ? 'desc' : 'asc';
         $query->orderBy($sort, $dir);
@@ -56,11 +65,13 @@ class TablaLegacyService
 
     /**
      * Inserta una fila completando NOT NULL faltantes con defaults por tipo y,
-     * si la PK no es auto_increment, asignando id = MAX(pk)+1. Devuelve el id.
+     * si la PK no es auto_increment, asignando id = MAX(pk)+1 (salvo que venga
+     * en $data, como en moneda/tipousuario cuya PK la escribe el usuario).
+     * Devuelve el id.
      *
      * @param  array<string,mixed>  $data
      */
-    public function insertar(string $tabla, array $data): int
+    public function insertar(string $tabla, array $data): int|string
     {
         $pk = null;
         $auto = false;
@@ -85,12 +96,21 @@ class TablaLegacyService
             }
         }
 
-        // PK no auto_increment: la calculamos a mano (como hace CI con MAX+1).
-        if ($pk !== null && ! $auto && empty($row[$pk])) {
-            $row[$pk] = ((int) DB::table($tabla)->max($pk)) + 1;
+        // PK no auto_increment sin valor: la calculamos a mano (como hace CI con MAX+1).
+        if ($pk !== null && ! $auto) {
+            if (empty($row[$pk])) {
+                $row[$pk] = ((int) DB::table($tabla)->max($pk)) + 1;
+            }
             DB::table($tabla)->insert($row);
 
-            return (int) $row[$pk];
+            return $row[$pk];
+        }
+
+        // Tablas sin PRIMARY KEY (moneda): el id lo trae el payload.
+        if ($pk === null) {
+            DB::table($tabla)->insert($row);
+
+            return 0;
         }
 
         return (int) DB::table($tabla)->insertGetId($row, $pk);
@@ -102,7 +122,7 @@ class TablaLegacyService
      *
      * @param  array<string,mixed>  $data
      */
-    public function actualizar(string $tabla, string $pk, int $id, array $data): void
+    public function actualizar(string $tabla, string $pk, int|string $id, array $data): void
     {
         $columnas = collect($this->columnas($tabla))->pluck('Field')->all();
         $fila = array_intersect_key($data, array_flip($columnas));
@@ -114,14 +134,14 @@ class TablaLegacyService
     }
 
     /** @return array<string,mixed>|null */
-    public function paraEditar(string $tabla, string $pk, int $id): ?array
+    public function paraEditar(string $tabla, string $pk, int|string $id): ?array
     {
         $row = DB::table($tabla)->where($pk, $id)->first();
 
         return $row === null ? null : (array) $row;
     }
 
-    public function eliminar(string $tabla, string $pk, int $id): void
+    public function eliminar(string $tabla, string $pk, int|string $id): void
     {
         DB::table($tabla)->where($pk, $id)->delete();
     }

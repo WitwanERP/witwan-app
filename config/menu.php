@@ -70,6 +70,35 @@ return [
         'administracion/asientocta' => '/app/contabilidad/asientos/cuenta-corriente',
         'administracion/fondos' => '/app/contabilidad/asientos/fondos',
 
+        // Configuración: ABMs config-driven (Web\Abm\*). Los seccion_uri de
+        // brain vienen con y sin barra inicial ('configuracion/tag' vs
+        // '/configuracion/tipousuario'); MenuService::url() compara sin ella.
+        'configuracion/region' => '/app/geo/regiones',
+        'configuracion/pais' => '/app/geo/paises',
+        'configuracion/ciudad' => '/app/geo/ciudades',
+        'configuracion/puntos' => '/app/config/puntos-interes',
+        'configuracion/grupopais' => '/app/config/grupos-pais',
+        'configuracion/negocios' => '/app/config/negocios',
+        'configuracion/proyecto' => '/app/config/proyectos',
+        'configuracion/programafidelidad' => '/app/config/programas-fidelidad',
+        'configuracion/tipoclavefiscal' => '/app/config/tipos-clave-fiscal',
+        'configuracion/banco' => '/app/config/bancos',
+        'configuracion/feriados' => '/app/config/feriados',
+        'configuracion/aerolinea' => '/app/config/aerolineas',
+        'configuracion/tarjetacredito' => '/app/config/tarjetas-credito',
+        'configuracion/tag' => '/app/config/tags',
+        'configuracion/formasdepago' => '/app/config/formas-pago',
+        'configuracion/Centrocosto' => '/app/config/centros-costo',
+        'configuracion/cadenacliente' => '/app/config/cadenas-cliente',
+        'configuracion/interfases' => '/app/config/interfases',
+        'configuracion/filearchivo' => '/app/config/archivos-adjuntos',
+        'configuracion/alojamientotipo' => '/app/config/tipos-alojamiento',
+        'configuracion/habitaciontipo' => '/app/config/tipos-habitacion',
+        'configuracion/facilidad' => '/app/config/facilidades',
+        'configuracion/cadenahotelera' => '/app/config/cadenas-hoteleras',
+        'configuracion/regimen' => '/app/config/regimenes',
+        'configuracion/guia' => '/app/config/guias',
+
         // Productos / vigencias / tarifarios / cupos: las pantallas Inertia ya
         // existen (Web\Productos\*). Se dejan SIN mapear a propósito hasta que
         // se prueben con datos reales en el tenant: al descomentar, el menú del

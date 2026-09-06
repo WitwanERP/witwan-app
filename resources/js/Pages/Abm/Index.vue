@@ -15,6 +15,13 @@ const props = defineProps({
 const fieldBase =
   'w-full rounded-lg border border-gray-300 bg-gray-50 py-2 px-3 text-sm text-gray-800 placeholder-gray-400 transition focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20'
 
+const COLOR_AREA = { Configuración: '#FF9900', Administración: '#c9a300', Receptivo: '#66CC00', Operador: '#FF33FF', Minorista: '#00B5B5' }
+const colorArea = computed(() => COLOR_AREA[props.config.area] || '#FF9900')
+
+const acciones = computed(() => props.config.acciones || ['crear', 'editar', 'eliminar'])
+const puede = (a) => acciones.value.includes(a)
+const hayAccionesFila = computed(() => puede('editar') || puede('eliminar'))
+
 const form = reactive({})
 for (const c of props.config.filtrosLike) form[c] = props.filtros[c] ?? ''
 for (const f of props.config.filtrosSelect || []) form[f.campo] = props.filtros[f.campo] ?? ''
@@ -62,12 +69,20 @@ function eliminar(id) {
 
 <template>
   <div>
+    <nav class="flex items-center gap-2 text-sm text-gray-500 mb-3">
+      <Link href="/app" class="hover:text-gray-700">Inicio</Link>
+      <span>/</span>
+      <span class="font-medium" :style="{ color: colorArea }">{{ config.area || 'Configuración' }}</span>
+      <span>/</span>
+      <span class="text-gray-900 font-semibold">{{ config.titulo }}</span>
+    </nav>
+
     <div class="mb-6 flex items-center justify-between gap-4">
       <div>
         <h1 class="text-2xl font-bold text-gray-900">{{ config.titulo }}</h1>
         <p class="text-gray-500">{{ registros.total }} registro{{ registros.total === 1 ? '' : 's' }}</p>
       </div>
-      <Link :href="`${config.baseUrl}/create`" class="btn btn-primary">
+      <Link v-if="puede('crear')" :href="`${config.baseUrl}/create`" class="btn btn-primary">
         <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
@@ -105,19 +120,19 @@ function eliminar(id) {
           <thead class="bg-gray-50">
             <tr>
               <th v-for="col in config.columnas" :key="col.campo" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ col.label }}</th>
-              <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
+              <th v-if="hayAccionesFila" class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200 bg-white">
             <tr v-for="r in registros.data" :key="r[config.pk]" class="hover:bg-gray-50">
               <td v-for="col in config.columnas" :key="col.campo" class="px-4 py-3 text-sm text-gray-700">{{ mostrar(r[col.campo]) }}</td>
-              <td class="px-4 py-3 text-right whitespace-nowrap">
-                <Link :href="`${config.baseUrl}/${r[config.pk]}/edit`" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Editar</Link>
-                <button type="button" :disabled="enviando" @click="eliminar(r[config.pk])" class="ml-3 text-red-600 hover:text-red-800 text-sm font-medium disabled:opacity-50">Eliminar</button>
+              <td v-if="hayAccionesFila" class="px-4 py-3 text-right whitespace-nowrap">
+                <Link v-if="puede('editar')" :href="`${config.baseUrl}/${r[config.pk]}/edit`" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Editar</Link>
+                <button v-if="puede('eliminar')" type="button" :disabled="enviando" @click="eliminar(r[config.pk])" class="ml-3 text-red-600 hover:text-red-800 text-sm font-medium disabled:opacity-50">Eliminar</button>
               </td>
             </tr>
             <tr v-if="registros.data.length === 0">
-              <td :colspan="config.columnas.length + 1" class="px-4 py-12 text-center text-gray-500">No se encontraron registros.</td>
+              <td :colspan="config.columnas.length + (hayAccionesFila ? 1 : 0)" class="px-4 py-12 text-center text-gray-500">No se encontraron registros.</td>
             </tr>
           </tbody>
         </table>

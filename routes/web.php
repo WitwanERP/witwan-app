@@ -1,14 +1,29 @@
 <?php
 
 use App\Http\Controllers\Web\Abm\AerolineaController;
+use App\Http\Controllers\Web\Abm\AlojamientotipoController;
 use App\Http\Controllers\Web\Abm\BancoController;
+use App\Http\Controllers\Web\Abm\CadenaclienteController;
+use App\Http\Controllers\Web\Abm\CadenahoteleraController;
+use App\Http\Controllers\Web\Abm\CentrocostoController;
 use App\Http\Controllers\Web\Abm\CiudadController;
+use App\Http\Controllers\Web\Abm\FacilidadController;
 use App\Http\Controllers\Web\Abm\FeriadoController;
+use App\Http\Controllers\Web\Abm\FilearchivoController;
+use App\Http\Controllers\Web\Abm\FormapagoController;
+use App\Http\Controllers\Web\Abm\GrupopaisController;
+use App\Http\Controllers\Web\Abm\GuiaController;
+use App\Http\Controllers\Web\Abm\HabitaciontipoController;
+use App\Http\Controllers\Web\Abm\InterfaseController;
 use App\Http\Controllers\Web\Abm\NegocioController;
 use App\Http\Controllers\Web\Abm\PaisController;
 use App\Http\Controllers\Web\Abm\ProgramaFidelidadController;
 use App\Http\Controllers\Web\Abm\ProyectoController;
+use App\Http\Controllers\Web\Abm\PuntoInteresController;
+use App\Http\Controllers\Web\Abm\RegimenController;
 use App\Http\Controllers\Web\Abm\RegionController;
+use App\Http\Controllers\Web\Abm\TagController;
+use App\Http\Controllers\Web\Abm\TarjetacreditoController;
 use App\Http\Controllers\Web\Abm\TipoclavefiscalController;
 use App\Http\Controllers\Web\ClienteController;
 use App\Http\Controllers\Web\Contabilidad\AsientoController;
@@ -213,19 +228,23 @@ Route::prefix('app')->group(function () {
 
     // ABMs de configuración (config-driven, controllers que extienden Abm\AbmController).
     // Helper local: registra las 6 rutas REST de un ABM bajo un slug dado.
-    $abm = function (string $slug, string $controlador) {
+    // $pkNumerica=false para tablas cuya PK es un código (moneda_id 'ARS').
+    $abm = function (string $slug, string $controlador, bool $pkNumerica = true) {
+        $id = $pkNumerica ? '[0-9]+' : '[A-Za-z0-9_-]+';
         Route::get("/{$slug}", [$controlador, 'index'])->name(str_replace('/', '.', $slug).'.index');
         Route::get("/{$slug}/create", [$controlador, 'create'])->name(str_replace('/', '.', $slug).'.create');
         Route::post("/{$slug}", [$controlador, 'store'])->name(str_replace('/', '.', $slug).'.store');
-        Route::get("/{$slug}/{id}/edit", [$controlador, 'edit'])->whereNumber('id')->name(str_replace('/', '.', $slug).'.edit');
-        Route::put("/{$slug}/{id}", [$controlador, 'update'])->whereNumber('id')->name(str_replace('/', '.', $slug).'.update');
-        Route::delete("/{$slug}/{id}", [$controlador, 'destroy'])->whereNumber('id')->name(str_replace('/', '.', $slug).'.destroy');
+        Route::get("/{$slug}/{id}/edit", [$controlador, 'edit'])->where('id', $id)->name(str_replace('/', '.', $slug).'.edit');
+        Route::put("/{$slug}/{id}", [$controlador, 'update'])->where('id', $id)->name(str_replace('/', '.', $slug).'.update');
+        Route::delete("/{$slug}/{id}", [$controlador, 'destroy'])->where('id', $id)->name(str_replace('/', '.', $slug).'.destroy');
     };
 
     // GEO
     $abm('geo/regiones', RegionController::class);
     $abm('geo/paises', PaisController::class);
     $abm('geo/ciudades', CiudadController::class);
+    $abm('config/puntos-interes', PuntoInteresController::class);
+    $abm('config/grupos-pais', GrupopaisController::class);
 
     // Configuración: ABMs sencillos
     $abm('config/negocios', NegocioController::class);
@@ -235,6 +254,21 @@ Route::prefix('app')->group(function () {
     $abm('config/bancos', BancoController::class);
     $abm('config/feriados', FeriadoController::class);
     $abm('config/aerolineas', AerolineaController::class);
+    $abm('config/tarjetas-credito', TarjetacreditoController::class);
+    $abm('config/tags', TagController::class);
+    $abm('config/formas-pago', FormapagoController::class);
+    $abm('config/centros-costo', CentrocostoController::class);
+    $abm('config/cadenas-cliente', CadenaclienteController::class);
+    $abm('config/interfases', InterfaseController::class);
+    $abm('config/archivos-adjuntos', FilearchivoController::class);
+
+    // Configuración > Productos
+    $abm('config/tipos-alojamiento', AlojamientotipoController::class);
+    $abm('config/tipos-habitacion', HabitaciontipoController::class);
+    $abm('config/facilidades', FacilidadController::class);
+    $abm('config/cadenas-hoteleras', CadenahoteleraController::class);
+    $abm('config/regimenes', RegimenController::class);
+    $abm('config/guias', GuiaController::class);
 
     // Smoke test del proxy / tenant (se mantiene para diagnóstico).
     Route::get('/_probe', function (Request $request) {
