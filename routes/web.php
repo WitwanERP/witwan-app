@@ -140,6 +140,7 @@ Route::prefix('app')->group(function () {
         Route::get('/{area}/nueva', [NuevaReservaController::class, 'create'])->where('area', $areas)->name('reservas.nueva');
         Route::post('/{area}/nueva', [NuevaReservaController::class, 'store'])->where('area', $areas)->name('reservas.nueva.store');
         Route::post('/{area}/nueva/validar', [NuevaReservaController::class, 'validar'])->where('area', $areas)->name('reservas.nueva.validar');
+        Route::post('/{area}/nueva/cotizar', [NuevaReservaController::class, 'cotizar'])->where('area', $areas)->name('reservas.nueva.cotizar');
         Route::get('/{area}/resumen/{id}', [ReservaListadoController::class, 'resumen'])->where('area', $areas)->whereNumber('id')->name('reservas.resumen');
         Route::get('/{area}/clientes', [ReservaListadoController::class, 'clientesAutocomplete'])->where('area', $areas)->name('reservas.clientes');
         Route::post('/{area}/eliminar', [ReservaListadoController::class, 'eliminar'])->where('area', $areas)->name('reservas.eliminar');

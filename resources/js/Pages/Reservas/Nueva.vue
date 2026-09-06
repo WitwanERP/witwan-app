@@ -43,7 +43,12 @@ const nuevoServicio = () => ({
   comentarios: '',
   vencimiento_proveedor: '',
   pasajeros: [],
+  fk_producto_id: 0,
+  fk_tarifacategoria_id: 0,
+  fk_regimen_id: 0,
   _abierto: true,
+  _cotizador: false,
+  _cot: { producto_id: 0, menores: '', residente: 'N', corriendo: false, resultado: null, error: '' },
 })
 
 const form = useForm({
@@ -134,6 +139,72 @@ function guardar() {
   enviar((o) => form.post(`${props.baseUrl}/nueva`, o), { preserveScroll: true })
 }
 const abierto = ref(true)
+
+// ---- Cotizador de productos propios (Tarifador) por servicio.
+const xsrf = () => decodeURIComponent((document.cookie.match(/XSRF-TOKEN=([^;]+)/) || [])[1] || '')
+const productosPara = (s) => props.opciones.productos.filter((p) => (!s.fk_tipoproducto_id || p.tipo === s.fk_tipoproducto_id) && (!s.fk_proveedor_id || p.proveedor === Number(s.fk_proveedor_id)))
+async function cotizar(s) {
+  const c = s._cot
+  if (!c.producto_id) return
+  c.corriendo = true
+  c.error = ''
+  c.resultado = null
+  try {
+    const res = await fetch(`${props.baseUrl}/nueva/cotizar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-XSRF-TOKEN': xsrf() },
+      body: JSON.stringify({
+        producto_id: c.producto_id,
+        fecha_ini: s.vigencia_ini,
+        fecha_fin: s.vigencia_fin || null,
+        adultos: Number(s.adultos) || 1,
+        menores: String(c.menores || '').split(',').map((x) => x.trim()).filter((x) => x !== '').map(Number),
+        residente: c.residente,
+        cliente_id: Number(form.fk_cliente_id) || 0,
+      }),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      c.error = data.message || 'No se pudo cotizar.'
+      return
+    }
+    c.resultado = data
+    if (!data.ok) c.error = (data.motivos || []).join(' ') || 'Sin tarifa para esas fechas.'
+  } catch (e) {
+    c.error = 'No se pudo cotizar.'
+  } finally {
+    c.corriendo = false
+  }
+}
+const opcionesCotizadas = (s) => {
+  const r = s._cot.resultado?.resultado || {}
+  const out = []
+  for (const cat of Object.keys(r)) for (const reg of Object.keys(r[cat])) out.push(r[cat][reg])
+  return out.sort((a, b) => a.total - b.total)
+}
+function aplicarCotizacion(s, item) {
+  const prod = props.opciones.productos.find((p) => p.value === Number(s._cot.producto_id))
+  const r = s._cot.resultado
+  s.fk_producto_id = Number(s._cot.producto_id)
+  s.fk_tarifacategoria_id = Number(item.categoria) || 0
+  s.fk_regimen_id = Number(item.regimen) || 0
+  s.servicio_nombre = `${r.producto.nombre}${item.nombre && item.nombre !== String(item.categoria) ? ' - ' + item.nombre : ''}`
+  if (prod) {
+    if (!s.fk_tipoproducto_id) s.fk_tipoproducto_id = prod.tipo
+    if (prod.proveedor) s.fk_proveedor_id = prod.proveedor
+  }
+  s.fk_moneda_id = item.moneda || s.fk_moneda_id
+  s.moneda_costo = item.moneda_costo || s.moneda_costo
+  s.total = Number(item.total) || 0
+  s.iva = Number(item.iva) || 0
+  s.impuestos = Number(item.impuestos) || 0
+  s.costo = Number(item.costoenmoneda ?? item.costo) || 0
+  s.iva_costo = Number(item.ivacosto) || 0
+  if (item.vencepago) s.vencimiento_proveedor = item.vencepago
+  // Sin cupo o sold out: queda a confirmar (como el carrito del CI marca RQ cuando no hay disponibilidad).
+  s.status = Number(item.soldout) === 1 || Number(item.cupo) === 0 ? 'RQ' : 'CO'
+  s._cotizador = false
+}
 </script>
 
 <template>
@@ -241,6 +312,40 @@ const abierto = ref(true)
           <div><label class="block text-sm mb-1">IVA costo</label><input v-model.number="s.iva_costo" type="number" step="0.01" min="0" :class="inputCls" /></div>
           <div><label class="block text-sm mb-1">Impuestos</label><input v-model.number="s.impuestos" type="number" step="0.01" min="0" :class="inputCls" /></div>
           <div class="md:col-span-5"><label class="block text-sm mb-1">Comentarios</label><input v-model="s.comentarios" type="text" :class="inputCls" /></div>
+        </div>
+        <div class="rounded-md border border-dashed border-gray-300 p-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-gray-800">Cotizar producto propio <span v-if="s.fk_producto_id" class="text-xs text-green-700 font-normal">(cargado desde producto #{{ s.fk_producto_id }})</span></h3>
+            <button type="button" class="text-xs text-blue-600 hover:underline" @click="s._cotizador = !s._cotizador">{{ s._cotizador ? 'Ocultar' : 'Buscar tarifa' }}</button>
+          </div>
+          <div v-show="s._cotizador" class="mt-3 space-y-3">
+            <div class="grid grid-cols-2 md:grid-cols-6 gap-3 items-end">
+              <div class="md:col-span-3">
+                <label class="block text-xs text-gray-500 mb-1">Producto (filtrado por tipo y proveedor del servicio)</label>
+                <select v-model="s._cot.producto_id" :class="inputCls"><option :value="0">--</option><option v-for="p in productosPara(s)" :key="p.value" :value="p.value">{{ p.label }}</option></select>
+              </div>
+              <div><label class="block text-xs text-gray-500 mb-1">Edades menores (coma)</label><input v-model="s._cot.menores" type="text" placeholder="5, 9" :class="inputCls" /></div>
+              <div><label class="block text-xs text-gray-500 mb-1">Residente</label><select v-model="s._cot.residente" :class="inputCls"><option value="N">No</option><option value="R">Sí</option></select></div>
+              <button type="button" class="btn btn-secondary" :disabled="s._cot.corriendo || !s._cot.producto_id" @click="cotizar(s)">{{ s._cot.corriendo ? 'Cotizando…' : 'Cotizar' }}</button>
+            </div>
+            <p class="text-xs text-gray-400">Usa las fechas y los adultos del servicio y el tarifario del cliente elegido.</p>
+            <p v-if="s._cot.error" class="text-sm text-red-600">{{ s._cot.error }}</p>
+            <table v-if="opcionesCotizadas(s).length" class="min-w-full text-sm">
+              <thead><tr class="text-left text-xs text-gray-500"><th class="pr-3">Opción</th><th class="pr-3">Moneda</th><th class="pr-3 text-right">Costo</th><th class="pr-3 text-right">Venta</th><th class="pr-3 text-right">IVA</th><th class="pr-3 text-right">Total</th><th class="pr-3">Cupo</th><th></th></tr></thead>
+              <tbody>
+                <tr v-for="it in opcionesCotizadas(s)" :key="it.categoria + '-' + it.regimen" class="border-t border-gray-100">
+                  <td class="pr-3 py-1">{{ it.nombre }}<span v-if="it.textodescuento" class="block text-xs text-green-700">{{ it.textodescuento }}</span></td>
+                  <td class="pr-3">{{ it.moneda }}</td>
+                  <td class="pr-3 text-right tabular-nums">{{ fmt(it.costoenmoneda ?? it.costo) }}</td>
+                  <td class="pr-3 text-right tabular-nums">{{ fmt(it.venta) }}</td>
+                  <td class="pr-3 text-right tabular-nums">{{ fmt(it.iva) }}</td>
+                  <td class="pr-3 text-right tabular-nums font-semibold">{{ fmt(it.total) }}</td>
+                  <td class="pr-3">{{ Number(it.soldout) === 1 ? 'Sold out' : it.cupo === null || it.cupo === undefined ? '-' : it.cupo }}</td>
+                  <td><button type="button" class="text-xs text-blue-600 hover:underline" @click="aplicarCotizacion(s, it)">Aplicar</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
         <div>
           <div class="flex items-center justify-between mb-1">

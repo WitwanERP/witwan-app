@@ -26,6 +26,7 @@ Cómo verificar: `php vendor/bin/phpunit` (no `php artisan test`). Build de asse
 | 14 | Documentación | (junto con 15) | `docs/MIGRACION_VISTAS.md`: motores, mapeo CI→/app, desvíos, lo que queda en el legacy, cómo agregar pantallas |
 | 15 | Generador de reservas v1 | ver `git log` | `/app/reservas/{área}/nueva`: file + N servicios con nómina, código atómico, transacción única, totales en servidor, validaciones de dominio, límite de crédito con forzado auditado, validación previa. Análisis en `docs/GENERADOR_RESERVAS.md`. 7 tests |
 | 16 | Reservas a facturar / facturación acumulada | ver `git log` | port de `administracion/reportes/afacturar` y `afacturarpp` con flags `facturapracial`/`factura_vertodos`, facturas/NC por servicio y botón FACTURAR al legacy. 3 tests |
+| 17 | Tarifador en el generador de reservas | ver `git log` | "Buscar tarifa" por servicio: cotiza productos propios con `App\Services\Pricing\Tarifador` (endpoint propio sin permiso de productos), aplica precio/costo/IVA/impuestos/vencimiento/categoría/régimen, RQ si no hay cupo. 1 test más |
 
 Suite completa al cierre del bloque 16: **397 tests OK**. Publicado en `origin/main`.
 
@@ -33,7 +34,7 @@ Suite completa al cierre del bloque 16: **397 tests OK**. Publicado en `origin/m
 
 ## En curso
 
-Nada en curso: bloque 16 cerrado y publicado. Candidatos siguientes: enganchar el Tarifador al generador de reservas; reportes `porboletear`, ventas por cliente/proveedor; libros contables.
+Nada en curso: bloque 17 cerrado. Candidatos siguientes: reportes `porboletear`, ventas por cliente/proveedor; libros contables (diario/mayor/balance).
 
 ---
 

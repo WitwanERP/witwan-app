@@ -157,4 +157,19 @@ class GeneradorReservaTest extends TestCase
         $this->post('/app/reservas/mayorista/nueva', $this->payload())->assertRedirect('/app/reservas/mayorista?codigo=1502');
         $this->assertSame(['1500', '1501', '1502'], DB::table('reserva')->orderBy('reserva_id')->pluck('codigo')->all());
     }
+
+    public function test_cotizador_delega_en_el_tarifador_y_el_alta_persiste_producto_categoria_y_regimen(): void
+    {
+        $this->postJson('/app/reservas/mayorista/nueva/cotizar', ['producto_id' => 999, 'fecha_ini' => now()->addDays(10)->toDateString(), 'adultos' => 2])
+            ->assertOk()->assertJsonPath('ok', false);
+        $this->postJson('/app/reservas/mayorista/nueva/cotizar', ['producto_id' => 999, 'adultos' => 2])->assertStatus(422);
+
+        $this->post('/app/reservas/mayorista/nueva', $this->payload([], ['fk_producto_id' => 55, 'fk_tarifacategoria_id' => 7, 'fk_regimen_id' => 3]))
+            ->assertRedirect('/app/reservas/mayorista?codigo=1501');
+        $s = DB::table('servicio')->where('fk_reserva_id', DB::table('reserva')->where('codigo', '1501')->value('reserva_id'))->first();
+        $this->assertSame(55, (int) $s->fk_producto_id);
+        $this->assertSame(7, (int) $s->fk_tarifacategoria_id);
+        $this->assertSame(3, (int) $s->fk_regimen_id);
+        $this->assertSame('TAR', $s->origen);
+    }
 }

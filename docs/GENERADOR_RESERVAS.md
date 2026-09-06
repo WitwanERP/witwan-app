@@ -45,11 +45,12 @@ Mejoras implementadas (`App\Services\Reservas\GeneradorReservaService`):
 4. **Validaciones**: cliente habilitado y del área (mismas reglas de combo del CI), proveedor habilitado y no eliminado, tipo de producto activo, monedas existentes, fecha de inicio ≥ fecha mínima (misma regla de +4 hábiles para externos), fin ≥ inicio, pax > 0, importes ≥ 0, status CO/RQ; avisos por nómina mayor que pax y totales en cero.
 5. **Límite de crédito**: con `credito_habilitado=1` y límite > 0 se calcula lo utilizado (`CreditoClienteService`, mismo cálculo que control de crédito) y se bloquea si utilizado + reserva > límite. POW o quien tenga `cambiar_limite_credito` puede tildar "crear igual": queda en `auditoria` con el detalle.
 6. **Cotizaciones siempre persistidas** (fallback 1 si no hay cotización, como `set_servicio`).
-7. **Validación previa** sin crear (botón "Validar") y confirmación antes del POST; el botón se bloquea mientras hay un envío en curso (`useEnvio`).
+7. **Cotización desde el Tarifador** (`POST /app/reservas/{área}/nueva/cotizar`): mismos parámetros que `/app/productos/{id}/cotizar`, sin exigir permiso de productos; los servicios cotizados quedan con `origen='TAR'` y los manuales con `'APP'`.
+8. **Validación previa** sin crear (botón "Validar") y confirmación antes del POST; el botón se bloquea mientras hay un envío en curso (`useEnvio`).
 
 ## 4. Lo que no hace la v1 (próximos pasos)
 
-- Búsqueda/tarifación de productos (`tarifar()`, cupos, `soldout`) e interfases XML: se cargan importes a mano. El `Tarifador` de `App\Services\Pricing` puede engancharse para precargar precio/costo de productos propios.
+- Interfases XML (Fase, HotelBeds, Travel Compositor, UA…): no se consultan. Los productos propios sí se cotizan con el `Tarifador` de `App\Services\Pricing` (botón "Buscar tarifa" en cada servicio: usa fechas, adultos, edades de menores, residente y el tarifario del cliente; al aplicar precarga nombre, producto, categoría, régimen, monedas, venta, IVA, impuestos, costo, IVA costo y vencimiento de pago; si no hay cupo o está sold out el servicio queda RQ). No descuenta cupo.
 - `generarfee()` (fees automáticos por modelo de fee) y gastos de reserva del cliente.
 - Cotizaciones (`ctz`/`servicioctz`): la v1 sólo crea reservas.
 - Reserva de cupos (`cupo_reservado`), reserva hija (`fk_filepadre_id`), extras `usuariofinal`/`markupinterno`, mails de confirmación, `colaevento`.

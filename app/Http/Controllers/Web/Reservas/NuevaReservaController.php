@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web\Reservas;
 
 use App\Http\Controllers\Controller;
 use App\Services\CatalogosService;
+use App\Services\Pricing\Tarifador;
 use App\Services\Reservas\EscritorioService;
 use App\Services\Reservas\GeneradorReservaService;
 use App\Services\Reservas\ReservaInvalidaException;
@@ -51,6 +52,10 @@ class NuevaReservaController extends Controller
                 'escritorio' => $escritorio === [] ? [] : DB::table('usuario')->whereIn('usuario_id', $escritorio)->orderBy('usuario_apellido')->get()
                     ->map(fn ($u) => ['value' => (int) $u->usuario_id, 'label' => trim("{$u->usuario_apellido}, {$u->usuario_nombre}")])->all(),
                 'tiposPax' => [['value' => 'ADT', 'label' => 'Adulto'], ['value' => 'CHD', 'label' => 'Menor'], ['value' => 'INF', 'label' => 'Infante'], ['value' => 'JUN', 'label' => 'Junior']],
+                // Productos propios cotizables con el Tarifador (tarifas cargadas en /app/productos).
+                'productos' => DB::table('producto')->where('habilitar', 1)->where('eliminar', 0)->where('producto_nombre', '<>', '')
+                    ->orderBy('producto_nombre')->limit(5000)->get(['producto_id', 'producto_nombre', 'fk_tipoproducto_id', 'fk_proveedor_id', 'fk_sistema_id'])
+                    ->map(fn ($p) => ['value' => (int) $p->producto_id, 'label' => $p->producto_nombre, 'tipo' => (string) $p->fk_tipoproducto_id, 'proveedor' => (int) $p->fk_proveedor_id, 'sistema' => (int) $p->fk_sistema_id])->all(),
             ],
         ]);
     }
@@ -73,6 +78,10 @@ class NuevaReservaController extends Controller
             'servicios.*.fk_tipoproducto_id' => 'required|string|max:3',
             'servicios.*.servicio_nombre' => 'required|string|max:200',
             'servicios.*.fk_proveedor_id' => 'nullable|integer',
+            'servicios.*.fk_prestador_id' => 'nullable|integer',
+            'servicios.*.fk_producto_id' => 'nullable|integer',
+            'servicios.*.fk_tarifacategoria_id' => 'nullable|integer',
+            'servicios.*.fk_regimen_id' => 'nullable|integer',
             'servicios.*.fk_ciudad_id' => 'nullable|integer',
             'servicios.*.vigencia_ini' => 'required|date_format:Y-m-d',
             'servicios.*.vigencia_fin' => 'nullable|date_format:Y-m-d',
@@ -113,6 +122,28 @@ class NuevaReservaController extends Controller
         }
 
         return redirect("/app/reservas/{$area}?codigo={$r['codigo']}")->with('success', $msg);
+    }
+
+    /**
+     * Cotiza un producto propio con el Tarifador para precargar un servicio
+     * (precio, costo, IVA, impuestos, vencimiento de pago). Misma entrada que
+     * /app/productos/{id}/cotizar pero sin exigir permiso sobre productos.
+     */
+    public function cotizar(Request $request, string $area, Tarifador $tarifador)
+    {
+        $datos = $request->validate([
+            'producto_id' => 'required|integer|min:1',
+            'fecha_ini' => 'required|date_format:Y-m-d',
+            'fecha_fin' => 'nullable|date_format:Y-m-d',
+            'adultos' => 'required|integer|min:1|max:20',
+            'menores' => 'nullable|array|max:9',
+            'menores.*' => 'integer|min:0|max:17',
+            'residente' => 'nullable|string|in:,R,N',
+            'cliente_id' => 'nullable|integer|min:0',
+            'categoria_id' => 'nullable|integer|min:0',
+        ]);
+
+        return response()->json($tarifador->cotizar($datos));
     }
 
     /** Vista previa de validación (sin crear): errores y advertencias para mostrar antes de confirmar. */

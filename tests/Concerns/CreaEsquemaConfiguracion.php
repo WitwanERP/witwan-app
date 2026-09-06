@@ -322,6 +322,8 @@ trait CreaEsquemaConfiguracion
             fn (Blueprint $t) => $t->integer('habilitar')->default(1),
             fn (Blueprint $t) => $t->integer('eliminar')->default(0),
             fn (Blueprint $t) => $t->integer('fk_proveedor_id')->default(0),
+            fn (Blueprint $t) => $t->string('fk_tipoproducto_id', 3)->default(''),
+            fn (Blueprint $t) => $t->integer('fk_sistema_id')->default(0),
         ]);
 
         Schema::create('ciudad', function (Blueprint $t) {

@@ -312,11 +312,12 @@ class GeneradorReservaService
         return [
             'servicio_nombre' => trim((string) $s['servicio_nombre']), 'fk_tipoproducto_id' => $tipo, 'fk_producto_id' => (int) ($s['fk_producto_id'] ?? 0),
             'fk_proveedor_id' => (int) ($s['fk_proveedor_id'] ?? 0), 'fk_prestador_id' => (int) ($s['fk_prestador_id'] ?? 0), 'fk_ciudad_id' => (int) ($s['fk_ciudad_id'] ?? 0),
+            'fk_tarifacategoria_id' => (int) ($s['fk_tarifacategoria_id'] ?? 0), 'fk_regimen_id' => (int) ($s['fk_regimen_id'] ?? 0),
             'vigencia_ini' => $ini, 'vigencia_fin' => $fin, 'adultos' => (int) ($s['adultos'] ?? 0), 'menores' => (int) ($s['menores'] ?? 0), 'infante' => (int) ($s['infante'] ?? 0), 'juniors' => (int) ($s['juniors'] ?? 0),
             'status' => (string) ($s['status'] ?? 'CO'), 'fk_moneda_id' => $monedaVenta, 'moneda_costo' => $monedaCosto, 'total' => $total, 'totalservicio' => $total, 'costo' => $costo,
             'iva' => $iva, 'iva_costo' => $ivaCosto, 'impuestos' => $impuestos, 'cotventa' => $cotventa, 'cotcosto' => $cotcosto, 'renta' => round($renta, 4),
             'nro_confirmacion' => (string) ($s['nro_confirmacion'] ?? ''), 'comentarios' => (string) ($s['comentarios'] ?? ''), 'vencimiento_proveedor' => (string) ($s['vencimiento_proveedor'] ?? '') ?: null,
-            'origen' => 'APP',
+            'origen' => (int) ($s['fk_producto_id'] ?? 0) > 0 ? 'TAR' : 'APP',
             '_pasajeros' => array_values(array_filter($s['pasajeros'] ?? [], fn ($p) => trim((string) ($p['apellido'] ?? '').($p['nombre'] ?? '')) !== '')),
         ];
     }
