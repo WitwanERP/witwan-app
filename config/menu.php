@@ -99,6 +99,16 @@ return [
         'configuracion/regimen' => '/app/config/regimenes',
         'configuracion/guia' => '/app/config/guias',
 
+        // Administración: monedas, contabilidad, fee y comisión.
+        'administracion/moneda' => '/app/admin/monedas',
+        'administracion/cambio/ultimas' => '/app/admin/tipo-cambio',
+        'administracion/tablaiva' => '/app/admin/tabla-iva',
+        'administracion/plancuenta' => '/app/admin/plan-cuentas',
+        'administracion/Parametros' => '/app/admin/parametros-contables',
+        'administracion/usuariocomision' => '/app/admin/perfiles-comision',
+        'administracion/Modelocomision' => '/app/admin/modelos-comision',
+        'administracion/Modelofee' => '/app/admin/modelos-fee',
+
         // Productos / vigencias / tarifarios / cupos: las pantallas Inertia ya
         // existen (Web\Productos\*). Se dejan SIN mapear a propósito hasta que
         // se prueben con datos reales en el tenant: al descomentar, el menú del

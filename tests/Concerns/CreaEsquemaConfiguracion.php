@@ -24,6 +24,7 @@ trait CreaEsquemaConfiguracion
         'tarifacategoria', 'alojamientofacilidad', 'tag', 'formapago', 'guia', 'interfases', 'ciudad', 'pais', 'filearchivo',
         'reserva', 'usuario', 'tipousuario', 'submodulo', 'plancuenta', 'proveedor', 'permisogrupo', 'permiso', 'moneda',
         'cotizacion', 'iva', 'modoivaventa', 'producto', 'sysconfig', 'rel_usuariomodelocomision', 'modelocomision',
+        'modelofee', 'region', 'cliente', 'rel_usuariousuario', 'sistema',
     ];
 
     protected function crearEsquemaConfiguracion(): void
@@ -96,7 +97,55 @@ trait CreaEsquemaConfiguracion
             fn (Blueprint $t) => $t->integer('eliminar')->default(0),
         ]);
         $nombre('modoivaventa', 'modoivaventa');
-        $nombre('modelocomision', 'modelocomision');
+        $nombre('modelocomision', 'modelocomision', [
+            fn (Blueprint $t) => $t->string('fk_moneda_id', 3)->default(''),
+            fn (Blueprint $t) => $t->string('modelocomision_tipo', 3)->default(''),
+            fn (Blueprint $t) => $t->string('modelocomision_esquema', 3)->default(''),
+            fn (Blueprint $t) => $t->string('modelocomision_basecomision', 3)->default(''),
+            fn (Blueprint $t) => $t->string('modelocomision_basecalculo', 3)->default(''),
+            fn (Blueprint $t) => $t->string('modelocomision_asignacion', 3)->default(''),
+            fn (Blueprint $t) => $t->integer('fk_usuario_id')->default(0),
+            fn (Blueprint $t) => $t->integer('fk_cliente_id')->default(0),
+            fn (Blueprint $t) => $t->string('fk_submodulo_id', 3)->default(''),
+            fn (Blueprint $t) => $t->string('modelocomision_prefijo', 3)->default(''),
+            fn (Blueprint $t) => $t->integer('in1')->default(0),
+            fn (Blueprint $t) => $t->integer('out1')->default(0),
+            fn (Blueprint $t) => $t->decimal('porcentaje1', 5, 2)->default(0),
+            fn (Blueprint $t) => $t->integer('meta_anual')->default(0),
+            fn (Blueprint $t) => $t->date('vigencia_in')->nullable(),
+            fn (Blueprint $t) => $t->date('vigencia_out')->nullable(),
+        ]);
+
+        $nombre('region', 'region');
+        $nombre('cliente', 'cliente');
+        $nombre('sistema', 'sistema', [
+            fn (Blueprint $t) => $t->string('sistema_codigo', 3)->default(''),
+            fn (Blueprint $t) => $t->string('texto_extra3', 100)->default(''),
+            fn (Blueprint $t) => $t->integer('item_order')->default(0),
+        ]);
+        $nombre('modelofee', 'modelofee', [
+            fn (Blueprint $t) => $t->integer('fk_cliente_id')->default(0),
+            fn (Blueprint $t) => $t->integer('fk_pais_id')->default(0),
+            fn (Blueprint $t) => $t->integer('fk_ciudad_id')->default(0),
+            fn (Blueprint $t) => $t->integer('region_origen')->default(0),
+            fn (Blueprint $t) => $t->integer('fk_region_id')->default(0),
+            fn (Blueprint $t) => $t->string('fk_moneda_id', 3)->default(''),
+            fn (Blueprint $t) => $t->string('tipocodigo', 4)->default(''),
+            fn (Blueprint $t) => $t->string('modelofee_tipo', 1)->default('P'),
+            fn (Blueprint $t) => $t->string('fk_submodulo_id', 3)->default('AER'),
+            fn (Blueprint $t) => $t->decimal('modelofee_normal', 15, 2)->default(0),
+            fn (Blueprint $t) => $t->decimal('modelofee_offline', 15, 2)->default(0),
+            fn (Blueprint $t) => $t->decimal('modelofee_emergencia', 15, 2)->default(0),
+            fn (Blueprint $t) => $t->decimal('modelofee_normal_r', 15, 2)->default(0),
+            fn (Blueprint $t) => $t->decimal('modelofee_minimo', 15, 2)->default(0),
+            fn (Blueprint $t) => $t->decimal('modelofee_maximo', 15, 2)->default(0),
+        ]);
+        Schema::create('rel_usuariousuario', function (Blueprint $t) {
+            $t->increments('usuariousuario_id');
+            $t->integer('fk_usuario_id');
+            $t->integer('fk_secundario_id');
+            $t->integer('tiporelacion')->default(1);
+        });
         $nombre('producto', 'producto', [
             fn (Blueprint $t) => $t->integer('habilitar')->default(1),
             fn (Blueprint $t) => $t->integer('eliminar')->default(0),

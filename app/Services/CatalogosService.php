@@ -143,4 +143,68 @@ class CatalogosService
             ->map(fn ($r) => ['value' => $r->idioma_id, 'label' => $r->idioma_nombre])
             ->all();
     }
+
+    public function clientes(int $limite = 5000): array
+    {
+        return $this->memo[__FUNCTION__] ??= DB::table('cliente')
+            ->orderBy('cliente_nombre')
+            ->limit($limite)
+            ->get(['cliente_id', 'cliente_nombre'])
+            ->map(fn ($r) => ['value' => (int) $r->cliente_id, 'label' => $r->cliente_nombre])
+            ->all();
+    }
+
+    public function regiones(): array
+    {
+        return $this->memo[__FUNCTION__] ??= DB::table('region')
+            ->orderBy('region_nombre')
+            ->get(['region_id', 'region_nombre'])
+            ->map(fn ($r) => ['value' => (int) $r->region_id, 'label' => $r->region_nombre])
+            ->all();
+    }
+
+    /**
+     * Prefijos de reserva de la licencia (réplica de Modelocomision.php:12-24 del
+     * CI): sistema_codigo de cada sistema más los códigos extra de texto_extra3.
+     */
+    public function prefijosReserva(): array
+    {
+        return $this->memo[__FUNCTION__] ??= (function () {
+            $out = [['value' => '', 'label' => 'N/A']];
+            foreach (DB::table('sistema')->get(['sistema_codigo', 'texto_extra3']) as $s) {
+                $codigos = array_merge([(string) $s->sistema_codigo], explode(',', (string) $s->texto_extra3));
+                foreach ($codigos as $c) {
+                    $c = trim($c);
+                    if ($c !== '' && ! in_array($c, array_column($out, 'value'), true)) {
+                        $out[] = ['value' => $c, 'label' => $c];
+                    }
+                }
+            }
+
+            return $out;
+        })();
+    }
+
+    /** Tipos de código de file usados (DISTINCT reserva.tipocodigo, como Modelofee.php). */
+    public function tiposCodigo(): array
+    {
+        return $this->memo[__FUNCTION__] ??= DB::table('reserva')
+            ->distinct()
+            ->orderBy('tipocodigo')
+            ->pluck('tipocodigo')
+            ->filter(fn ($t) => (string) $t !== '')
+            ->map(fn ($t) => ['value' => $t, 'label' => $t])
+            ->values()
+            ->all();
+    }
+
+    /** Sistemas del tenant (id => nombre), para encabezados de la matriz de permisos. */
+    public function sistemas(): array
+    {
+        return $this->memo[__FUNCTION__] ??= DB::table('sistema')
+            ->orderBy('item_order')
+            ->get(['sistema_id', 'sistema_nombre'])
+            ->map(fn ($r) => ['value' => (int) $r->sistema_id, 'label' => $r->sistema_nombre])
+            ->all();
+    }
 }

@@ -72,6 +72,9 @@ abstract class AbmController extends Controller
 
     protected string $sortDefault;
 
+    /** Dirección del orden por defecto (asc|desc). */
+    protected string $dirDefault = 'asc';
+
     /**
      * Definición de los campos del formulario.
      *
@@ -113,7 +116,7 @@ abstract class AbmController extends Controller
             $this->tabla,
             $cols,
             $this->filtrosLike,
-            $request->all(),
+            array_merge(['dir' => $this->dirDefault], $request->all()),
             $this->pk,
             $this->sortDefault,
             $this->porPagina,

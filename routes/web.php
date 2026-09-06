@@ -7,6 +7,7 @@ use App\Http\Controllers\Web\Abm\CadenaclienteController;
 use App\Http\Controllers\Web\Abm\CadenahoteleraController;
 use App\Http\Controllers\Web\Abm\CentrocostoController;
 use App\Http\Controllers\Web\Abm\CiudadController;
+use App\Http\Controllers\Web\Abm\CotizacionController;
 use App\Http\Controllers\Web\Abm\FacilidadController;
 use App\Http\Controllers\Web\Abm\FeriadoController;
 use App\Http\Controllers\Web\Abm\FilearchivoController;
@@ -15,16 +16,24 @@ use App\Http\Controllers\Web\Abm\GrupopaisController;
 use App\Http\Controllers\Web\Abm\GuiaController;
 use App\Http\Controllers\Web\Abm\HabitaciontipoController;
 use App\Http\Controllers\Web\Abm\InterfaseController;
+use App\Http\Controllers\Web\Abm\ModelocomisionController;
+use App\Http\Controllers\Web\Abm\ModelofeeController;
+use App\Http\Controllers\Web\Abm\MonedaController;
 use App\Http\Controllers\Web\Abm\NegocioController;
 use App\Http\Controllers\Web\Abm\PaisController;
+use App\Http\Controllers\Web\Abm\PlancuentaController;
 use App\Http\Controllers\Web\Abm\ProgramaFidelidadController;
 use App\Http\Controllers\Web\Abm\ProyectoController;
 use App\Http\Controllers\Web\Abm\PuntoInteresController;
 use App\Http\Controllers\Web\Abm\RegimenController;
 use App\Http\Controllers\Web\Abm\RegionController;
+use App\Http\Controllers\Web\Abm\TablaIvaController;
 use App\Http\Controllers\Web\Abm\TagController;
 use App\Http\Controllers\Web\Abm\TarjetacreditoController;
 use App\Http\Controllers\Web\Abm\TipoclavefiscalController;
+use App\Http\Controllers\Web\Abm\UsuariocomisionController;
+use App\Http\Controllers\Web\Admin\ParametrosContablesController;
+use App\Http\Controllers\Web\Admin\TipoCambioController;
 use App\Http\Controllers\Web\ClienteController;
 use App\Http\Controllers\Web\Contabilidad\AsientoController;
 use App\Http\Controllers\Web\Documentos\DteChileController;
@@ -261,6 +270,19 @@ Route::prefix('app')->group(function () {
     $abm('config/cadenas-cliente', CadenaclienteController::class);
     $abm('config/interfases', InterfaseController::class);
     $abm('config/archivos-adjuntos', FilearchivoController::class);
+
+    // Administración: monedas, contabilidad, fee y comisión
+    $abm('admin/monedas', MonedaController::class, false);
+    $abm('admin/cotizaciones', CotizacionController::class);
+    $abm('admin/tabla-iva', TablaIvaController::class);
+    $abm('admin/plan-cuentas', PlancuentaController::class);
+    $abm('admin/perfiles-comision', UsuariocomisionController::class);
+    $abm('admin/modelos-comision', ModelocomisionController::class);
+    $abm('admin/modelos-fee', ModelofeeController::class);
+    Route::get('/admin/tipo-cambio', [TipoCambioController::class, 'index'])->name('admin.tipo-cambio');
+    Route::post('/admin/tipo-cambio', [TipoCambioController::class, 'guardar'])->name('admin.tipo-cambio.guardar');
+    Route::get('/admin/parametros-contables', [ParametrosContablesController::class, 'index'])->name('admin.parametros-contables');
+    Route::post('/admin/parametros-contables', [ParametrosContablesController::class, 'guardar'])->name('admin.parametros-contables.guardar');
 
     // Configuración > Productos
     $abm('config/tipos-alojamiento', AlojamientotipoController::class);
