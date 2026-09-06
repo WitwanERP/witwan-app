@@ -421,6 +421,60 @@
       "resources/js/app.js"
     ]
   },
+  "resources/js/Pages/Operaciones/Autorizar.vue": {
+    "file": "assets/Autorizar.js",
+    "name": "Autorizar",
+    "src": "resources/js/Pages/Operaciones/Autorizar.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js"
+    ]
+  },
+  "resources/js/Pages/Operaciones/AutorizarFile.vue": {
+    "file": "assets/AutorizarFile.js",
+    "name": "AutorizarFile",
+    "src": "resources/js/Pages/Operaciones/AutorizarFile.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "_envio.js"
+    ]
+  },
+  "resources/js/Pages/Operaciones/Guardia.vue": {
+    "file": "assets/Guardia.js",
+    "name": "Guardia",
+    "src": "resources/js/Pages/Operaciones/Guardia.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "_RangoFechas.js"
+    ]
+  },
+  "resources/js/Pages/Operaciones/GuardiaReporte.vue": {
+    "file": "assets/GuardiaReporte.js",
+    "name": "GuardiaReporte",
+    "src": "resources/js/Pages/Operaciones/GuardiaReporte.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js"
+    ]
+  },
+  "resources/js/Pages/Operaciones/Trafico.vue": {
+    "file": "assets/Trafico.js",
+    "name": "Trafico",
+    "src": "resources/js/Pages/Operaciones/Trafico.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "_RangoFechas.js",
+      "_envio.js"
+    ]
+  },
   "resources/js/Pages/Pasajeros/Form.vue": {
     "file": "assets/Form5.js",
     "name": "Form",
@@ -666,6 +720,11 @@
       "resources/js/Pages/Documentos/FacturasProveedor/components/SelectorProveedor.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/components/TablaFacturas.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/components/TotalesPorTipo.vue",
+      "resources/js/Pages/Operaciones/Autorizar.vue",
+      "resources/js/Pages/Operaciones/AutorizarFile.vue",
+      "resources/js/Pages/Operaciones/Guardia.vue",
+      "resources/js/Pages/Operaciones/GuardiaReporte.vue",
+      "resources/js/Pages/Operaciones/Trafico.vue",
       "resources/js/Pages/Pasajeros/Form.vue",
       "resources/js/Pages/Pasajeros/Index.vue",
       "resources/js/Pages/Productos/Cupos/Calendario.vue",

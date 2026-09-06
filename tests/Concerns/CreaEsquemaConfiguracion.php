@@ -26,7 +26,7 @@ trait CreaEsquemaConfiguracion
         'cotizacion', 'iva', 'modoivaventa', 'producto', 'sysconfig', 'rel_usuariomodelocomision', 'modelocomision',
         'modelofee', 'region', 'cliente', 'rel_usuariousuario', 'sistema', 'condicioniva', 'idioma', 'servicio', 'negocio', 'pnraereo', 'aerolinea', 'servicio_extra', 'reserva_extra',
         'facturaproveedor', 'movimiento', 'factura', 'rel_serviciofactura', 'reservain', 'rel_facturaproveedorocupacion',
-        'rel_ordenadminocupacion', 'ordenadmin', 'rel_facturarecibo', 'rel_filefactura', 'recibo', 'rel_filerecibo',
+        'rel_ordenadminocupacion', 'ordenadmin', 'rel_facturarecibo', 'rel_filefactura', 'recibo', 'rel_filerecibo', 'servicio_nomina', 'vigencia',
     ];
 
     protected function crearEsquemaConfiguracion(): void
@@ -161,7 +161,22 @@ trait CreaEsquemaConfiguracion
         ]);
 
         $nombre('region', 'region');
-        $nombre('cliente', 'cliente');
+        $nombre('cliente', 'cliente', [
+            fn (Blueprint $t) => $t->string('cliente_telefono', 50)->default(''),
+            fn (Blueprint $t) => $t->integer('fk_cadenacliente_id')->default(0),
+        ]);
+        Schema::create('servicio_nomina', function (Blueprint $t) {
+            $t->increments('servicio_nomina_id');
+            $t->integer('fk_servicio_id')->default(0);
+            $t->string('nombre', 100)->default('');
+            $t->string('apellido', 100)->default('');
+        });
+        Schema::create('vigencia', function (Blueprint $t) {
+            $t->increments('vigencia_id');
+            $t->integer('fk_producto_id')->default(0);
+            $t->date('vigencia_ini')->nullable();
+            $t->date('vigencia_fin')->nullable();
+        });
         $nombre('sistema', 'sistema', [
             fn (Blueprint $t) => $t->string('sistema_codigo', 3)->default(''),
             fn (Blueprint $t) => $t->string('texto_extra3', 100)->default(''),
@@ -193,6 +208,7 @@ trait CreaEsquemaConfiguracion
         $nombre('producto', 'producto', [
             fn (Blueprint $t) => $t->integer('habilitar')->default(1),
             fn (Blueprint $t) => $t->integer('eliminar')->default(0),
+            fn (Blueprint $t) => $t->integer('fk_proveedor_id')->default(0),
         ]);
 
         Schema::create('ciudad', function (Blueprint $t) {

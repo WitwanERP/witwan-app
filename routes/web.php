@@ -43,7 +43,11 @@ use App\Http\Controllers\Web\Contabilidad\AsientoController;
 use App\Http\Controllers\Web\Documentos\DteChileController;
 use App\Http\Controllers\Web\Documentos\FacturaproveedorController as FacturaproveedorWebController;
 use App\Http\Controllers\Web\Documentos\FacturaproveedorMultipleController;
+use App\Http\Controllers\Web\Operaciones\AutorizarController;
 use App\Http\Controllers\Web\Operaciones\CierreGrupoController;
+use App\Http\Controllers\Web\Operaciones\GuardiaController;
+use App\Http\Controllers\Web\Operaciones\OperacionesController;
+use App\Http\Controllers\Web\Operaciones\TraficoController;
 use App\Http\Controllers\Web\PasajeroController;
 use App\Http\Controllers\Web\Productos\CupoController;
 use App\Http\Controllers\Web\Productos\ProductoController;
@@ -318,6 +322,21 @@ Route::prefix('app')->group(function () {
     $reporte('admin/reportes/gastos-area', GastosPorAreaController::class);
     $reporte('admin/reportes/facturas-impagas', FacturasImpagasController::class);
     $reporte('operaciones/cierre-grupo', CierreGrupoController::class);
+
+    // Operaciones por área (receptivo, mayorista, minorista, nacional, corporativo, consolidador).
+    Route::prefix('operaciones')->where(['area' => OperacionesController::patronDeArea()])->group(function () {
+        Route::get('/autorizar/{area}', [AutorizarController::class, 'lista'])->name('operaciones.autorizar');
+        Route::get('/autorizar/{area}/{id}', [AutorizarController::class, 'file'])->whereNumber('id')->name('operaciones.autorizar.file');
+        Route::post('/autorizar/{area}/{id}/actualizar', [AutorizarController::class, 'actualizar'])->whereNumber('id')->name('operaciones.autorizar.actualizar');
+        Route::post('/autorizar/{area}/{id}/autorizar', [AutorizarController::class, 'autorizar'])->whereNumber('id')->name('operaciones.autorizar.autorizar');
+
+        Route::get('/guardia/{area}', [GuardiaController::class, 'lista'])->name('operaciones.guardia');
+        Route::post('/guardia/{area}/reporte', [GuardiaController::class, 'reporte'])->name('operaciones.guardia.reporte');
+
+        Route::get('/trafico/{area}', [TraficoController::class, 'lista'])->name('operaciones.trafico');
+        Route::get('/trafico/{area}/productos/{proveedor}', [TraficoController::class, 'productos'])->whereNumber('proveedor')->name('operaciones.trafico.productos');
+        Route::post('/trafico/{area}/guardar', [TraficoController::class, 'guardar'])->name('operaciones.trafico.guardar');
+    });
 
     // Configuración > Usuarios / Proveedores
     $abm('config/tipos-usuario', TipousuarioController::class, false);

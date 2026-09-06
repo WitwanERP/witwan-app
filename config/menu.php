@@ -105,6 +105,18 @@ return [
         'configuracion/proveedor' => '/app/config/proveedores',
         'configuracion/Prestador' => '/app/config/prestadores',
 
+        // Operaciones por área (Web\Operaciones\*).
+        'operaciones/autorizar/lista/receptivo' => '/app/operaciones/autorizar/receptivo',
+        'operaciones/autorizar/lista/mayorista' => '/app/operaciones/autorizar/mayorista',
+        'operaciones/autorizar/lista/minorista' => '/app/operaciones/autorizar/minorista',
+        'operaciones/autorizar/lista/nacional' => '/app/operaciones/autorizar/nacional',
+        'operaciones/guardia/lista/receptivo' => '/app/operaciones/guardia/receptivo',
+        'operaciones/guardia/lista/mayorista' => '/app/operaciones/guardia/mayorista',
+        'operaciones/guardia/lista/nacional' => '/app/operaciones/guardia/nacional',
+        'operaciones/trafico/lista/receptivo' => '/app/operaciones/trafico/receptivo',
+        'operaciones/trafico/lista/mayorista' => '/app/operaciones/trafico/mayorista',
+        'operaciones/trafico/lista/nacional' => '/app/operaciones/trafico/nacional',
+
         // Administración: monedas, contabilidad, fee y comisión.
         'administracion/moneda' => '/app/admin/monedas',
         'administracion/cambio/ultimas' => '/app/admin/tipo-cambio',
