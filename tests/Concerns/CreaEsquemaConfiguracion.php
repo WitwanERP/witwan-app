@@ -26,7 +26,7 @@ trait CreaEsquemaConfiguracion
         'cotizacion', 'iva', 'modoivaventa', 'producto', 'sysconfig', 'rel_usuariomodelocomision', 'modelocomision',
         'modelofee', 'region', 'cliente', 'rel_usuariousuario', 'sistema', 'condicioniva', 'idioma', 'servicio', 'negocio', 'pnraereo', 'aerolinea', 'servicio_extra', 'reserva_extra',
         'facturaproveedor', 'movimiento', 'factura', 'rel_serviciofactura', 'reservain', 'rel_facturaproveedorocupacion',
-        'rel_ordenadminocupacion', 'ordenadmin', 'rel_facturarecibo', 'rel_filefactura', 'recibo', 'rel_filerecibo', 'servicio_nomina', 'vigencia', 'notacredito', 'notadebito', 'ctz', 'servicioctz', 'imputacion', 'precompra', 'canje', 'sysnotification', 'pasajero', 'cliente_extra', 'pasajero_extra', 'rel_clientetag', 'rel_pasajerotag', 'rel_clientesistema', 'tarifario', 'tipofactura', 'tipoclavefiscal', 'creditoextra', 'feriado', 'historialfile', 'auditoria', 'rel_servicio', 'filestatus',
+        'rel_ordenadminocupacion', 'ordenadmin', 'rel_facturarecibo', 'rel_filefactura', 'recibo', 'rel_filerecibo', 'servicio_nomina', 'vigencia', 'notacredito', 'notadebito', 'ctz', 'servicioctz', 'imputacion', 'precompra', 'canje', 'sysnotification', 'pasajero', 'cliente_extra', 'pasajero_extra', 'rel_clientetag', 'rel_pasajerotag', 'rel_clientesistema', 'tarifario', 'tipofactura', 'tipoclavefiscal', 'creditoextra', 'feriado', 'historialfile', 'auditoria', 'solicitud', 'rel_servicio', 'filestatus',
     ];
 
     protected function crearEsquemaConfiguracion(): void
@@ -218,6 +218,14 @@ trait CreaEsquemaConfiguracion
                 $t->text('extra_valor');
             });
         }
+        Schema::create('solicitud', function (Blueprint $t) {
+            $t->increments('solicitud_id');
+            foreach (['solicitud_nombre', 'solicitud_apellido', 'solicitud_email', 'solicitud_telefono', 'solicitud_celular', 'solicitud_ciudad', 'solicitud_empresa', 'solicitud_rz', 'solicitud_clavefiscal'] as $c) {
+                $t->string($c, 150)->default('');
+            }
+            $t->string('solicitud_status', 100)->default('PENDIENTE');
+            $t->timestamp('solicitud_fecha')->nullable();
+        });
         Schema::create('creditoextra', function (Blueprint $t) {
             $t->increments('creditoextra_id');
             $t->date('creditoextra_fecha');

@@ -78,6 +78,9 @@ return [
         'administracion/ivacredito' => '/app/contabilidad/iva-venta',
         'administracion/Balance' => '/app/contabilidad/balance-8',
         'administracion/cuentas/micuenta' => '/app/cuentas/estado',
+        'administracion/cartera/lista' => '/app/caja/cartera',
+        'configuracion/solicitud' => '/app/config/solicitudes',
+        // 'administracion/caja/arqueo' abre el CIERRE de arqueo del legacy; el listado del día está en /app/caja/arqueo sin mapear.
 
         // Configuración: ABMs config-driven (Web\Abm\*). Los seccion_uri de
         // brain vienen con y sin barra inicial ('configuracion/tag' vs

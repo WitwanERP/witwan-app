@@ -50,6 +50,9 @@ Tests: cada lote tiene su Feature test sobre el esquema real en MySQL (`tests/Co
 | administracion/libros/{balance,ventascl,comprascl} | /app/contabilidad/{balance,libro-ventas,libro-compras} | balance convierte siempre a moneda básica (el CI comparaba contra 'ARS' fijo); libros SII con tasa de `sysconfig.tasageneral` (el CI: 19 fijo) |
 | administracion/cuentas/{cliente,proveedor} | /app/cuentas/… | port de `getCuenta` con modo diferencias y CSV |
 | administracion/{canje,precompra,creditoproveedor} | /app/proveedores/… | recalculo de "utilizado" como el legacy |
+| administracion/cartera/lista | /app/caja/cartera | valores en cartera por banco; "quitar de cartera" (utilizado=1); depósitos/pagos directos siguen en el legacy; etiqueta MF/AC/OP por tipo (el CI decía OP siempre) |
+| (caja/arqueos, sin mapear) | /app/caja/arqueo | arqueo del día por cuenta; el cierre de arqueo (`caja/arqueo`) sigue en el legacy |
+| configuracion/solicitud | /app/config/solicitudes | listado; aprobar/rechazar linkean al legacy |
 | administracion/{ventasnetas,reportedeuda,productopororigen} y administracion/reportes/{canjes,r14,r12,honorarios,provisiondeuda,pagos,gastos,facturasaldo,reportedifcambio,analiticovta,reportegastosreserva,opnacionales} | /app/admin/reportes/… | motor de reportes |
 | reportes/controlcredito | /app/admin/reportes/control-credito | crédito extra diario (`creditoextra`) |
 | dashboard/afacturarmt, dashboard/facturadosmt | /app/admin/reportes/{pendientes-factura,facturados} | el legacy sólo bajaba CSV; ahora listado + CSV |
@@ -82,13 +85,13 @@ Tests: cada lote tiene su Feature test sobre el esquema real en MySQL (`tests/Co
 
 Listado tomado de `brain.seccion` para la licencia (script en el historial de esta migración). Se agrupan por tipo de trabajo pendiente:
 
-- **Flujos transaccionales pesados** (emiten comprobantes o mueven dinero): `administracion/cobranzas`, `administracion/pagos` (pagos a procesar), `administracion/cartera/{lista,pagodirecto}`, `administracion/ordenservicio/acuenta`, `administracion/caja/arqueo`, `administracion/conciliacion/conciliar`, `administracion/banco/` (conciliación automática), `administracion/autorizar` (e-voucher), `administracion/factura/prebcn`.
+- **Flujos transaccionales pesados** (emiten comprobantes o mueven dinero): `administracion/cobranzas`, `administracion/pagos` (pagos a procesar), `administracion/cartera/pagodirecto` (y `guardar`), `administracion/ordenservicio/acuenta`, `administracion/caja/arqueo` (cierre), `administracion/conciliacion/conciliar`, `administracion/banco/` (conciliación automática), `administracion/autorizar` (e-voucher), `administracion/factura/prebcn`.
 - **Contabilidad**: `administracion/libros/cierrecontable`, `administracion/ctacliente/analitico` (conciliación con `ctaaplicada`/`nubeanalitico`).
 - **Rentabilidad**: `administracion/renta/{mirenta,rentabilidad}`, `administracion/rentamt/{payroll,mayorista,desestimados,crearasiento}`.
 - **Reportes grandes** (dependen de `reserva_model` del CI, 500–1500 líneas cada uno): `administracion/reportes/{porboletear,cliente,proveedor,reportegastosingreso}`.
 - **Consolidador / BSP**: `consolidador/*`, `administracion/bsp/*`, `administracion/Bspmt/link`.
 - **Productos por tipo**: las pantallas Inertia de productos/tarifarios existen pero sus `seccion_uri` quedan sin mapear a propósito hasta probarlas con datos reales (ver comentario en `config/menu.php`). Los tipos auto/asistencia/crucero/ctk/cae/guia/motorhome/misc/dinamicos no tienen pantalla nueva.
-- **Varios**: `configuracion/solicitud`, `configuracion/destacado/lista`, `configuracion/reporte/vista` (marketing), `dashboard/backup`, `productos/vistarapidahotel/`, `tarifario/mayorista/{lista,vista}`, `reserva/reservamayorista/minorista`.
+- **Varios**: `configuracion/destacado/lista`, `configuracion/reporte/vista` (marketing), `dashboard/backup`, `productos/vistarapidahotel/`, `tarifario/mayorista/{lista,vista}`, `reserva/reservamayorista/minorista`.
 - **Nueva reserva / cotización** (`reserva/nueva/{área}`): ver `docs/GENERADOR_RESERVAS.md`.
 - El resto de las entradas de la sección 6 "Reservas" y "Usuarios" son flags de permiso sin URI (no son pantallas).
 

@@ -36,8 +36,11 @@ use App\Http\Controllers\Web\Abm\TipoclavefiscalController;
 use App\Http\Controllers\Web\Abm\UsuariocomisionController;
 use App\Http\Controllers\Web\Admin\ParametrosContablesController;
 use App\Http\Controllers\Web\Admin\TipoCambioController;
+use App\Http\Controllers\Web\Caja\ArqueoController;
+use App\Http\Controllers\Web\Caja\CarteraController;
 use App\Http\Controllers\Web\ClienteController;
 use App\Http\Controllers\Web\Config\EscritoriosController;
+use App\Http\Controllers\Web\Config\SolicitudesController;
 use App\Http\Controllers\Web\Config\TipousuarioController;
 use App\Http\Controllers\Web\Config\UsuarioController;
 use App\Http\Controllers\Web\Contabilidad\AsientoController;
@@ -375,6 +378,12 @@ Route::prefix('app')->group(function () {
     $reporte('contabilidad/iva-venta', IvaVentaController::class);
     $reporte('contabilidad/balance-8', BalanceOchoController::class);
     $reporte('cuentas/estado', EstadoCuentaController::class);
+
+    // Administración > Caja (listados; los movimientos transaccionales siguen en el legacy).
+    $reporte('caja/cartera', CarteraController::class);
+    Route::post('/caja/cartera/{movimiento}/utilizar', [CarteraController::class, 'utilizar'])->whereNumber('movimiento');
+    $reporte('caja/arqueo', ArqueoController::class);
+    $reporte('config/solicitudes', SolicitudesController::class);
 
     // Configuración > Usuarios > Escritorios (sólo POW).
     Route::get('/config/escritorios', [EscritoriosController::class, 'index'])->name('config.escritorios');
