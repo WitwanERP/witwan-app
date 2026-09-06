@@ -2,7 +2,7 @@
 
 Origen: proyecto CodeIgniter `witwan-ci-svn/witwan/produccion/application` (copia de producción). Destino: `witwan-app` (Laravel 12, montado en `/app`), misma base del tenant. Cada bloque replica la lógica del controlador/vista del CI; los desvíos están anotados. Este archivo se actualiza al cierre de cada bloque. Detalle técnico completo en `docs/MIGRACION_VISTAS.md`.
 
-Cómo verificar: `php vendor/bin/phpunit` (no `php artisan test`). Build de assets commiteado (`npm run build`). Rama `main`, publicada en `origin/main` al cierre del bloque 16.
+Cómo verificar: `php vendor/bin/phpunit` (no `php artisan test`). Build de assets commiteado (`npm run build`). Rama `main`, publicada en `origin/main` al cierre de cada bloque desde el 16.
 
 ---
 
@@ -34,7 +34,7 @@ Cómo verificar: `php vendor/bin/phpunit` (no `php artisan test`). Build de asse
 | 22 | Caja: cartera y arqueo del día; solicitudes de alta | ver `git log` | port de `cartera/lista` (con quitar de cartera), `caja/arqueos` (saldo inicial, movimientos del día, saldo final) y `configuracion/solicitud` (listado; aprobar/rechazar al legacy). 3 tests |
 | 23 | Cierre contable | ver `git log` | ABM de `cierrecaja` (port de `libros/cierrecontable`). 1 test |
 
-Suite completa al cierre del bloque 16: **397 tests OK**. Publicado en `origin/main`.
+Suite completa al cierre del bloque 23: **410 tests OK**. Todo publicado en `origin/main` (último commit b117668).
 
 ---
 
