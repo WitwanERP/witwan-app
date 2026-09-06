@@ -107,6 +107,7 @@ return [
 
         // Administración > Cuentas.
         'administracion/cuentas/cliente' => '/app/cuentas/cliente',
+        'administracion/cuentas/proveedor' => '/app/cuentas/proveedor',
 
         // Documentos en modo lectura (las acciones siguen linkeando al legacy).
         'administracion/factura' => '/app/documentos/facturas',

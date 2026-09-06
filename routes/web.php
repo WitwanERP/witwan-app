@@ -333,6 +333,7 @@ Route::prefix('app')->group(function () {
 
     // Administración > Cuentas.
     Route::get('/cuentas/cliente', [CuentaCorrienteController::class, 'cliente'])->name('cuentas.cliente');
+    Route::get('/cuentas/proveedor', [CuentaCorrienteController::class, 'proveedor'])->name('cuentas.proveedor');
 
     // Documentos en modo lectura (acciones al legacy) y cotizaciones por área.
     $reporte('documentos/facturas', FacturasListadoController::class);

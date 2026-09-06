@@ -26,7 +26,7 @@ trait CreaEsquemaConfiguracion
         'cotizacion', 'iva', 'modoivaventa', 'producto', 'sysconfig', 'rel_usuariomodelocomision', 'modelocomision',
         'modelofee', 'region', 'cliente', 'rel_usuariousuario', 'sistema', 'condicioniva', 'idioma', 'servicio', 'negocio', 'pnraereo', 'aerolinea', 'servicio_extra', 'reserva_extra',
         'facturaproveedor', 'movimiento', 'factura', 'rel_serviciofactura', 'reservain', 'rel_facturaproveedorocupacion',
-        'rel_ordenadminocupacion', 'ordenadmin', 'rel_facturarecibo', 'rel_filefactura', 'recibo', 'rel_filerecibo', 'servicio_nomina', 'vigencia', 'notacredito', 'notadebito', 'ctz', 'servicioctz',
+        'rel_ordenadminocupacion', 'ordenadmin', 'rel_facturarecibo', 'rel_filefactura', 'recibo', 'rel_filerecibo', 'servicio_nomina', 'vigencia', 'notacredito', 'notadebito', 'ctz', 'servicioctz', 'imputacion', 'precompra',
     ];
 
     protected function crearEsquemaConfiguracion(): void
@@ -298,7 +298,7 @@ trait CreaEsquemaConfiguracion
         Schema::create('facturaproveedor', function (Blueprint $t) {
             $t->increments('facturaproveedor_id');
             $t->string('facturaproveedor_nro', 50)->default('');
-            $t->string('facturaproveedor_tipodocumento', 5)->default('');
+            $t->string('facturaproveedor_tipodocumento', 50)->default('');
             $t->integer('fk_proveedor_id')->default(0);
             $t->date('fecha')->nullable();
             $t->date('fechacontable')->nullable();
@@ -322,6 +322,8 @@ trait CreaEsquemaConfiguracion
             $t->integer('fk_asientocontable_id')->default(0);
             $t->integer('cuenta_debito')->default(0);
             $t->integer('cuenta_credito')->default(0);
+            $t->integer('fk_plancuenta_id')->default(0);
+            $t->string('operacion', 100)->default('');
             $t->string('fk_moneda_id', 3)->default('');
             $t->decimal('cotizacion_moneda', 15, 4)->default(1);
             $t->decimal('monto', 15, 2)->default(0);
@@ -456,6 +458,15 @@ trait CreaEsquemaConfiguracion
             $t->string('statusrecibo', 2)->default('');
             $t->decimal('monto', 15, 2)->default(0);
             $t->string('fk_moneda_id', 3)->default('');
+            $t->text('observaciones')->nullable();
+        });
+        Schema::create('imputacion', function (Blueprint $t) {
+            $t->increments('imputacion_id');
+            $t->integer('imputacion_orden')->default(0);
+            $t->string('imputacion_movimiento1', 50)->default('');
+        });
+        Schema::create('precompra', function (Blueprint $t) {
+            $t->increments('precompra_id');
             $t->text('observaciones')->nullable();
         });
         Schema::create('rel_filerecibo', function (Blueprint $t) {
