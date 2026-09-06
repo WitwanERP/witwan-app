@@ -435,6 +435,8 @@ trait CreaEsquemaConfiguracion
         Schema::create('facturaproveedor', function (Blueprint $t) {
             $t->increments('facturaproveedor_id');
             $t->text('descripcion')->nullable();
+            $t->string('electronica', 1)->default('N');
+            $t->string('facturaproveedor_tipofactura', 2)->default('');
             $t->string('facturaproveedor_nro', 50)->default('');
             $t->string('facturaproveedor_tipodocumento', 50)->default('');
             $t->integer('fk_proveedor_id')->default(0);

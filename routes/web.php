@@ -41,8 +41,11 @@ use App\Http\Controllers\Web\Config\EscritoriosController;
 use App\Http\Controllers\Web\Config\TipousuarioController;
 use App\Http\Controllers\Web\Config\UsuarioController;
 use App\Http\Controllers\Web\Contabilidad\AsientoController;
+use App\Http\Controllers\Web\Contabilidad\BalanceController;
+use App\Http\Controllers\Web\Contabilidad\LibroComprasClController;
 use App\Http\Controllers\Web\Contabilidad\LibroDiarioController;
 use App\Http\Controllers\Web\Contabilidad\LibroMayorController;
+use App\Http\Controllers\Web\Contabilidad\LibroVentasClController;
 use App\Http\Controllers\Web\Cuentas\CuentaCorrienteController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\Documentos\DteChileController;
@@ -363,6 +366,9 @@ Route::prefix('app')->group(function () {
     // Administración > Contabilidad > Libros.
     $reporte('contabilidad/libro-diario', LibroDiarioController::class);
     $reporte('contabilidad/libro-mayor', LibroMayorController::class);
+    $reporte('contabilidad/balance', BalanceController::class);
+    $reporte('contabilidad/libro-ventas', LibroVentasClController::class);
+    $reporte('contabilidad/libro-compras', LibroComprasClController::class);
 
     // Configuración > Usuarios > Escritorios (sólo POW).
     Route::get('/config/escritorios', [EscritoriosController::class, 'index'])->name('config.escritorios');

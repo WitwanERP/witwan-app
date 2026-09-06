@@ -28,6 +28,7 @@ Cómo verificar: `php vendor/bin/phpunit` (no `php artisan test`). Build de asse
 | 16 | Reservas a facturar / facturación acumulada | ver `git log` | port de `administracion/reportes/afacturar` y `afacturarpp` con flags `facturapracial`/`factura_vertodos`, facturas/NC por servicio y botón FACTURAR al legacy. 3 tests |
 | 17 | Tarifador en el generador de reservas | ver `git log` | "Buscar tarifa" por servicio: cotiza productos propios con `App\Services\Pricing\Tarifador` (endpoint propio sin permiso de productos), aplica precio/costo/IVA/impuestos/vencimiento/categoría/régimen, RQ si no hay cupo. 1 test más |
 | 18 | Contabilidad: libro diario y libro mayor | ver `git log` | port de `libros::diario` y `libros::mayor` (clasificación debe/haber por documento, conversión de moneda, cuentas de recibos de sysconfig, saldo anterior, exclusión de anulados). 2 tests |
+| 19 | Contabilidad: balance de sumas y saldos, libro de ventas y compras (SII) | ver `git log` | port de `libros::balance/ventascl/comprascl`; totalización a cuentas padre, acumulado anterior, códigos SII 30/33/34/55/56/60, tipos de transacción. 3 tests |
 
 Suite completa al cierre del bloque 16: **397 tests OK**. Publicado en `origin/main`.
 
@@ -35,7 +36,7 @@ Suite completa al cierre del bloque 16: **397 tests OK**. Publicado en `origin/m
 
 ## En curso
 
-Nada en curso: bloque 18 cerrado. Candidatos siguientes: balance de sumas y saldos, libro IVA ventas/compras (CL), reportes `porboletear` y ventas por cliente/proveedor.
+Nada en curso: bloque 19 cerrado. Candidatos siguientes: Balance 8 columnas, IVA venta (`ivacredito`), analítico de cuentas (`ctacliente/analitico`), rentabilidad (`renta/mirenta`), reportes `porboletear` y ventas por cliente/proveedor.
 
 ---
 
