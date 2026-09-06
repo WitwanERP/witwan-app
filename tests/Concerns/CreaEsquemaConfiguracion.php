@@ -495,6 +495,7 @@ trait CreaEsquemaConfiguracion
             $t->string('fk_moneda_id', 3)->default('');
             $t->string('vencimiento_pago', 19)->default('2020-01-01 00:00:00');
             $t->string('factura_sucursal', 10)->default('');
+            $t->decimal('factura_rgaereos', 15, 2)->default(0);
             $t->decimal('factura_conceptos_gravadosespecial', 15, 2)->default(0);
             $t->decimal('factura_conceptos_nogravados', 15, 2)->default(0);
             $t->decimal('factura_rgterrestres', 15, 2)->default(0);
@@ -531,6 +532,7 @@ trait CreaEsquemaConfiguracion
                 $t->text('observaciones')->nullable();
                 $t->string('fk_moneda_id', 3)->default('');
                 $t->decimal("{$tabla}_tipo_cambio", 15, 4)->default(0);
+                $t->string("{$tabla}_sucursal", 10)->default('');
                 $t->integer('fk_notacredito_id')->default(0);
             });
         }

@@ -42,6 +42,7 @@ use App\Http\Controllers\Web\Config\TipousuarioController;
 use App\Http\Controllers\Web\Config\UsuarioController;
 use App\Http\Controllers\Web\Contabilidad\AsientoController;
 use App\Http\Controllers\Web\Contabilidad\BalanceController;
+use App\Http\Controllers\Web\Contabilidad\IvaVentaController;
 use App\Http\Controllers\Web\Contabilidad\LibroComprasClController;
 use App\Http\Controllers\Web\Contabilidad\LibroDiarioController;
 use App\Http\Controllers\Web\Contabilidad\LibroMayorController;
@@ -369,6 +370,7 @@ Route::prefix('app')->group(function () {
     $reporte('contabilidad/balance', BalanceController::class);
     $reporte('contabilidad/libro-ventas', LibroVentasClController::class);
     $reporte('contabilidad/libro-compras', LibroComprasClController::class);
+    $reporte('contabilidad/iva-venta', IvaVentaController::class);
 
     // Configuración > Usuarios > Escritorios (sólo POW).
     Route::get('/config/escritorios', [EscritoriosController::class, 'index'])->name('config.escritorios');
