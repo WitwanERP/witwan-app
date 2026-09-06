@@ -43,11 +43,15 @@ use App\Http\Controllers\Web\Contabilidad\AsientoController;
 use App\Http\Controllers\Web\Documentos\DteChileController;
 use App\Http\Controllers\Web\Documentos\FacturaproveedorController as FacturaproveedorWebController;
 use App\Http\Controllers\Web\Documentos\FacturaproveedorMultipleController;
+use App\Http\Controllers\Web\Operaciones\CierreGrupoController;
 use App\Http\Controllers\Web\PasajeroController;
 use App\Http\Controllers\Web\Productos\CupoController;
 use App\Http\Controllers\Web\Productos\ProductoController;
 use App\Http\Controllers\Web\Productos\TarifarioController;
 use App\Http\Controllers\Web\Productos\VigenciaController;
+use App\Http\Controllers\Web\Reportes\ProductosPorOrigenController;
+use App\Http\Controllers\Web\Reportes\ReporteDeudaController;
+use App\Http\Controllers\Web\Reportes\VentasNetasController;
 use App\Http\Controllers\Web\Reservas\ReservaListadoController;
 use App\Services\CiSessionReader;
 use App\Services\CiUserResolver;
@@ -287,6 +291,17 @@ Route::prefix('app')->group(function () {
     Route::post('/admin/tipo-cambio', [TipoCambioController::class, 'guardar'])->name('admin.tipo-cambio.guardar');
     Route::get('/admin/parametros-contables', [ParametrosContablesController::class, 'index'])->name('admin.parametros-contables');
     Route::post('/admin/parametros-contables', [ParametrosContablesController::class, 'guardar'])->name('admin.parametros-contables.guardar');
+
+    // Reportes config-driven (Web\Reportes\ReporteController): listado + export CSV.
+    $reporte = function (string $slug, string $controlador) {
+        $nombre = str_replace('/', '.', $slug);
+        Route::get("/{$slug}", [$controlador, 'index'])->name($nombre);
+        Route::get("/{$slug}/export", [$controlador, 'exportar'])->name($nombre.'.export');
+    };
+    $reporte('admin/reportes/ventas-netas', VentasNetasController::class);
+    $reporte('admin/reportes/deuda', ReporteDeudaController::class);
+    $reporte('admin/reportes/productos-origen', ProductosPorOrigenController::class);
+    $reporte('operaciones/cierre-grupo', CierreGrupoController::class);
 
     // Configuración > Usuarios / Proveedores
     $abm('config/tipos-usuario', TipousuarioController::class, false);

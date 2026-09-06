@@ -115,6 +115,11 @@ return [
         'administracion/Modelocomision' => '/app/admin/modelos-comision',
         'administracion/Modelofee' => '/app/admin/modelos-fee',
 
+        // Administración > Reportes (config-driven).
+        'administracion/ventasnetas' => '/app/admin/reportes/ventas-netas',
+        'administracion/reportedeuda' => '/app/admin/reportes/deuda',
+        'administracion/productopororigen' => '/app/admin/reportes/productos-origen',
+
         // Productos / vigencias / tarifarios / cupos: las pantallas Inertia ya
         // existen (Web\Productos\*). Se dejan SIN mapear a propósito hasta que
         // se prueben con datos reales en el tenant: al descomentar, el menú del

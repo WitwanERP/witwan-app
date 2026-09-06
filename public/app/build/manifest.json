@@ -543,8 +543,19 @@
       "resources/js/app.js"
     ]
   },
-  "resources/js/Pages/Reservas/Listado.vue": {
+  "resources/js/Pages/Reportes/Listado.vue": {
     "file": "assets/Listado.js",
+    "name": "Listado",
+    "src": "resources/js/Pages/Reportes/Listado.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "_RangoFechas.js"
+    ]
+  },
+  "resources/js/Pages/Reservas/Listado.vue": {
+    "file": "assets/Listado2.js",
     "name": "Listado",
     "src": "resources/js/Pages/Reservas/Listado.vue",
     "isDynamicEntry": true,
@@ -666,6 +677,7 @@
       "resources/js/Pages/Productos/Vigencia/Index.vue",
       "resources/js/Pages/Productos/components/CampoProducto.vue",
       "resources/js/Pages/Productos/components/Habitaciones.vue",
+      "resources/js/Pages/Reportes/Listado.vue",
       "resources/js/Pages/Reservas/Listado.vue",
       "resources/js/Pages/Reservas/components/FiltrosReserva.vue",
       "resources/js/Pages/Reservas/components/ModalResumen.vue",

@@ -24,7 +24,7 @@ trait CreaEsquemaConfiguracion
         'tarifacategoria', 'alojamientofacilidad', 'tag', 'formapago', 'guia', 'interfases', 'ciudad', 'pais', 'filearchivo',
         'reserva', 'usuario', 'tipousuario', 'submodulo', 'plancuenta', 'proveedor', 'permisogrupo', 'permiso', 'moneda',
         'cotizacion', 'iva', 'modoivaventa', 'producto', 'sysconfig', 'rel_usuariomodelocomision', 'modelocomision',
-        'modelofee', 'region', 'cliente', 'rel_usuariousuario', 'sistema', 'condicioniva', 'idioma',
+        'modelofee', 'region', 'cliente', 'rel_usuariousuario', 'sistema', 'condicioniva', 'idioma', 'servicio', 'negocio', 'pnraereo', 'aerolinea', 'servicio_extra', 'reserva_extra',
     ];
 
     protected function crearEsquemaConfiguracion(): void
@@ -216,11 +216,88 @@ trait CreaEsquemaConfiguracion
             $t->increments('reserva_id');
             $t->string('tipocodigo', 3)->default('');
             $t->string('codigo', 20)->default('');
+            $t->integer('fk_cliente_id')->default(0);
+            $t->integer('fk_sistema_id')->default(0);
+            $t->integer('fk_sistemaaplicacion_id')->default(0);
+            $t->integer('fk_usuario_id')->default(0);
+            $t->integer('agente')->default(0);
+            $t->integer('promotor')->default(0);
+            $t->string('fk_filestatus_id', 2)->default('');
+            $t->integer('fk_guia_id')->default(0);
+            $t->integer('fk_negocio_id')->default(0);
+            $t->date('fecha_alta')->nullable();
+            $t->date('fecha_vencimiento')->nullable();
+            $t->date('inicio')->nullable();
+            $t->string('titular_nombre', 150)->default('');
+            $t->string('titular_apellido', 150)->default('');
+            $t->integer('autorizado')->default(0);
+            $t->text('observaciones')->nullable();
+            $t->string('fk_moneda_id', 3)->default('');
+            $t->decimal('total', 15, 2)->default(0);
+            $t->decimal('cobrado', 15, 2)->default(0);
+            $t->string('codigo_externo', 50)->default('');
+        });
+
+        Schema::create('servicio', function (Blueprint $t) {
+            $t->increments('servicio_id');
+            $t->string('servicio_nombre', 200)->default('');
+            $t->integer('fk_reserva_id')->default(0);
+            $t->string('fk_tipoproducto_id', 3)->default('');
+            $t->integer('fk_producto_id')->default(0);
+            $t->integer('fk_proveedor_id')->default(0);
+            $t->integer('fk_ciudad_id')->default(0);
+            $t->date('vigencia_ini')->nullable();
+            $t->date('vigencia_fin')->nullable();
+            $t->integer('adultos')->default(0);
+            $t->integer('menores')->default(0);
+            $t->integer('juniors')->default(0);
+            $t->integer('infante')->default(0);
+            $t->integer('fk_tarifacategoria_id')->default(0);
+            $t->integer('fk_regimen_id')->default(0);
+            $t->string('status', 2)->default('');
+            $t->string('moneda_costo', 3)->default('');
+            $t->decimal('iva', 15, 2)->default(0);
+            $t->string('fk_moneda_id', 3)->default('');
+            $t->decimal('comision', 15, 2)->default(0);
+            $t->decimal('costo', 15, 2)->default(0);
+            $t->decimal('iva_costo', 15, 2)->default(0);
+            $t->decimal('total', 15, 2)->default(0);
+            $t->string('nro_confirmacion', 200)->default('');
+            $t->text('comentarios')->nullable();
+            $t->string('retira_voucher', 255)->default('');
+            $t->text('autoriza_evoucher')->nullable();
+            $t->decimal('cotcosto', 15, 4)->default(0);
+            $t->decimal('cotventa', 15, 4)->default(0);
+            $t->decimal('renta', 15, 4)->default(0);
+            $t->string('origen', 5)->default('');
+            $t->decimal('comisionproveedor_porcentaje', 7, 5)->default(0);
+            $t->text('info')->nullable();
+        });
+        Schema::create('servicio_extra', function (Blueprint $t) {
+            $t->integer('fk_servicio_id');
+            $t->string('regdate', 19)->default('2020-01-01 00:00:00');
+            $t->string('extra_nombre', 50);
+            $t->text('extra_valor');
+        });
+        Schema::create('reserva_extra', function (Blueprint $t) {
+            $t->integer('fk_reserva_id');
+            $t->string('regdate', 19)->default('2020-01-01 00:00:00');
+            $t->string('extra_nombre', 50);
+            $t->text('extra_valor');
+        });
+        $nombre('negocio', 'negocio');
+        $nombre('aerolinea', 'aerolinea');
+        Schema::create('pnraereo', function (Blueprint $t) {
+            $t->increments('pnraereo_id');
+            $t->integer('fk_ocupacion_id')->default(0);
+            $t->integer('fk_aerolinea_id')->default(0);
         });
 
         Schema::create('submodulo', function (Blueprint $t) {
             $t->string('tipoproducto_id', 3)->primary();
             $t->string('tipoproducto_nombre', 100)->default('');
+            $t->string('submodulo_id', 3)->default('');
+            $t->string('tipoproducto_tipo', 1)->default('S');
         });
 
         Schema::create('plancuenta', function (Blueprint $t) {
