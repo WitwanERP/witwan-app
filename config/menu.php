@@ -105,6 +105,20 @@ return [
         'configuracion/proveedor' => '/app/config/proveedores',
         'configuracion/Prestador' => '/app/config/prestadores',
 
+        // Documentos en modo lectura (las acciones siguen linkeando al legacy).
+        'administracion/factura' => '/app/documentos/facturas',
+        'administracion/notacredito' => '/app/documentos/notas-credito',
+        'administracion/notadebito' => '/app/documentos/notas-debito',
+        'administracion/recibo' => '/app/documentos/recibos',
+        'administracion/ordenpago' => '/app/documentos/ordenes-pago',
+        'administracion/ordenservicio' => '/app/documentos/ordenes-servicio',
+
+        // Reservas > Cotizaciones por área.
+        'reserva/cotizaciones/receptivo' => '/app/cotizaciones/receptivo',
+        'reserva/cotizaciones/mayorista' => '/app/cotizaciones/mayorista',
+        'reserva/cotizaciones/minorista' => '/app/cotizaciones/minorista',
+        'reserva/cotizaciones/nacional' => '/app/cotizaciones/nacional',
+
         // Operaciones por área (Web\Operaciones\*).
         'operaciones/autorizar/lista/receptivo' => '/app/operaciones/autorizar/receptivo',
         'operaciones/autorizar/lista/mayorista' => '/app/operaciones/autorizar/mayorista',

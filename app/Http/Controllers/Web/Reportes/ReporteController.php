@@ -9,17 +9,21 @@ use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * Reporte genérico (config-driven): filtros declarativos, una consulta que
- * devuelve filas, agrupación opcional (por moneda, como casi todos los del
- * CI), totales por columna numérica y export a CSV con el mismo criterio.
+ * Reporte / listado genérico (config-driven): filtros declarativos, una
+ * consulta que devuelve filas, agrupación opcional (por moneda, como casi
+ * todos los del CI), totales por columna numérica y export a CSV con el mismo
+ * criterio.
  *
  * Es el equivalente de los controllers de `administracion/reportes` y
  * `operaciones` que sólo arman un SQL con filtros del query-string y lo
- * vuelcan a una tabla + PHPExcel. El front es un solo componente:
- * Reportes/Listado.
+ * vuelcan a una tabla + PHPExcel, y de los listados Admin_Controller de
+ * documentos (facturas, recibos, órdenes) en modo lectura. El front es un solo
+ * componente: Reportes/Listado.
  *
- * Tipos de filtro: text, select, rango (fechas desde/hasta => campo y
+ * Tipos de filtro: text, select, multi, rango (fechas desde/hasta => campo y
  * campo_to, como el `range=>true` del legacy), date, bool (1/0).
+ * Tipos de columna: text (default), num (alineada y totalizable), pre (respeta
+ * saltos), acciones (lista de links {label, href, target?} en fila['acciones']).
  */
 abstract class ReporteController extends Controller
 {
@@ -41,6 +45,9 @@ abstract class ReporteController extends Controller
     /** Texto de ayuda arriba de los filtros. */
     protected string $ayuda = '';
 
+    /** Máximo de filas que devuelve consultar() (0 = sin límite). El front avisa si se alcanzó. */
+    protected int $limite = 0;
+
     /**
      * @return list<array{campo:string,label:string,tipo:string,opciones?:list<array{value:mixed,label:string}>,default?:mixed}>
      */
@@ -60,8 +67,18 @@ abstract class ReporteController extends Controller
      */
     abstract protected function consultar(array $f): array;
 
+    /** Links globales del encabezado (ej. "Nueva factura" al legacy): [{label, href, target?}]. */
+    protected function accionesGlobales(): array
+    {
+        return [];
+    }
+
+    /** Hook para leer parámetros de ruta ({area}) antes de armar el reporte. */
+    protected function preparar(Request $request): void {}
+
     public function index(Request $request): Response
     {
+        $this->preparar($request);
         $filtros = $this->leerFiltros($request);
         $consulta = ! $this->requiereFiltros || $this->hayFiltros($request);
         $filas = $consulta ? $this->consultar($filtros) : [];
@@ -77,6 +94,8 @@ abstract class ReporteController extends Controller
                 'columnas' => $this->columnas(),
                 'agruparPor' => $this->agruparPor,
                 'consultado' => $consulta,
+                'limite' => $this->limite,
+                'acciones' => $this->accionesGlobales(),
             ],
             'filtros' => $filtros,
             'grupos' => $this->agrupar($filas),
@@ -85,8 +104,9 @@ abstract class ReporteController extends Controller
 
     public function exportar(Request $request): StreamedResponse
     {
+        $this->preparar($request);
         $filas = $this->consultar($this->leerFiltros($request));
-        $columnas = $this->columnas();
+        $columnas = array_values(array_filter($this->columnas(), fn ($c) => ($c['tipo'] ?? '') !== 'acciones'));
         $nombre = str_replace(['/', ' '], '-', mb_strtolower($this->titulo)).'-'.now()->format('Ymd-His').'.csv';
 
         return response()->streamDownload(function () use ($filas, $columnas) {
@@ -184,7 +204,7 @@ abstract class ReporteController extends Controller
         return preg_match('/^\d{4}-\d{2}-\d{2}$/', $valor) ? $valor : '';
     }
 
-    /** dd/mm/yyyy para mostrar (como dbtocal() del CI). */
+    /** dd/mm/yyyy para mostrar (como dbtocal() del CI). Acepta datetime. */
     protected function dmy(?string $fecha): string
     {
         if ($fecha === null || $fecha === '' || str_starts_with($fecha, '0000')) {
@@ -195,13 +215,21 @@ abstract class ReporteController extends Controller
     }
 
     /** Aplica un filtro de rango de fechas (desde/hasta, cualquiera opcional) a un query builder. */
-    protected function rango($query, string $columna, array $f, string $campo): void
+    protected function rango($query, string $columna, array $f, string $campo, bool $conHora = false): void
     {
         if (($f[$campo] ?? '') !== '') {
-            $query->where($columna, '>=', $f[$campo]);
+            $query->where($columna, '>=', $f[$campo].($conHora ? ' 00:00:00' : ''));
         }
         if (($f["{$campo}_to"] ?? '') !== '') {
-            $query->where($columna, '<=', $f["{$campo}_to"]);
+            $query->where($columna, '<=', $f["{$campo}_to"].($conHora ? ' 23:59:59' : ''));
+        }
+    }
+
+    /** Aplica el límite configurado al query builder. */
+    protected function limitar($query): void
+    {
+        if ($this->limite > 0) {
+            $query->limit($this->limite);
         }
     }
 }

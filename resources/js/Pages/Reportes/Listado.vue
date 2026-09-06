@@ -93,7 +93,14 @@ function esLink(col, fila) {
           <span v-else>Complete los filtros y presione Buscar.</span>
         </p>
       </div>
-      <a v-if="config.consultado && totalFilas > 0" :href="urlExport" class="btn btn-secondary">Exportar CSV</a>
+      <div class="flex gap-2">
+        <a v-for="a in config.acciones || []" :key="a.label" :href="a.href" :target="a.target || '_self'" class="btn btn-primary">{{ a.label }}</a>
+        <a v-if="config.consultado && totalFilas > 0" :href="urlExport" class="btn btn-secondary">Exportar CSV</a>
+      </div>
+    </div>
+
+    <div v-if="config.limite && totalFilas >= config.limite" class="rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-900 mb-4">
+      Se muestran los primeros {{ config.limite }} registros. Ajuste los filtros para acotar la búsqueda.
     </div>
 
     <div v-if="config.ayuda" class="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 mb-4">{{ config.ayuda }}</div>
@@ -160,7 +167,12 @@ function esLink(col, fila) {
           <tbody class="divide-y divide-gray-200 bg-white">
             <tr v-for="(fila, i) in g.filas" :key="i" class="hover:bg-gray-50">
               <td v-for="col in config.columnas" :key="col.campo" class="px-3 py-1.5 text-gray-700 align-top" :class="[col.tipo === 'num' ? 'text-right whitespace-nowrap tabular-nums' : '', col.tipo === 'pre' ? 'whitespace-pre-line' : '']">
-                <a v-if="esLink(col, fila)" :href="fila[col.link]" class="text-blue-600 hover:underline" target="_blank">{{ mostrar(col, fila[col.campo]) }}</a>
+                <template v-if="col.tipo === 'acciones'">
+                  <span class="flex flex-wrap gap-x-2 gap-y-0.5 whitespace-nowrap">
+                    <a v-for="a in fila[col.campo] || []" :key="a.label" :href="a.href" :target="a.target || '_blank'" class="text-xs font-medium hover:underline" :class="a.peligro ? 'text-red-600' : 'text-blue-600'">{{ a.label }}</a>
+                  </span>
+                </template>
+                <a v-else-if="esLink(col, fila)" :href="fila[col.link]" class="text-blue-600 hover:underline" target="_blank">{{ mostrar(col, fila[col.campo]) }}</a>
                 <template v-else>{{ mostrar(col, fila[col.campo]) }}</template>
               </td>
             </tr>

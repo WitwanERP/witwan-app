@@ -43,6 +43,12 @@ use App\Http\Controllers\Web\Contabilidad\AsientoController;
 use App\Http\Controllers\Web\Documentos\DteChileController;
 use App\Http\Controllers\Web\Documentos\FacturaproveedorController as FacturaproveedorWebController;
 use App\Http\Controllers\Web\Documentos\FacturaproveedorMultipleController;
+use App\Http\Controllers\Web\Documentos\Listados\FacturasListadoController;
+use App\Http\Controllers\Web\Documentos\Listados\NotasCreditoListadoController;
+use App\Http\Controllers\Web\Documentos\Listados\NotasDebitoListadoController;
+use App\Http\Controllers\Web\Documentos\Listados\OrdenesPagoListadoController;
+use App\Http\Controllers\Web\Documentos\Listados\OrdenesServicioListadoController;
+use App\Http\Controllers\Web\Documentos\Listados\RecibosListadoController;
 use App\Http\Controllers\Web\Operaciones\AutorizarController;
 use App\Http\Controllers\Web\Operaciones\CierreGrupoController;
 use App\Http\Controllers\Web\Operaciones\GuardiaController;
@@ -64,6 +70,7 @@ use App\Http\Controllers\Web\Reportes\ProductosPorOrigenController;
 use App\Http\Controllers\Web\Reportes\ProvisionDeudaController;
 use App\Http\Controllers\Web\Reportes\ReporteDeudaController;
 use App\Http\Controllers\Web\Reportes\VentasNetasController;
+use App\Http\Controllers\Web\Reservas\CotizacionesListadoController;
 use App\Http\Controllers\Web\Reservas\ReservaListadoController;
 use App\Services\CiSessionReader;
 use App\Services\CiUserResolver;
@@ -322,6 +329,16 @@ Route::prefix('app')->group(function () {
     $reporte('admin/reportes/gastos-area', GastosPorAreaController::class);
     $reporte('admin/reportes/facturas-impagas', FacturasImpagasController::class);
     $reporte('operaciones/cierre-grupo', CierreGrupoController::class);
+
+    // Documentos en modo lectura (acciones al legacy) y cotizaciones por área.
+    $reporte('documentos/facturas', FacturasListadoController::class);
+    $reporte('documentos/notas-credito', NotasCreditoListadoController::class);
+    $reporte('documentos/notas-debito', NotasDebitoListadoController::class);
+    $reporte('documentos/recibos', RecibosListadoController::class);
+    $reporte('documentos/ordenes-pago', OrdenesPagoListadoController::class);
+    $reporte('documentos/ordenes-servicio', OrdenesServicioListadoController::class);
+    Route::get('/cotizaciones/{area}', [CotizacionesListadoController::class, 'index'])->where('area', OperacionesController::patronDeArea().'|all')->name('cotizaciones.index');
+    Route::get('/cotizaciones/{area}/export', [CotizacionesListadoController::class, 'exportar'])->where('area', OperacionesController::patronDeArea().'|all')->name('cotizaciones.export');
 
     // Operaciones por área (receptivo, mayorista, minorista, nacional, corporativo, consolidador).
     Route::prefix('operaciones')->where(['area' => OperacionesController::patronDeArea()])->group(function () {
