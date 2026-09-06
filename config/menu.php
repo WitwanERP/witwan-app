@@ -119,6 +119,14 @@ return [
         'administracion/ventasnetas' => '/app/admin/reportes/ventas-netas',
         'administracion/reportedeuda' => '/app/admin/reportes/deuda',
         'administracion/productopororigen' => '/app/admin/reportes/productos-origen',
+        'administracion/reportes/canjes' => '/app/admin/reportes/canjes',
+        'administracion/reportes/r14' => '/app/admin/reportes/gastos-administrativos',
+        'administracion/reportes/r12' => '/app/admin/reportes/gastos-bancarios',
+        'administracion/reportes/honorarios' => '/app/admin/reportes/honorarios',
+        'administracion/reportes/provisiondeuda' => '/app/admin/reportes/provision-deuda',
+        'administracion/reportes/pagos' => '/app/admin/reportes/pagos',
+        'administracion/reportes/gastos' => '/app/admin/reportes/gastos-area',
+        'administracion/reportes/facturasaldo' => '/app/admin/reportes/facturas-impagas',
 
         // Productos / vigencias / tarifarios / cupos: las pantallas Inertia ya
         // existen (Web\Productos\*). Se dejan SIN mapear a propósito hasta que

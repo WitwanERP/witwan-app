@@ -25,6 +25,8 @@ trait CreaEsquemaConfiguracion
         'reserva', 'usuario', 'tipousuario', 'submodulo', 'plancuenta', 'proveedor', 'permisogrupo', 'permiso', 'moneda',
         'cotizacion', 'iva', 'modoivaventa', 'producto', 'sysconfig', 'rel_usuariomodelocomision', 'modelocomision',
         'modelofee', 'region', 'cliente', 'rel_usuariousuario', 'sistema', 'condicioniva', 'idioma', 'servicio', 'negocio', 'pnraereo', 'aerolinea', 'servicio_extra', 'reserva_extra',
+        'facturaproveedor', 'movimiento', 'factura', 'rel_serviciofactura', 'reservain', 'rel_facturaproveedorocupacion',
+        'rel_ordenadminocupacion', 'ordenadmin', 'rel_facturarecibo', 'rel_filefactura', 'recibo', 'rel_filerecibo',
     ];
 
     protected function crearEsquemaConfiguracion(): void
@@ -272,6 +274,92 @@ trait CreaEsquemaConfiguracion
             $t->string('origen', 5)->default('');
             $t->decimal('comisionproveedor_porcentaje', 7, 5)->default(0);
             $t->text('info')->nullable();
+            $t->integer('fk_prestador_id')->default(0);
+            $t->decimal('extra1', 15, 2)->default(0);
+            $t->decimal('extra2', 15, 2)->default(0);
+        });
+        Schema::create('facturaproveedor', function (Blueprint $t) {
+            $t->increments('facturaproveedor_id');
+            $t->string('facturaproveedor_nro', 50)->default('');
+            $t->string('facturaproveedor_tipodocumento', 5)->default('');
+            $t->integer('fk_proveedor_id')->default(0);
+            $t->date('fecha')->nullable();
+            $t->date('fechacontable')->nullable();
+            $t->string('fk_moneda_id', 3)->default('');
+            $t->decimal('montoexento', 15, 2)->default(0);
+            $t->decimal('montogeneral', 15, 2)->default(0);
+            $t->decimal('retencioniibb', 15, 2)->default(0);
+            $t->decimal('cotizacion', 15, 4)->default(0);
+            $t->decimal('montototal', 15, 2)->default(0);
+            $t->string('tipomovimiento', 50)->default('');
+            $t->text('imputacion')->nullable();
+        });
+        Schema::create('movimiento', function (Blueprint $t) {
+            $t->increments('movimiento_id');
+            $t->integer('fk_facturaproveedor_id')->default(0);
+            $t->integer('fk_recibo_id')->default(0);
+            $t->string('fk_moneda_id', 3)->default('');
+            $t->decimal('cotizacion_moneda', 15, 4)->default(1);
+            $t->decimal('monto', 15, 2)->default(0);
+            $t->date('fecha')->nullable();
+        });
+        Schema::create('factura', function (Blueprint $t) {
+            $t->increments('factura_id');
+            $t->string('statusfactura', 2)->default('');
+            $t->string('factura_fecha', 19)->default('2020-01-01 00:00:00');
+            $t->string('factura_tipo', 1)->default('A');
+            $t->string('factura_nro', 20)->default('');
+            $t->decimal('factura_conceptos_gravados', 15, 2)->default(0);
+            $t->decimal('factura_conceptos_exentos', 15, 2)->default(0);
+            $t->integer('fk_cliente_id')->default(0);
+            $t->integer('fk_file_id')->default(0);
+            $t->string('vencimiento_pago', 19)->default('2020-01-01 00:00:00');
+        });
+        Schema::create('rel_serviciofactura', function (Blueprint $t) {
+            $t->integer('fk_servicio_id');
+            $t->integer('fk_factura_id');
+        });
+        Schema::create('reservain', function (Blueprint $t) {
+            $t->integer('fk_reserva_id');
+            $t->date('inicio')->nullable();
+        });
+        Schema::create('rel_facturaproveedorocupacion', function (Blueprint $t) {
+            $t->integer('fk_facturaproveedor_id');
+            $t->integer('fk_ocupacion_id');
+            $t->decimal('monto', 15, 2)->default(0);
+        });
+        Schema::create('rel_ordenadminocupacion', function (Blueprint $t) {
+            $t->integer('fk_ordenadmin_id');
+            $t->integer('fk_ocupacion_id');
+            $t->string('fk_moneda_id', 3)->default('');
+            $t->decimal('monto', 15, 2)->default(0);
+        });
+        Schema::create('ordenadmin', function (Blueprint $t) {
+            $t->increments('ordenadmin_id');
+            $t->integer('fk_ordenadmin_id')->default(0);
+            $t->string('tipo', 1)->default('');
+            $t->decimal('cotizacion', 15, 4)->default(0);
+        });
+        Schema::create('rel_facturarecibo', function (Blueprint $t) {
+            $t->increments('rel_facturarecibo_id');
+            $t->integer('fk_factura_id')->default(0);
+            $t->integer('fk_recibo_id')->default(0);
+            $t->decimal('monto', 15, 2)->default(0);
+        });
+        Schema::create('rel_filefactura', function (Blueprint $t) {
+            $t->integer('fk_file_id');
+            $t->integer('fk_factura_id');
+        });
+        Schema::create('recibo', function (Blueprint $t) {
+            $t->increments('recibo_id');
+            $t->string('recibo_nro', 20)->default('');
+            $t->string('statusrecibo', 2)->default('');
+            $t->decimal('monto', 15, 2)->default(0);
+            $t->string('fk_moneda_id', 3)->default('');
+        });
+        Schema::create('rel_filerecibo', function (Blueprint $t) {
+            $t->integer('fk_file_id');
+            $t->integer('fk_recibo_id');
         });
         Schema::create('servicio_extra', function (Blueprint $t) {
             $t->integer('fk_servicio_id');

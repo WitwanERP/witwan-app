@@ -49,7 +49,15 @@ use App\Http\Controllers\Web\Productos\CupoController;
 use App\Http\Controllers\Web\Productos\ProductoController;
 use App\Http\Controllers\Web\Productos\TarifarioController;
 use App\Http\Controllers\Web\Productos\VigenciaController;
+use App\Http\Controllers\Web\Reportes\CanjesReporteController;
+use App\Http\Controllers\Web\Reportes\FacturasImpagasController;
+use App\Http\Controllers\Web\Reportes\GastosAdministrativosController;
+use App\Http\Controllers\Web\Reportes\GastosBancariosController;
+use App\Http\Controllers\Web\Reportes\GastosPorAreaController;
+use App\Http\Controllers\Web\Reportes\HonorariosController;
+use App\Http\Controllers\Web\Reportes\PagosProveedoresController;
 use App\Http\Controllers\Web\Reportes\ProductosPorOrigenController;
+use App\Http\Controllers\Web\Reportes\ProvisionDeudaController;
 use App\Http\Controllers\Web\Reportes\ReporteDeudaController;
 use App\Http\Controllers\Web\Reportes\VentasNetasController;
 use App\Http\Controllers\Web\Reservas\ReservaListadoController;
@@ -301,6 +309,14 @@ Route::prefix('app')->group(function () {
     $reporte('admin/reportes/ventas-netas', VentasNetasController::class);
     $reporte('admin/reportes/deuda', ReporteDeudaController::class);
     $reporte('admin/reportes/productos-origen', ProductosPorOrigenController::class);
+    $reporte('admin/reportes/canjes', CanjesReporteController::class);
+    $reporte('admin/reportes/gastos-administrativos', GastosAdministrativosController::class);
+    $reporte('admin/reportes/gastos-bancarios', GastosBancariosController::class);
+    $reporte('admin/reportes/honorarios', HonorariosController::class);
+    $reporte('admin/reportes/provision-deuda', ProvisionDeudaController::class);
+    $reporte('admin/reportes/pagos', PagosProveedoresController::class);
+    $reporte('admin/reportes/gastos-area', GastosPorAreaController::class);
+    $reporte('admin/reportes/facturas-impagas', FacturasImpagasController::class);
     $reporte('operaciones/cierre-grupo', CierreGrupoController::class);
 
     // Configuración > Usuarios / Proveedores
