@@ -41,6 +41,8 @@ use App\Http\Controllers\Web\Config\EscritoriosController;
 use App\Http\Controllers\Web\Config\TipousuarioController;
 use App\Http\Controllers\Web\Config\UsuarioController;
 use App\Http\Controllers\Web\Contabilidad\AsientoController;
+use App\Http\Controllers\Web\Contabilidad\LibroDiarioController;
+use App\Http\Controllers\Web\Contabilidad\LibroMayorController;
 use App\Http\Controllers\Web\Cuentas\CuentaCorrienteController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\Documentos\DteChileController;
@@ -357,6 +359,10 @@ Route::prefix('app')->group(function () {
     $reporte('admin/reportes/facturados', FacturadosController::class);
     $reporte('admin/reportes/reservas-a-facturar', ReservasAFacturarController::class);
     $reporte('admin/reportes/facturacion-acumulada', ReservasAFacturarController::class);
+
+    // Administración > Contabilidad > Libros.
+    $reporte('contabilidad/libro-diario', LibroDiarioController::class);
+    $reporte('contabilidad/libro-mayor', LibroMayorController::class);
 
     // Configuración > Usuarios > Escritorios (sólo POW).
     Route::get('/config/escritorios', [EscritoriosController::class, 'index'])->name('config.escritorios');

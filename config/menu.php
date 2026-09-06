@@ -70,6 +70,8 @@ return [
         'administracion/asientocontable' => '/app/contabilidad/asientos/contable',
         'administracion/asientocta' => '/app/contabilidad/asientos/cuenta-corriente',
         'administracion/fondos' => '/app/contabilidad/asientos/fondos',
+        'administracion/libros/diario' => '/app/contabilidad/libro-diario',
+        'administracion/libros/mayor' => '/app/contabilidad/libro-mayor',
 
         // Configuración: ABMs config-driven (Web\Abm\*). Los seccion_uri de
         // brain vienen con y sin barra inicial ('configuracion/tag' vs

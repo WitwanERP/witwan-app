@@ -434,6 +434,7 @@ trait CreaEsquemaConfiguracion
         });
         Schema::create('facturaproveedor', function (Blueprint $t) {
             $t->increments('facturaproveedor_id');
+            $t->text('descripcion')->nullable();
             $t->string('facturaproveedor_nro', 50)->default('');
             $t->string('facturaproveedor_tipodocumento', 50)->default('');
             $t->integer('fk_proveedor_id')->default(0);
@@ -466,9 +467,20 @@ trait CreaEsquemaConfiguracion
             $t->decimal('cotizacion_moneda', 15, 4)->default(1);
             $t->decimal('monto', 15, 2)->default(0);
             $t->date('fecha')->nullable();
+            $t->string('statusmovimiento', 2)->default('');
+            $t->integer('auxiliar')->default(0);
+            $t->integer('fk_notacredito_id')->default(0);
+            $t->integer('fk_notadebito_id')->default(0);
+            $t->integer('fk_factura_id')->default(0);
+            $t->integer('fk_movimiento_id')->default(0);
+            $t->integer('utilizado')->default(0);
+            $t->text('descripcion')->nullable();
+            $t->string('banco', 200)->default('');
+            $t->date('fecha_acreditacion')->nullable();
         });
         Schema::create('factura', function (Blueprint $t) {
             $t->increments('factura_id');
+            $t->text('observaciones')->nullable();
             $t->string('statusfactura', 2)->default('');
             $t->string('factura_fecha', 19)->default('2020-01-01 00:00:00');
             $t->string('factura_tipo', 1)->default('A');
