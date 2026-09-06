@@ -40,6 +40,7 @@ use App\Http\Controllers\Web\ClienteController;
 use App\Http\Controllers\Web\Config\TipousuarioController;
 use App\Http\Controllers\Web\Config\UsuarioController;
 use App\Http\Controllers\Web\Contabilidad\AsientoController;
+use App\Http\Controllers\Web\Cuentas\CuentaCorrienteController;
 use App\Http\Controllers\Web\Documentos\DteChileController;
 use App\Http\Controllers\Web\Documentos\FacturaproveedorController as FacturaproveedorWebController;
 use App\Http\Controllers\Web\Documentos\FacturaproveedorMultipleController;
@@ -329,6 +330,9 @@ Route::prefix('app')->group(function () {
     $reporte('admin/reportes/gastos-area', GastosPorAreaController::class);
     $reporte('admin/reportes/facturas-impagas', FacturasImpagasController::class);
     $reporte('operaciones/cierre-grupo', CierreGrupoController::class);
+
+    // Administración > Cuentas.
+    Route::get('/cuentas/cliente', [CuentaCorrienteController::class, 'cliente'])->name('cuentas.cliente');
 
     // Documentos en modo lectura (acciones al legacy) y cotizaciones por área.
     $reporte('documentos/facturas', FacturasListadoController::class);

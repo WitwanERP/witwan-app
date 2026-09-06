@@ -105,6 +105,9 @@ return [
         'configuracion/proveedor' => '/app/config/proveedores',
         'configuracion/Prestador' => '/app/config/prestadores',
 
+        // Administración > Cuentas.
+        'administracion/cuentas/cliente' => '/app/cuentas/cliente',
+
         // Documentos en modo lectura (las acciones siguen linkeando al legacy).
         'administracion/factura' => '/app/documentos/facturas',
         'administracion/notacredito' => '/app/documentos/notas-credito',

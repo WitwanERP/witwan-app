@@ -315,6 +315,13 @@ trait CreaEsquemaConfiguracion
             $t->increments('movimiento_id');
             $t->integer('fk_facturaproveedor_id')->default(0);
             $t->integer('fk_recibo_id')->default(0);
+            $t->integer('fk_ordenadmin_id')->default(0);
+            $t->integer('fk_cliente_id')->default(0);
+            $t->integer('fk_proveedor_id')->default(0);
+            $t->integer('fk_file_id')->default(0);
+            $t->integer('fk_asientocontable_id')->default(0);
+            $t->integer('cuenta_debito')->default(0);
+            $t->integer('cuenta_credito')->default(0);
             $t->string('fk_moneda_id', 3)->default('');
             $t->decimal('cotizacion_moneda', 15, 4)->default(1);
             $t->decimal('monto', 15, 2)->default(0);
@@ -343,6 +350,7 @@ trait CreaEsquemaConfiguracion
             $t->decimal('factura_impuesto4', 15, 2)->default(0);
             $t->decimal('factura_impuesto5', 15, 2)->default(0);
             $t->string('remitofull', 100)->default('0:0:0');
+            $t->decimal('factura_tipo_cambio', 15, 4)->default(0);
         });
         foreach (['notacredito', 'notadebito'] as $tabla) {
             Schema::create($tabla, function (Blueprint $t) use ($tabla) {
@@ -368,6 +376,8 @@ trait CreaEsquemaConfiguracion
                 $t->string('remitofull', 100)->default('0:0:0');
                 $t->text('observaciones')->nullable();
                 $t->string('fk_moneda_id', 3)->default('');
+                $t->decimal("{$tabla}_tipo_cambio", 15, 4)->default(0);
+                $t->integer('fk_notacredito_id')->default(0);
             });
         }
         Schema::create('ctz', function (Blueprint $t) {
@@ -451,6 +461,7 @@ trait CreaEsquemaConfiguracion
         Schema::create('rel_filerecibo', function (Blueprint $t) {
             $t->integer('fk_file_id');
             $t->integer('fk_recibo_id');
+            $t->decimal('monto', 15, 2)->default(0);
         });
         Schema::create('servicio_extra', function (Blueprint $t) {
             $t->integer('fk_servicio_id');

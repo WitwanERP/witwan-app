@@ -235,6 +235,17 @@
       "resources/js/app.js"
     ]
   },
+  "resources/js/Pages/Cuentas/CuentaCorriente.vue": {
+    "file": "assets/CuentaCorriente.js",
+    "name": "CuentaCorriente",
+    "src": "resources/js/Pages/Cuentas/CuentaCorriente.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js",
+      "_RangoFechas.js"
+    ]
+  },
   "resources/js/Pages/Dashboard.vue": {
     "file": "assets/Dashboard.js",
     "name": "Dashboard",
@@ -704,6 +715,7 @@
       "resources/js/Pages/Contabilidad/Asientos/components/GrillaFondos.vue",
       "resources/js/Pages/Contabilidad/Asientos/components/TablaAsientos.vue",
       "resources/js/Pages/Contabilidad/Asientos/components/TotalesPorMoneda.vue",
+      "resources/js/Pages/Cuentas/CuentaCorriente.vue",
       "resources/js/Pages/Dashboard.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/CargaMultiple.vue",
       "resources/js/Pages/Documentos/FacturasProveedor/DteChile.vue",
