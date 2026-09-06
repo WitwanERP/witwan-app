@@ -50,6 +50,17 @@ function buscar() {
 function limpiar() {
   router.get(props.config.baseUrl, {}, { preserveState: false })
 }
+// Acción POST de una fila: { label, href, method: 'post', prompt?, campo?, datos?, confirmar? }.
+function ejecutar(a) {
+  let datos = { ...(a.datos || {}) }
+  if (a.prompt) {
+    const v = window.prompt(a.prompt, '')
+    if (v === null || v.trim() === '') return
+    datos[a.campo || 'valor'] = v.trim()
+  }
+  if (a.confirmar && !window.confirm(a.confirmar)) return
+  router.post(a.href, datos, { preserveScroll: true })
+}
 const urlExport = computed(() => {
   const q = new URLSearchParams()
   for (const [k, v] of Object.entries(params())) {
@@ -169,7 +180,10 @@ function esLink(col, fila) {
               <td v-for="col in config.columnas" :key="col.campo" class="px-3 py-1.5 text-gray-700 align-top" :class="[col.tipo === 'num' ? 'text-right whitespace-nowrap tabular-nums' : '', col.tipo === 'pre' ? 'whitespace-pre-line' : '']">
                 <template v-if="col.tipo === 'acciones'">
                   <span class="flex flex-wrap gap-x-2 gap-y-0.5 whitespace-nowrap">
-                    <a v-for="a in fila[col.campo] || []" :key="a.label" :href="a.href" :target="a.target || '_blank'" class="text-xs font-medium hover:underline" :class="a.peligro ? 'text-red-600' : 'text-blue-600'">{{ a.label }}</a>
+                    <template v-for="a in fila[col.campo] || []" :key="a.label">
+                      <button v-if="a.method === 'post'" type="button" class="text-xs font-medium hover:underline" :class="a.peligro ? 'text-red-600' : 'text-blue-600'" @click="ejecutar(a)">{{ a.label }}</button>
+                      <a v-else :href="a.href" :target="a.target || '_blank'" class="text-xs font-medium hover:underline" :class="a.peligro ? 'text-red-600' : 'text-blue-600'">{{ a.label }}</a>
+                    </template>
                   </span>
                 </template>
                 <a v-else-if="esLink(col, fila)" :href="fila[col.link]" class="text-blue-600 hover:underline" target="_blank">{{ mostrar(col, fila[col.campo]) }}</a>

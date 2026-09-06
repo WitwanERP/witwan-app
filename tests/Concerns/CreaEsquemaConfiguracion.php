@@ -26,7 +26,7 @@ trait CreaEsquemaConfiguracion
         'cotizacion', 'iva', 'modoivaventa', 'producto', 'sysconfig', 'rel_usuariomodelocomision', 'modelocomision',
         'modelofee', 'region', 'cliente', 'rel_usuariousuario', 'sistema', 'condicioniva', 'idioma', 'servicio', 'negocio', 'pnraereo', 'aerolinea', 'servicio_extra', 'reserva_extra',
         'facturaproveedor', 'movimiento', 'factura', 'rel_serviciofactura', 'reservain', 'rel_facturaproveedorocupacion',
-        'rel_ordenadminocupacion', 'ordenadmin', 'rel_facturarecibo', 'rel_filefactura', 'recibo', 'rel_filerecibo', 'servicio_nomina', 'vigencia', 'notacredito', 'notadebito', 'ctz', 'servicioctz', 'imputacion', 'precompra', 'canje', 'sysnotification', 'pasajero', 'cliente_extra', 'pasajero_extra', 'rel_clientetag', 'rel_pasajerotag', 'rel_clientesistema', 'tarifario', 'tipofactura', 'tipoclavefiscal', 'rel_servicio', 'filestatus',
+        'rel_ordenadminocupacion', 'ordenadmin', 'rel_facturarecibo', 'rel_filefactura', 'recibo', 'rel_filerecibo', 'servicio_nomina', 'vigencia', 'notacredito', 'notadebito', 'ctz', 'servicioctz', 'imputacion', 'precompra', 'canje', 'sysnotification', 'pasajero', 'cliente_extra', 'pasajero_extra', 'rel_clientetag', 'rel_pasajerotag', 'rel_clientesistema', 'tarifario', 'tipofactura', 'tipoclavefiscal', 'creditoextra', 'rel_servicio', 'filestatus',
     ];
 
     protected function crearEsquemaConfiguracion(): void
@@ -218,6 +218,14 @@ trait CreaEsquemaConfiguracion
                 $t->text('extra_valor');
             });
         }
+        Schema::create('creditoextra', function (Blueprint $t) {
+            $t->increments('creditoextra_id');
+            $t->date('creditoextra_fecha');
+            $t->integer('fk_cliente_id');
+            $t->integer('fk_usuario_id')->default(0);
+            $t->decimal('creditoextra_monto', 15, 2)->default(0);
+            $t->dateTime('regdate')->nullable();
+        });
         Schema::create('rel_clientetag', function (Blueprint $t) {
             $t->integer('fk_cliente_id');
             $t->integer('fk_tag_id');
@@ -503,6 +511,7 @@ trait CreaEsquemaConfiguracion
         Schema::create('rel_serviciofactura', function (Blueprint $t) {
             $t->integer('fk_servicio_id');
             $t->integer('fk_factura_id');
+            $t->integer('tipodocumento')->default(1);
         });
         Schema::create('reservain', function (Blueprint $t) {
             $t->integer('fk_reserva_id');
@@ -639,6 +648,7 @@ trait CreaEsquemaConfiguracion
             $t->string('tipoproducto_nombre', 100)->default('');
             $t->string('submodulo_id', 3)->default('');
             $t->string('tipoproducto_tipo', 1)->default('S');
+            $t->integer('fk_plancuenta_id')->default(0);
         });
 
         Schema::create('plancuenta', function (Blueprint $t) {

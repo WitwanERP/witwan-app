@@ -170,6 +170,9 @@ return [
         'administracion/reportes/reportegastosreserva' => '/app/admin/reportes/gastos-reserva',
         'administracion/reportes/opnacionales' => '/app/admin/reportes/op-nacionales',
         'dashboard/buscarpax' => '/app/reservas-buscar',
+        'reportes/controlcredito' => '/app/admin/reportes/control-credito',
+        'dashboard/afacturarmt' => '/app/admin/reportes/pendientes-factura',
+        'dashboard/facturadosmt' => '/app/admin/reportes/facturados',
         'administracion/escritorios' => '/app/config/escritorios',
 
         // Productos / vigencias / tarifarios / cupos: las pantallas Inertia ya
