@@ -81,7 +81,7 @@ Tests: cada lote tiene su Feature test sobre el esquema real en MySQL (`tests/Co
 Listado tomado de `brain.seccion` para la licencia (script en el historial de esta migración). Se agrupan por tipo de trabajo pendiente:
 
 - **Flujos transaccionales pesados** (emiten comprobantes o mueven dinero): `administracion/cobranzas`, `administracion/pagos` (pagos a procesar), `administracion/cartera/{lista,pagodirecto}`, `administracion/ordenservicio/acuenta`, `administracion/caja/arqueo`, `administracion/conciliacion/conciliar`, `administracion/banco/` (conciliación automática), `administracion/autorizar` (e-voucher), `administracion/factura/prebcn`.
-- **Contabilidad**: `administracion/libros/cierrecontable`, `administracion/Balance` (8 columnas), `administracion/ctacliente/analitico` (conciliación con `ctaaplicada`/`nubeanalitico`), `administracion/cuentas/micuenta`, `administracion/Balance` (8 columnas), `administracion/ivacredito`, `administracion/ctacliente/analitico`, `administracion/cuentas/micuenta`.
+- **Contabilidad**: `administracion/libros/cierrecontable`, `administracion/Balance` (8 columnas), `administracion/ctacliente/analitico` (conciliación con `ctaaplicada`/`nubeanalitico`), `administracion/cuentas/micuenta`.
 - **Rentabilidad**: `administracion/renta/{mirenta,rentabilidad}`, `administracion/rentamt/{payroll,mayorista,desestimados,crearasiento}`.
 - **Reportes grandes** (dependen de `reserva_model` del CI, 500–1500 líneas cada uno): `administracion/reportes/{porboletear,cliente,proveedor,reportegastosingreso}`.
 - **Consolidador / BSP**: `consolidador/*`, `administracion/bsp/*`, `administracion/Bspmt/link`.
