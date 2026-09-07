@@ -693,6 +693,7 @@
     "imports": [
       "resources/js/app.js",
       "_formato.js",
+      "resources/js/Pages/Reservas/Generador/PanelOfertas.vue",
       "_useGenerador.js",
       "_envio.js"
     ]
@@ -720,6 +721,7 @@
       "_formato.js",
       "resources/js/Pages/Reservas/Generador/DetalleResultado.vue",
       "_useGenerador.js",
+      "resources/js/Pages/Reservas/Generador/PanelOfertas.vue",
       "_envio.js"
     ]
   },
@@ -747,6 +749,18 @@
       "_envio.js"
     ]
   },
+  "resources/js/Pages/Reservas/Generador/PanelOfertas.vue": {
+    "file": "assets/PanelOfertas.js",
+    "name": "PanelOfertas",
+    "src": "resources/js/Pages/Reservas/Generador/PanelOfertas.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_formato.js",
+      "_useGenerador.js",
+      "resources/js/app.js",
+      "_envio.js"
+    ]
+  },
   "resources/js/Pages/Reservas/Generador/PasoBuscar.vue": {
     "file": "assets/PasoBuscar.js",
     "name": "PasoBuscar",
@@ -761,7 +775,8 @@
       "resources/js/Pages/Reservas/Generador/CamposHabitaciones.vue",
       "_envio.js",
       "_formato.js",
-      "resources/js/Pages/Reservas/Generador/DetalleResultado.vue"
+      "resources/js/Pages/Reservas/Generador/DetalleResultado.vue",
+      "resources/js/Pages/Reservas/Generador/PanelOfertas.vue"
     ]
   },
   "resources/js/Pages/Reservas/Generador/PasoContexto.vue": {
@@ -837,6 +852,7 @@
       "resources/js/Pages/Reservas/Generador/CamposHabitaciones.vue",
       "resources/js/Pages/Reservas/Generador/GrillaResultados.vue",
       "resources/js/Pages/Reservas/Generador/DetalleResultado.vue",
+      "resources/js/Pages/Reservas/Generador/PanelOfertas.vue",
       "resources/js/Pages/Reservas/Generador/LineaCarrito.vue",
       "resources/js/Pages/Reservas/Generador/Nomina.vue"
     ]
@@ -966,6 +982,7 @@
       "resources/js/Pages/Reservas/Generador/GrillaResultados.vue",
       "resources/js/Pages/Reservas/Generador/LineaCarrito.vue",
       "resources/js/Pages/Reservas/Generador/Nomina.vue",
+      "resources/js/Pages/Reservas/Generador/PanelOfertas.vue",
       "resources/js/Pages/Reservas/Generador/PasoBuscar.vue",
       "resources/js/Pages/Reservas/Generador/PasoContexto.vue",
       "resources/js/Pages/Reservas/Generador/ResumenCliente.vue",

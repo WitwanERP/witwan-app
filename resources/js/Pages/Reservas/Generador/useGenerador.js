@@ -68,6 +68,7 @@ export function crearGenerador(props) {
     errorCliente: '',
     busqueda: busquedaInicial(),
     seleccion: null,
+    ofertas: { producto_id: 0, corriendo: false, datos: null, error: '' },
     carrito: [],
     pasajeros: [],
     previa: { errores: {}, advertencias: [], corriendo: false, hecha: false },
@@ -291,6 +292,31 @@ export function crearGenerador(props) {
   }
   const totalSeleccion = (fila, elegidas) => fila.habitaciones.reduce((acc, h, i) => acc + (Number(opcionDe(h, elegidas[i])?.total) || 0), 0)
 
+  // ---- Ofertas sobre el producto abierto ----
+  /** Alternativas más baratas de la misma categoría (estrellas) en la grilla cargada, sin ir al servidor. */
+  const alternativas = (fila) =>
+    estado.busqueda.resultados
+      .filter((f) => f.producto_id !== fila.producto_id && f.disponibilidad !== 'SO' && (f.estrellas ?? null) === (fila.estrellas ?? null) && f.mejor_total > 0 && f.mejor_total < fila.mejor_total)
+      .slice(0, 5)
+  async function pedirOfertas(fila, total) {
+    const elegidas = estado.seleccion?.producto_id === fila.producto_id ? estado.seleccion.elegidas : fila.habitaciones.map((h) => h.mejor)
+    estado.ofertas = { producto_id: fila.producto_id, corriendo: true, datos: null, error: '' }
+    try {
+      estado.ofertas.datos = await postJson(`${props.baseUrl}/nueva/ofertas`, {
+        ...cuerpoBusqueda(),
+        producto_id: fila.producto_id,
+        ciudad_id: fila.ciudad?.id || 0,
+        elegidas: elegidas.map((e) => e || { categoria: 0, regimen: 0 }),
+        total_elegido: Number(total) || fila.mejor_total,
+        moneda: fila.moneda,
+      })
+    } catch (e) {
+      estado.ofertas.error = e?.data?.errors ? Object.values(e.data.errors).flat().join(' ') : e?.data?.message || 'No se pudieron consultar las ofertas.'
+    } finally {
+      estado.ofertas.corriendo = false
+    }
+  }
+
   /**
    * Una línea de carrito por habitación con la opción elegida (categoría/régimen).
    * Mapa fila → servicio como reservar() 2447-2523: costo sin IVA en moneda de
@@ -512,6 +538,8 @@ export function crearGenerador(props) {
     seleccionar,
     opcionDe,
     totalSeleccion,
+    alternativas,
+    pedirOfertas,
     agregarDesdeResultado,
     contextoListo,
     faltantesContexto,

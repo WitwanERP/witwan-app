@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web\Reservas;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Reservas\BusquedaRequest;
 use App\Http\Requests\Reservas\NuevaReservaRequest;
+use App\Http\Requests\Reservas\OfertasRequest;
 use App\Services\CatalogosService;
 use App\Services\CotizacionService;
 use App\Services\Pricing\Tarifador;
@@ -12,6 +13,7 @@ use App\Services\Reservas\BusquedaProductosService;
 use App\Services\Reservas\ContextoVentaService;
 use App\Services\Reservas\EscritorioService;
 use App\Services\Reservas\GeneradorReservaService;
+use App\Services\Reservas\OfertasService;
 use App\Services\Reservas\ReservaInvalidaException;
 use App\Support\Licencia;
 use Illuminate\Http\JsonResponse;
@@ -168,6 +170,26 @@ class NuevaReservaController extends Controller
         }
 
         return response()->json($this->busqueda->buscar((string) $p['tipo'], $p, $ctx) + ['contexto' => ['tarifario_id' => $ctx['tarifario_id'], 'residente' => $ctx['residente']]]);
+    }
+
+    /**
+     * Ofertas sobre el producto que el vendedor está mirando: fechas cercanas más
+     * baratas, promociones vigentes en el destino y qué pagó el cliente por lo mismo.
+     */
+    public function ofertas(OfertasRequest $request, string $area, OfertasService $ofertas): JsonResponse
+    {
+        $p = $request->validated();
+        $ctx = $this->busqueda->contexto(Auth::user(), $this->idsistema($area), (int) $p['cliente_id'], (string) ($p['residente'] ?? 'N'));
+        $que = (array) ($p['que'] ?? ['fechas', 'promociones', 'historial']);
+        $tipo = (string) $p['tipo'];
+        $ciudad = (int) ($p['ciudad_id'] ?? $p['ciudad'] ?? $p['origen'] ?? 0);
+        $total = (float) ($p['total_elegido'] ?? 0);
+
+        return response()->json([
+            'fechas_cercanas' => in_array('fechas', $que, true) ? $ofertas->fechasCercanas($tipo, $p, $ctx, $total) : [],
+            'promociones' => in_array('promociones', $que, true) ? $ofertas->promociones($tipo, $ciudad, (string) $p['from'], $p['to'] ?? null, $ctx) : [],
+            'historial' => in_array('historial', $que, true) ? $ofertas->historial((int) $p['cliente_id'], (int) $p['producto_id'], $tipo, $ciudad, $total, (string) ($p['moneda'] ?? '')) : null,
+        ]);
     }
 
     /**

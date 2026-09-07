@@ -1,6 +1,7 @@
 <script setup>
 import { computed, reactive } from 'vue'
 import { formatearFecha, formatearImporte } from '@/lib/formato'
+import PanelOfertas from './PanelOfertas.vue'
 import { inputSm, useGenerador } from './useGenerador'
 
 /**
@@ -70,6 +71,8 @@ const paxTexto = (h) => [h.pax.adultos ? `${h.pax.adultos} adulto${h.pax.adultos
       <div><label class="block text-xs text-gray-600 mb-1">Hora</label><input v-model="extras.hora_pickup" type="time" :class="inputSm" /></div>
       <div class="md:col-span-2"><label class="block text-xs text-gray-600 mb-1">Drop-off</label><input v-model="extras.dropoff" type="text" maxlength="200" :class="inputSm" /></div>
     </div>
+
+    <PanelOfertas :fila="fila" :total="total" />
 
     <div class="flex items-start justify-between gap-4 flex-wrap">
       <p v-if="fila.politica_cancelacion" class="text-xs text-gray-600 max-w-2xl"><b>Cancelación:</b> {{ fila.politica_cancelacion }}</p>
