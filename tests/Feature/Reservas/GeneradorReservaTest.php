@@ -52,18 +52,63 @@ class GeneradorReservaTest extends TestCase
         ];
     }
 
-    public function test_formulario_carga_clientes_del_area_tipos_y_fecha_minima(): void
+    public function test_formulario_carga_props_livianas_tipos_cotizaciones_y_fecha_minima(): void
     {
         $this->get('/app/reservas/mayorista/nueva')->assertOk()->assertInertia(fn (Assert $p) => $p
             ->component('Reservas/Nueva')
             ->where('idsistema', 2)
             ->where('fechaMinima', now()->toDateString())
             ->where('statusFile', 'CO')
-            ->has('opciones.clientes', 2)
-            ->where('opciones.clientes.1.label', 'CON CREDITO (100.000)')
+            ->where('esInterno', true)
+            ->where('monedaBasica', 'ARS')
+            ->where('cotizaciones.USD', 1000)
             ->has('opciones.tipos', 2)
+            ->missing('opciones.clientes')
             ->where('puedeForzarCredito', true)
         );
+    }
+
+    public function test_autocomplete_de_clientes_respeta_el_area_y_el_contexto_trae_tarifario_credito_e_historial(): void
+    {
+        DB::table('tarifario')->insert(['tarifario_id' => 1, 'tarifario_nombre' => 'Agencias', 'fk_sistema_id' => 2, 'fk_moneda_id' => 'USD']);
+        DB::table('ciudad')->insert(['ciudad_id' => 9, 'ciudad_nombre' => 'Bariloche']);
+        DB::table('reserva')->where('reserva_id', 21)->update(['fecha_alta' => now()->subDays(3)->toDateString(), 'total' => 500, 'fk_moneda_id' => 'USD', 'titular_apellido' => 'GOMEZ', 'titular_nombre' => 'LUIS', 'fk_filestatus_id' => 'CO']);
+        DB::table('servicio')->insert(['fk_reserva_id' => 21, 'fk_tipoproducto_id' => 'HTL', 'fk_ciudad_id' => 9, 'status' => 'CO', 'vigencia_ini' => '2026-10-01', 'vigencia_fin' => '2026-10-03']);
+
+        $this->getJson('/app/reservas/mayorista/nueva/clientes?q=a')->assertOk()
+            ->assertJsonCount(1)->assertJsonPath('0.id', 3)->assertJsonPath('0.label', 'AGENCIA SOL');
+        $this->getJson('/app/reservas/mayorista/nueva/clientes?q=OTRA')->assertOk()->assertJsonCount(0, null);
+        $this->getJson('/app/reservas/mayorista/nueva/clientes?q=')->assertOk()->assertExactJson([]);
+
+        $this->getJson('/app/reservas/mayorista/nueva/cliente/3')->assertOk()
+            ->assertJsonPath('cliente.nombre', 'AGENCIA SOL')
+            ->assertJsonPath('cliente.vendedor', 7)
+            ->assertJsonPath('tarifario.id', 1)
+            ->assertJsonPath('tarifario.nombre', 'Agencias')
+            ->assertJsonPath('credito.habilitado', false)
+            ->assertJsonPath('credito.utilizado', null)
+            ->assertJsonPath('historial.reservas', 1)
+            ->assertJsonPath('historial.ultimas.0.codigo', 'MA-1500')
+            ->assertJsonPath('historial.ultimas.0.destinos.0', 'Bariloche')
+            ->assertJsonPath('historial.destinos_top.0.nombre', 'Bariloche')
+            ->assertJsonPath('historial.tipos_top.0.nombre', 'Hotel')
+            ->assertJsonPath('historial.gasto_promedio.valor', 500000)
+            ->assertJsonPath('historial.gasto_promedio.moneda', 'ARS');
+
+        // Cliente con control de crédito: lo utilizado se calcula (0 sin facturas ni files).
+        $this->getJson('/app/reservas/mayorista/nueva/cliente/4')->assertOk()
+            ->assertJsonPath('credito.habilitado', true)->assertJsonPath('credito.utilizado', 0)->assertJsonPath('credito.disponible', 100000)->assertJsonPath('tarifario.id', 1);
+
+        // Cliente de otra área: 404.
+        $this->getJson('/app/reservas/mayorista/nueva/cliente/5')->assertNotFound();
+    }
+
+    public function test_autocompletes_de_proveedores_y_ciudades(): void
+    {
+        DB::table('ciudad')->insert([['ciudad_id' => 9, 'ciudad_nombre' => 'Bariloche', 'ciudad_activo' => 1], ['ciudad_id' => 10, 'ciudad_nombre' => 'Barcelona', 'ciudad_activo' => 0]]);
+        $this->getJson('/app/reservas/mayorista/nueva/proveedores?q=sol')->assertOk()->assertJsonCount(1)->assertJsonPath('0.label', 'Hotel Sol');
+        $this->getJson('/app/reservas/mayorista/nueva/proveedores?q=baja')->assertOk()->assertJsonCount(0, null);
+        $this->getJson('/app/reservas/mayorista/nueva/ciudades?q=bar')->assertOk()->assertJsonCount(1)->assertJsonPath('0.id', 9);
     }
 
     public function test_crea_reserva_con_codigo_siguiente_servicios_nomina_totales_historial_y_auditoria(): void

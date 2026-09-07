@@ -1,215 +1,44 @@
 <script setup>
-import { computed, reactive, ref, watch } from 'vue'
-import { Link, useForm } from '@inertiajs/vue3'
+import { Link } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
-import FilasRepetibles from '@/Components/FilasRepetibles.vue'
-import { useEnvio } from '@/lib/envio'
+import Stepper from './Generador/Stepper.vue'
+import PasoContexto from './Generador/PasoContexto.vue'
+import PasoBuscar from './Generador/PasoBuscar.vue'
+import Carrito from './Generador/Carrito.vue'
+import Confirmacion from './Generador/Confirmacion.vue'
+import { crearGenerador } from './Generador/useGenerador'
 
 defineOptions({ layout: AppLayout })
 
+/**
+ * Generador de reservas v2: asistente de venta en cuatro pasos.
+ * El estado vive en useGenerador (provide/inject) y se persiste por área en
+ * sessionStorage; el POST final es el contrato de GeneradorReservaService.
+ */
 const props = defineProps({
   area: { type: String, required: true },
   baseUrl: { type: String, required: true },
   idsistema: { type: Number, required: true },
   fechaMinima: { type: String, required: true },
   monedaDefault: { type: String, default: 'USD' },
+  monedaBasica: { type: String, default: 'ARS' },
+  cotizaciones: { type: Object, default: () => ({}) },
   statusFile: { type: String, default: 'CO' },
+  esInterno: { type: Boolean, default: false },
   puedeForzarCredito: { type: Boolean, default: false },
-  // { clientes, proveedores, tipos, monedas, ciudades, paises, vendedores, escritorio, tiposPax }
+  // [{ tipo, nombre, campos, requiere, pickup }] — tipos de producto con tarifas en el área.
+  pestanas: { type: Array, default: () => [] },
+  // { tipos, monedas, vendedores, escritorio, tiposPax }
   opciones: { type: Object, required: true },
 })
 
-const inputCls = 'w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
-const nuevoServicio = () => ({
-  fk_tipoproducto_id: '',
-  servicio_nombre: '',
-  fk_proveedor_id: 0,
-  fk_ciudad_id: 0,
-  vigencia_ini: props.fechaMinima,
-  vigencia_fin: props.fechaMinima,
-  adultos: 2,
-  menores: 0,
-  infante: 0,
-  juniors: 0,
-  fk_moneda_id: props.monedaDefault,
-  moneda_costo: props.monedaDefault,
-  total: 0,
-  costo: 0,
-  iva: 0,
-  iva_costo: 0,
-  impuestos: 0,
-  status: 'CO',
-  nro_confirmacion: '',
-  comentarios: '',
-  vencimiento_proveedor: '',
-  pasajeros: [],
-  fk_producto_id: 0,
-  fk_tarifacategoria_id: 0,
-  fk_regimen_id: 0,
-  _abierto: true,
-  _cotizador: false,
-  _cot: { producto_id: 0, menores: '', residente: 'N', corriendo: false, resultado: null, error: '' },
-})
-
-const form = useForm({
-  fk_cliente_id: 0,
-  titular_nombre: '',
-  titular_apellido: '',
-  titular_email: '',
-  titular_celular: '',
-  fk_moneda_id: props.monedaDefault,
-  agente: 0,
-  observaciones: '',
-  fecha_vencimiento: '',
-  forzar_credito: 0,
-  servicios: [nuevoServicio()],
-})
-
-const cliente = computed(() => props.opciones.clientes.find((c) => c.value === Number(form.fk_cliente_id)) || null)
-watch(
-  () => form.fk_cliente_id,
-  () => {
-    if (cliente.value && !form.agente && cliente.value.vendedor) form.agente = cliente.value.vendedor
-  },
-)
-
-const totales = computed(() => {
-  const t = {}
-  for (const s of form.servicios) {
-    const m = s.fk_moneda_id || '?'
-    t[m] = t[m] || { total: 0, costo: 0 }
-    t[m].total += Number(s.total) || 0
-    t[m].costo += (Number(s.costo) || 0) + (Number(s.iva_costo) || 0)
-  }
-  return t
-})
-const fmt = (n) => Number(n || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-
-function agregarServicio() {
-  form.servicios.push(nuevoServicio())
-}
-function duplicarServicio(i) {
-  const c = JSON.parse(JSON.stringify(form.servicios[i]))
-  c.nro_confirmacion = ''
-  form.servicios.splice(i + 1, 0, c)
-}
-function quitarServicio(i) {
-  if (form.servicios.length === 1) return
-  form.servicios.splice(i, 1)
-}
-function copiarTitular(i) {
-  const s = form.servicios[i]
-  if (!s.pasajeros.some((p) => p.apellido === form.titular_apellido && p.nombre === form.titular_nombre)) {
-    s.pasajeros.push({ nombre: form.titular_nombre, apellido: form.titular_apellido, documento: '', nacionalidad: '', tipopax: 'ADT', nacimiento: '' })
-  }
-}
-const colPax = [
-  { campo: 'apellido', label: 'Apellido' },
-  { campo: 'nombre', label: 'Nombre' },
-  { campo: 'tipopax', label: 'Tipo', tipo: 'select', opciones: props.opciones.tiposPax, ancho: '110px' },
-  { campo: 'documento', label: 'Documento', ancho: '140px' },
-  { campo: 'nacionalidad', label: 'Nacionalidad', ancho: '130px' },
-  { campo: 'nacimiento', label: 'Nacimiento', tipo: 'date', ancho: '150px' },
-]
-
-// Validación previa sin crear (misma lógica que el POST) para mostrar errores y avisos antes de confirmar.
-const previa = reactive({ errores: {}, advertencias: [], corriendo: false, hecha: false })
-async function validarPrevia() {
-  previa.corriendo = true
-  try {
-    const res = await fetch(`${props.baseUrl}/nueva/validar`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-XSRF-TOKEN': decodeURIComponent((document.cookie.match(/XSRF-TOKEN=([^;]+)/) || [])[1] || '') },
-      body: JSON.stringify(form.data()),
-    })
-    const data = res.ok ? await res.json() : { errores: { general: 'No se pudo validar.' }, advertencias: [] }
-    previa.errores = data.errores || {}
-    previa.advertencias = data.advertencias || []
-    previa.hecha = true
-  } finally {
-    previa.corriendo = false
-  }
-}
-const erroresTodos = computed(() => ({ ...previa.errores, ...form.errors }))
-const listaErrores = computed(() => Object.values(erroresTodos.value))
-
-const { enviando, enviar } = useEnvio()
-function guardar() {
-  if (!window.confirm(`¿Crear la reserva para ${form.titular_apellido}, ${form.titular_nombre} con ${form.servicios.length} servicio(s)?`)) return
-  enviar((o) => form.post(`${props.baseUrl}/nueva`, o), { preserveScroll: true })
-}
-const abierto = ref(true)
-
-// ---- Cotizador de productos propios (Tarifador) por servicio.
-const xsrf = () => decodeURIComponent((document.cookie.match(/XSRF-TOKEN=([^;]+)/) || [])[1] || '')
-const productosPara = (s) => props.opciones.productos.filter((p) => (!s.fk_tipoproducto_id || p.tipo === s.fk_tipoproducto_id) && (!s.fk_proveedor_id || p.proveedor === Number(s.fk_proveedor_id)))
-async function cotizar(s) {
-  const c = s._cot
-  if (!c.producto_id) return
-  c.corriendo = true
-  c.error = ''
-  c.resultado = null
-  try {
-    const res = await fetch(`${props.baseUrl}/nueva/cotizar`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-XSRF-TOKEN': xsrf() },
-      body: JSON.stringify({
-        producto_id: c.producto_id,
-        fecha_ini: s.vigencia_ini,
-        fecha_fin: s.vigencia_fin || null,
-        adultos: Number(s.adultos) || 1,
-        menores: String(c.menores || '').split(',').map((x) => x.trim()).filter((x) => x !== '').map(Number),
-        residente: c.residente,
-        cliente_id: Number(form.fk_cliente_id) || 0,
-      }),
-    })
-    const data = await res.json()
-    if (!res.ok) {
-      c.error = data.message || 'No se pudo cotizar.'
-      return
-    }
-    c.resultado = data
-    if (!data.ok) c.error = (data.motivos || []).join(' ') || 'Sin tarifa para esas fechas.'
-  } catch (e) {
-    c.error = 'No se pudo cotizar.'
-  } finally {
-    c.corriendo = false
-  }
-}
-const opcionesCotizadas = (s) => {
-  const r = s._cot.resultado?.resultado || {}
-  const out = []
-  for (const cat of Object.keys(r)) for (const reg of Object.keys(r[cat])) out.push(r[cat][reg])
-  return out.sort((a, b) => a.total - b.total)
-}
-function aplicarCotizacion(s, item) {
-  const prod = props.opciones.productos.find((p) => p.value === Number(s._cot.producto_id))
-  const r = s._cot.resultado
-  s.fk_producto_id = Number(s._cot.producto_id)
-  s.fk_tarifacategoria_id = Number(item.categoria) || 0
-  s.fk_regimen_id = Number(item.regimen) || 0
-  s.servicio_nombre = `${r.producto.nombre}${item.nombre && item.nombre !== String(item.categoria) ? ' - ' + item.nombre : ''}`
-  if (prod) {
-    if (!s.fk_tipoproducto_id) s.fk_tipoproducto_id = prod.tipo
-    if (prod.proveedor) s.fk_proveedor_id = prod.proveedor
-  }
-  s.fk_moneda_id = item.moneda || s.fk_moneda_id
-  s.moneda_costo = item.moneda_costo || s.moneda_costo
-  s.total = Number(item.total) || 0
-  s.iva = Number(item.iva) || 0
-  s.impuestos = Number(item.impuestos) || 0
-  s.costo = Number(item.costoenmoneda ?? item.costo) || 0
-  s.iva_costo = Number(item.ivacosto) || 0
-  if (item.vencepago) s.vencimiento_proveedor = item.vencepago
-  // Sin cupo o sold out: queda a confirmar (como el carrito del CI marca RQ cuando no hay disponibilidad).
-  s.status = Number(item.soldout) === 1 || Number(item.cupo) === 0 ? 'RQ' : 'CO'
-  s._cotizador = false
-}
+const g = crearGenerador(props)
+const { estado } = g
 </script>
 
 <template>
   <div>
-    <nav class="flex items-center gap-2 text-sm text-gray-500 mb-4">
+    <nav class="flex items-center gap-2 text-sm text-gray-500 mb-3">
       <Link href="/app" class="hover:text-gray-700">Inicio</Link>
       <span>/</span>
       <Link :href="baseUrl" class="hover:text-gray-700">Reservas {{ area }}</Link>
@@ -219,150 +48,21 @@ function aplicarCotizacion(s, item) {
 
     <div class="mb-4 flex items-start justify-between gap-4 flex-wrap">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">Nueva reserva ({{ area }})</h1>
-        <p class="text-gray-500 text-sm">Alta manual de file y servicios. El código, las cotizaciones y los totales los calcula el servidor al confirmar. Status inicial del file: <b>{{ statusFile }}</b>.</p>
+        <h1 class="text-2xl font-bold text-gray-900">Nueva reserva <span class="text-gray-400 font-normal text-lg">({{ area }})</span></h1>
+        <p class="text-gray-500 text-sm">Cliente → productos → carrito → confirmar. El código, las cotizaciones y los totales los calcula el servidor al crear.</p>
       </div>
-      <div class="flex items-center gap-2">
-        <button type="button" class="btn btn-secondary" :disabled="previa.corriendo" @click="validarPrevia">{{ previa.corriendo ? 'Validando…' : 'Validar' }}</button>
-        <button type="button" class="btn btn-primary" :disabled="enviando" @click="guardar">{{ enviando ? 'Creando…' : 'Crear reserva' }}</button>
-        <Link :href="baseUrl" class="btn btn-secondary">Cancelar</Link>
+      <div class="flex items-center gap-2 text-sm">
+        <span v-if="estado.restaurado" class="text-xs text-amber-700">Se restauró una venta en curso.</span>
+        <button type="button" class="text-xs text-gray-500 hover:text-red-600 hover:underline" @click="g.reiniciar()">Empezar de nuevo</button>
+        <Link :href="baseUrl" class="btn btn-secondary btn-sm">Cancelar</Link>
       </div>
     </div>
 
-    <div v-if="listaErrores.length" class="rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800 mb-4">
-      <b>No se puede crear:</b>
-      <ul class="list-disc ml-5 mt-1"><li v-for="(e, k) in listaErrores" :key="k">{{ e }}</li></ul>
-      <label v-if="erroresTodos.credito && puedeForzarCredito" class="flex items-center gap-2 mt-2 font-medium"><input type="checkbox" :true-value="1" :false-value="0" v-model="form.forzar_credito" /> Crear igual excediendo el límite de crédito (queda auditado)</label>
-    </div>
-    <div v-if="previa.advertencias.length" class="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 mb-4">
-      <b>Avisos:</b>
-      <ul class="list-disc ml-5 mt-1"><li v-for="(a, k) in previa.advertencias" :key="k">{{ a }}</li></ul>
-    </div>
-    <div v-else-if="previa.hecha && !listaErrores.length" class="rounded-md border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-800 mb-4">Validación correcta: se puede crear la reserva.</div>
+    <Stepper />
 
-    <section class="card mb-4">
-      <div class="card-header"><h2 class="card-title">File</h2></div>
-      <div class="card-body grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div class="md:col-span-2">
-          <label class="block text-sm mb-1 font-bold">Cliente</label>
-          <select v-model="form.fk_cliente_id" :class="inputCls">
-            <option :value="0">Seleccione un cliente</option>
-            <option v-for="c in opciones.clientes" :key="c.value" :value="c.value">{{ c.label }}</option>
-          </select>
-          <p v-if="cliente && cliente.limite > 0" class="text-xs text-gray-500 mt-1">Límite de crédito: {{ fmt(cliente.limite) }}{{ cliente.credito_habilitado ? ' (control activo)' : ' (sin control)' }}</p>
-        </div>
-        <div>
-          <label class="block text-sm mb-1 font-bold">Moneda del file</label>
-          <select v-model="form.fk_moneda_id" :class="inputCls"><option v-for="m in opciones.monedas" :key="m.value" :value="m.value">{{ m.label }}</option></select>
-        </div>
-        <div>
-          <label class="block text-sm mb-1">{{ opciones.escritorio.length ? 'Escritorio' : 'Vendedor' }}</label>
-          <select v-model="form.agente" :class="inputCls">
-            <option :value="0">(yo / vendedor del cliente)</option>
-            <option v-for="u in opciones.escritorio.length ? opciones.escritorio : opciones.vendedores" :key="u.value" :value="u.value">{{ u.label }}</option>
-          </select>
-        </div>
-        <div><label class="block text-sm mb-1 font-bold">Apellido del titular</label><input v-model="form.titular_apellido" type="text" maxlength="150" :class="inputCls" /></div>
-        <div><label class="block text-sm mb-1 font-bold">Nombre del titular</label><input v-model="form.titular_nombre" type="text" maxlength="150" :class="inputCls" /></div>
-        <div><label class="block text-sm mb-1">Email del titular</label><input v-model="form.titular_email" type="email" maxlength="50" :class="inputCls" /></div>
-        <div><label class="block text-sm mb-1">Celular del titular</label><input v-model="form.titular_celular" type="text" maxlength="50" :class="inputCls" /></div>
-        <div><label class="block text-sm mb-1">Vencimiento del file</label><input v-model="form.fecha_vencimiento" type="date" :class="inputCls" /><span class="text-xs text-gray-400">Vacío = hoy (como el legacy).</span></div>
-        <div class="md:col-span-3"><label class="block text-sm mb-1">Observaciones</label><textarea v-model="form.observaciones" rows="2" :class="inputCls"></textarea></div>
-      </div>
-    </section>
-
-    <section v-for="(s, i) in form.servicios" :key="i" class="card mb-4">
-      <div class="card-header flex items-center justify-between">
-        <h2 class="card-title">Servicio {{ i + 1 }} <span class="text-gray-400 font-normal text-sm">{{ s.servicio_nombre || '(sin nombre)' }}</span></h2>
-        <div class="flex gap-3 text-xs">
-          <button type="button" class="text-blue-600 hover:underline" @click="s._abierto = !s._abierto">{{ s._abierto ? 'Contraer' : 'Expandir' }}</button>
-          <button type="button" class="text-blue-600 hover:underline" @click="duplicarServicio(i)">Duplicar</button>
-          <button type="button" class="text-red-600 hover:underline" :disabled="form.servicios.length === 1" @click="quitarServicio(i)">Quitar</button>
-        </div>
-      </div>
-      <div v-show="s._abierto" class="card-body space-y-4">
-        <div class="grid grid-cols-2 md:grid-cols-6 gap-3">
-          <div>
-            <label class="block text-sm mb-1 font-bold">Tipo</label>
-            <select v-model="s.fk_tipoproducto_id" :class="inputCls"><option value="">--</option><option v-for="t in opciones.tipos" :key="t.value" :value="t.value">{{ t.label }}</option></select>
-          </div>
-          <div class="md:col-span-3"><label class="block text-sm mb-1 font-bold">Nombre del servicio</label><input v-model="s.servicio_nombre" type="text" maxlength="200" :class="inputCls" /></div>
-          <div class="md:col-span-2">
-            <label class="block text-sm mb-1">Proveedor</label>
-            <select v-model="s.fk_proveedor_id" :class="inputCls"><option :value="0">--</option><option v-for="p in opciones.proveedores" :key="p.value" :value="p.value">{{ p.label }}</option></select>
-          </div>
-          <div class="md:col-span-2">
-            <label class="block text-sm mb-1">Ciudad</label>
-            <select v-model="s.fk_ciudad_id" :class="inputCls"><option :value="0">--</option><option v-for="c in opciones.ciudades" :key="c.value" :value="c.value">{{ c.label }}</option></select>
-          </div>
-          <div><label class="block text-sm mb-1 font-bold">Inicio</label><input v-model="s.vigencia_ini" type="date" :min="fechaMinima" :class="inputCls" /></div>
-          <div><label class="block text-sm mb-1">Fin</label><input v-model="s.vigencia_fin" type="date" :min="s.vigencia_ini" :class="inputCls" /></div>
-          <div><label class="block text-sm mb-1">Status</label><select v-model="s.status" :class="inputCls"><option value="CO">CO · Confirmado</option><option value="RQ">RQ · A confirmar</option></select></div>
-          <div><label class="block text-sm mb-1">Vence pago prov.</label><input v-model="s.vencimiento_proveedor" type="date" :class="inputCls" /></div>
-          <div><label class="block text-sm mb-1">Adultos</label><input v-model.number="s.adultos" type="number" min="0" :class="inputCls" /></div>
-          <div><label class="block text-sm mb-1">Menores</label><input v-model.number="s.menores" type="number" min="0" :class="inputCls" /></div>
-          <div><label class="block text-sm mb-1">Infantes</label><input v-model.number="s.infante" type="number" min="0" :class="inputCls" /></div>
-          <div><label class="block text-sm mb-1">Juniors</label><input v-model.number="s.juniors" type="number" min="0" :class="inputCls" /></div>
-          <div class="md:col-span-2"><label class="block text-sm mb-1">Nro. confirmación</label><input v-model="s.nro_confirmacion" type="text" maxlength="200" :class="inputCls" /></div>
-          <div><label class="block text-sm mb-1 font-bold">Moneda venta</label><select v-model="s.fk_moneda_id" :class="inputCls"><option v-for="m in opciones.monedas" :key="m.value" :value="m.value">{{ m.label }}</option></select></div>
-          <div><label class="block text-sm mb-1 font-bold">Total venta</label><input v-model.number="s.total" type="number" step="0.01" min="0" :class="inputCls" /></div>
-          <div><label class="block text-sm mb-1">IVA venta</label><input v-model.number="s.iva" type="number" step="0.01" min="0" :class="inputCls" /></div>
-          <div><label class="block text-sm mb-1">Moneda costo</label><select v-model="s.moneda_costo" :class="inputCls"><option v-for="m in opciones.monedas" :key="m.value" :value="m.value">{{ m.label }}</option></select></div>
-          <div><label class="block text-sm mb-1">Costo</label><input v-model.number="s.costo" type="number" step="0.01" min="0" :class="inputCls" /></div>
-          <div><label class="block text-sm mb-1">IVA costo</label><input v-model.number="s.iva_costo" type="number" step="0.01" min="0" :class="inputCls" /></div>
-          <div><label class="block text-sm mb-1">Impuestos</label><input v-model.number="s.impuestos" type="number" step="0.01" min="0" :class="inputCls" /></div>
-          <div class="md:col-span-5"><label class="block text-sm mb-1">Comentarios</label><input v-model="s.comentarios" type="text" :class="inputCls" /></div>
-        </div>
-        <div class="rounded-md border border-dashed border-gray-300 p-3">
-          <div class="flex items-center justify-between">
-            <h3 class="text-sm font-semibold text-gray-800">Cotizar producto propio <span v-if="s.fk_producto_id" class="text-xs text-green-700 font-normal">(cargado desde producto #{{ s.fk_producto_id }})</span></h3>
-            <button type="button" class="text-xs text-blue-600 hover:underline" @click="s._cotizador = !s._cotizador">{{ s._cotizador ? 'Ocultar' : 'Buscar tarifa' }}</button>
-          </div>
-          <div v-show="s._cotizador" class="mt-3 space-y-3">
-            <div class="grid grid-cols-2 md:grid-cols-6 gap-3 items-end">
-              <div class="md:col-span-3">
-                <label class="block text-xs text-gray-500 mb-1">Producto (filtrado por tipo y proveedor del servicio)</label>
-                <select v-model="s._cot.producto_id" :class="inputCls"><option :value="0">--</option><option v-for="p in productosPara(s)" :key="p.value" :value="p.value">{{ p.label }}</option></select>
-              </div>
-              <div><label class="block text-xs text-gray-500 mb-1">Edades menores (coma)</label><input v-model="s._cot.menores" type="text" placeholder="5, 9" :class="inputCls" /></div>
-              <div><label class="block text-xs text-gray-500 mb-1">Residente</label><select v-model="s._cot.residente" :class="inputCls"><option value="N">No</option><option value="R">Sí</option></select></div>
-              <button type="button" class="btn btn-secondary" :disabled="s._cot.corriendo || !s._cot.producto_id" @click="cotizar(s)">{{ s._cot.corriendo ? 'Cotizando…' : 'Cotizar' }}</button>
-            </div>
-            <p class="text-xs text-gray-400">Usa las fechas y los adultos del servicio y el tarifario del cliente elegido.</p>
-            <p v-if="s._cot.error" class="text-sm text-red-600">{{ s._cot.error }}</p>
-            <table v-if="opcionesCotizadas(s).length" class="min-w-full text-sm">
-              <thead><tr class="text-left text-xs text-gray-500"><th class="pr-3">Opción</th><th class="pr-3">Moneda</th><th class="pr-3 text-right">Costo</th><th class="pr-3 text-right">Venta</th><th class="pr-3 text-right">IVA</th><th class="pr-3 text-right">Total</th><th class="pr-3">Cupo</th><th></th></tr></thead>
-              <tbody>
-                <tr v-for="it in opcionesCotizadas(s)" :key="it.categoria + '-' + it.regimen" class="border-t border-gray-100">
-                  <td class="pr-3 py-1">{{ it.nombre }}<span v-if="it.textodescuento" class="block text-xs text-green-700">{{ it.textodescuento }}</span></td>
-                  <td class="pr-3">{{ it.moneda }}</td>
-                  <td class="pr-3 text-right tabular-nums">{{ fmt(it.costoenmoneda ?? it.costo) }}</td>
-                  <td class="pr-3 text-right tabular-nums">{{ fmt(it.venta) }}</td>
-                  <td class="pr-3 text-right tabular-nums">{{ fmt(it.iva) }}</td>
-                  <td class="pr-3 text-right tabular-nums font-semibold">{{ fmt(it.total) }}</td>
-                  <td class="pr-3">{{ Number(it.soldout) === 1 ? 'Sold out' : it.cupo === null || it.cupo === undefined ? '-' : it.cupo }}</td>
-                  <td><button type="button" class="text-xs text-blue-600 hover:underline" @click="aplicarCotizacion(s, it)">Aplicar</button></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <h3 class="text-sm font-semibold text-gray-800">Nómina de pasajeros</h3>
-            <button type="button" class="text-xs text-blue-600 hover:underline" @click="copiarTitular(i)">Agregar al titular</button>
-          </div>
-          <FilasRepetibles v-model="s.pasajeros" :columnas="colPax" agregar-label="Agregar pasajero" />
-        </div>
-      </div>
-    </section>
-
-    <div class="flex items-center justify-between flex-wrap gap-3 mb-8">
-      <button type="button" class="btn btn-secondary" @click="agregarServicio">+ Agregar servicio</button>
-      <div class="text-sm text-gray-700 flex gap-4">
-        <span v-for="(t, m) in totales" :key="m"><b>{{ m }}</b>: venta {{ fmt(t.total) }} · costo {{ fmt(t.costo) }}</span>
-      </div>
-      <button type="button" class="btn btn-primary" :disabled="enviando" @click="guardar">{{ enviando ? 'Creando…' : 'Crear reserva' }}</button>
-    </div>
+    <PasoContexto v-if="estado.paso === 'contexto'" />
+    <PasoBuscar v-else-if="estado.paso === 'buscar'" />
+    <Carrito v-else-if="estado.paso === 'carrito'" />
+    <Confirmacion v-else-if="estado.paso === 'confirmar'" />
   </div>
 </template>
