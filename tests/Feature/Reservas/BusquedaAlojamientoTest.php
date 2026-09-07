@@ -6,8 +6,10 @@ use App\Models\User;
 use App\Services\MenuService;
 use App\Services\Reservas\BusquedaProductosService;
 use App\Services\Vigencias\VigenciaService;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Tests\Concerns\CreaEsquemaProductos;
 use Tests\TestCase;
 
@@ -159,6 +161,51 @@ class BusquedaAlojamientoTest extends TestCase
 
         $r2 = $this->postJson('/app/reservas/mayorista/nueva/buscar', $this->params())->assertOk()->json();
         $this->assertTrue($r2['cache'], 'misma búsqueda, misma respuesta cacheada');
+    }
+
+    public function test_validacion_previa_recotiza_lineas_tarifadas_y_avisa_si_la_tarifa_cambio(): void
+    {
+        // Lo mínimo de `cliente` que mira GeneradorReservaService::validar() (el esquema de productos no la trae).
+        Schema::dropIfExists('cliente');
+        Schema::create('cliente', function (Blueprint $t) {
+            $t->increments('cliente_id');
+            $t->string('cliente_nombre', 150)->default('');
+            $t->string('habilita', 1)->default('Y');
+            $t->decimal('limite_credito', 15, 2)->default(0);
+            $t->integer('credito_habilitado')->default(0);
+            $t->integer('fk_usuario_vendedor')->default(0);
+            $t->integer('fk_usuario_promotor1')->default(0);
+            $t->string('fk_moneda_id', 3)->default('');
+        });
+        DB::table('cliente')->insert(['cliente_id' => 50, 'cliente_nombre' => 'AGENCIA']);
+        DB::table('submodulo')->where('tipoproducto_id', 'HOT')->update(['tipoproducto_activo' => 1]);
+
+        $linea = fn (float $total) => [
+            'fk_tipoproducto_id' => 'HOT', 'servicio_nombre' => 'Hotel Playa - Standard', 'fk_producto_id' => $this->playa, 'fk_tarifacategoria_id' => 7, 'fk_regimen_id' => 3, 'fk_base_id' => '2',
+            'vigencia_ini' => '2026-10-05', 'vigencia_fin' => '2026-10-08', 'adultos' => 2, 'menores' => 0, 'edades' => [], 'fk_moneda_id' => 'USD', 'moneda_costo' => 'USD',
+            'total' => $total, 'costo' => 300, 'iva' => 0, 'iva_costo' => 0, 'impuestos' => 0, 'status' => 'RQ',
+        ];
+        $cab = ['fk_cliente_id' => 50, 'tarifario_id' => 3, 'residente' => 'N', 'titular_nombre' => 'Ana', 'titular_apellido' => 'Pérez', 'fk_moneda_id' => 'USD'];
+
+        // Total vigente (50 × 2 × 3 ÷ 0,8 → 376): sin avisos.
+        $this->postJson('/app/reservas/mayorista/nueva/validar', $cab + ['servicios' => [$linea(376)]])->assertOk()->assertJsonPath('errores', [])->assertJsonPath('advertencias', []);
+
+        // Precio envejecido en el carrito: aviso con el valor nuevo.
+        $r = $this->postJson('/app/reservas/mayorista/nueva/validar', $cab + ['servicios' => [$linea(300)]])->assertOk()->assertJsonPath('errores', [])->json();
+        $this->assertCount(1, $r['advertencias']);
+        $this->assertStringContainsString('cambió de 300,00 a 376,00 USD', $r['advertencias'][0]);
+
+        // Opción que ya no existe en la tarifa.
+        $otra = $linea(376);
+        $otra['fk_tarifacategoria_id'] = 8;
+        $r = $this->postJson('/app/reservas/mayorista/nueva/validar', $cab + ['servicios' => [$otra]])->assertOk()->json();
+        $this->assertStringContainsString('ya no está en la tarifa', $r['advertencias'][0]);
+
+        // Línea manual (sin `edades`): no se recotiza.
+        $manual = $linea(1);
+        unset($manual['edades']);
+        $manual['fk_producto_id'] = 0;
+        $this->postJson('/app/reservas/mayorista/nueva/validar', $cab + ['servicios' => [$manual]])->assertOk()->assertJsonPath('advertencias', []);
     }
 
     public function test_pestanas_solo_tipos_con_productos_y_buscador(): void

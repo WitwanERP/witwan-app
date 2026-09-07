@@ -360,6 +360,8 @@ export function crearGenerador(props) {
         status: op.disponibilidad === 'CI' ? 'CO' : 'RQ',
         vencimiento_proveedor: op.vencepago || '',
         servicio_extra: { pickup: extras.pickup || '', dropoff: extras.dropoff || '', hora_pickup: extras.hora_pickup || '' },
+        edades: h.edades,
+        _cotizado_en: Date.now(),
         _detalle: { nombre: nombreOp, regimen_nombre: op.regimen_nombre, noches: op.noches, textodescuento: op.textodescuento, disponibilidad: op.disponibilidad, comision: op.comision, cupo: op.cupo, estrellas: fila.estrellas },
       })
       lineas.push(l)
@@ -430,6 +432,7 @@ export function crearGenerador(props) {
     const porUid = Object.fromEntries(estado.pasajeros.map((p) => [p._uid, p]))
     return {
       ...limpiar(estado.contexto, ['cliente_label']),
+      tarifario_id: estado.clienteInfo?.tarifario?.id || 0,
       servicios: estado.carrito.map((l) => ({
         ...limpiar(l, ['proveedor_label', 'ciudad_label', 'pasajeros_ids']),
         pasajeros: l.pasajeros_ids.map((id) => porUid[id]).filter(Boolean).map((p) => limpiar(p, [])),

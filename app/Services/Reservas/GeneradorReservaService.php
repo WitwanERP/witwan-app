@@ -5,6 +5,7 @@ namespace App\Services\Reservas;
 use App\Models\User;
 use App\Services\AuditoriaService;
 use App\Services\CotizacionService;
+use App\Services\Pricing\Tarifador;
 use App\Support\Licencia;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -39,6 +40,7 @@ class GeneradorReservaService
         private CotizacionService $cotizaciones,
         private CreditoClienteService $credito,
         private AuditoriaService $auditoria,
+        private Tarifador $tarifador,
     ) {}
 
     /** Fecha mínima de inicio: hoy para internos; +4 días hábiles (sin feriados) para externos, como el CI. */
@@ -188,6 +190,13 @@ class GeneradorReservaService
             }
             if ((float) ($s['total'] ?? 0) == 0.0) {
                 $avisos[] = "Servicio {$n}: total en cero.";
+            }
+            // Líneas tarifadas: el carrito puede envejecer (queda en el navegador); si la tarifa cambió, aviso.
+            if (array_key_exists('edades', $s) && (int) ($s['fk_producto_id'] ?? 0) > 0 && ! isset($errores["{$k}.vigencia_ini"]) && (string) ($s['fk_tipoproducto_id'] ?? '') !== 'ASV') {
+                $aviso = $this->recotizar($s, $cab, $n);
+                if ($aviso !== null) {
+                    $avisos[] = $aviso;
+                }
             }
         }
 
@@ -342,6 +351,41 @@ class GeneradorReservaService
             '_pasajeros' => array_values(array_filter($s['pasajeros'] ?? [], fn ($p) => trim((string) ($p['apellido'] ?? '').($p['nombre'] ?? '')) !== '')),
             '_extras' => array_filter(array_map(fn ($v) => trim((string) $v), array_intersect_key((array) ($s['servicio_extra'] ?? []), array_flip(self::EXTRAS_SERVICIO))), fn ($v) => $v !== ''),
         ];
+    }
+
+    /**
+     * Vuelve a cotizar una línea tarifada con el Tarifador (mismas fechas, pax,
+     * edades, tarifario y tipo de pasajero) y devuelve un aviso si el total
+     * cambió o la opción ya no existe. Null si coincide o no se pudo cotizar.
+     */
+    private function recotizar(array $s, array $cab, int $n): ?string
+    {
+        try {
+            $r = $this->tarifador->cotizar([
+                'producto_id' => (int) $s['fk_producto_id'],
+                'fecha_ini' => (string) $s['vigencia_ini'],
+                'fecha_fin' => (string) ($s['vigencia_fin'] ?? '') ?: null,
+                'adultos' => (int) ($s['adultos'] ?? 1),
+                'menores' => array_values(array_map('intval', (array) $s['edades'])),
+                'residente' => (string) ($cab['residente'] ?? 'N'),
+                'tarifario_id' => (int) ($cab['tarifario_id'] ?? 0),
+                'cliente_id' => (int) ($cab['fk_cliente_id'] ?? 0),
+            ]);
+        } catch (\Throwable) {
+            return null;
+        }
+        if (empty($r['ok'])) {
+            return "Servicio {$n}: el producto ya no cotiza para esas fechas; revisá la tarifa antes de confirmar.";
+        }
+        $item = $r['resultado'][(int) ($s['fk_tarifacategoria_id'] ?? 0)][(int) ($s['fk_regimen_id'] ?? 0)] ?? null;
+        if ($item === null) {
+            return "Servicio {$n}: la opción elegida (categoría/régimen) ya no está en la tarifa.";
+        }
+        if (abs((float) $item['total'] - (float) ($s['total'] ?? 0)) > 0.01) {
+            return sprintf('Servicio %d: la tarifa cambió de %s a %s %s desde que se cotizó; recotizá la línea.', $n, number_format((float) ($s['total'] ?? 0), 2, ',', '.'), number_format((float) $item['total'], 2, ',', '.'), (string) $item['moneda']);
+        }
+
+        return null;
     }
 
     private function totalEnMonedaBasica(array $servicios): float

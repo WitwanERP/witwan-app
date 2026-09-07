@@ -55,3 +55,25 @@ Mejoras implementadas (`App\Services\Reservas\GeneradorReservaService`):
 - Cotizaciones (`ctz`/`servicioctz`): la v1 sólo crea reservas.
 - Reserva de cupos (`cupo_reservado`), reserva hija (`fk_filepadre_id`), extras `usuariofinal`/`markupinterno`, mails de confirmación, `colaevento`.
 - Edición de servicios ya creados (sigue en el CI: `reserva/servicio`).
+
+## 5. v2 (2026-09-07): asistente de venta producto-primero
+
+La v1 quedó como un formulario plano (file + N cards de 25 campos con el tarifador escondido) y se rehízo el front sobre el mismo backend de alta. Filosofía: primero el cliente y el tipo de pasajero (fijan tarifario, markup y vigencias), después el tipo de producto con su búsqueda propia, y sobre eso ofertas, cross-selling y carrito con nómina única.
+
+Pasos (`resources/js/Pages/Reservas/Nueva.vue` + `Generador/*`, estado en `useGenerador.js` persistido en `sessionStorage` por área):
+
+1. **Cliente**: autocomplete remoto filtrado por área (`GET nueva/clientes`, reglas del combo del CI vía `GeneradorReservaService::queryClientes`), residente/extranjero, moneda del file, escritorio/vendedor, titular. `GET nueva/cliente/{id}` (`ContextoVentaService`) trae tarifario (rel_clientesistema con fallback `cliente.fk_tarifario{sistema}_id`), crédito (límite, utilizado, disponible) e historial de 12 meses (últimas reservas con destinos, destinos y tipos más comprados, gasto promedio).
+2. **Buscar**: pestañas = tipos de `config/reservas_busqueda.php` con productos habilitados en el sistema (réplica de reserva.php:4634-4736). Cada tipo declara `campos`/`requiere`; `POST nueva/buscar` (`BusquedaRequest` + `BusquedaProductosService`) resuelve el buscador por config:
+   - `BuscadorAlojamiento` (HOT/MSC/AEL/MOT): candidatos `producto ⋈ rel_productociudad ⋈ vigencia` (reserva.php:3891-3910, `CandidatosQuery`), una cotización del `Tarifador` por habitación, la fila entra sólo si todas cotizan.
+   - `BuscadorPaquete` (PAQ/TRL): una noche, fin = salida + `vigencia.noches`; PAQ sólo circuitos (`solo_circuito`).
+   - `BuscadorTramos` (EXC/GUI/TRE/TRN/AUT/CRU): una cotización por producto; TRN por origen/destino; EXC/TRN/GUI con pick-up/drop-off.
+   - `BuscadorAsistencia` (ASV): port de la rama propia de tarifar() (tarifa_model:1333-1510): `max_pax` = días de cobertura, `<70`/`>70`, venta = costo ÷ markup sin IVA ni impuestos.
+   Todas devuelven la misma fila (`NormalizadorFila`): producto, proveedor, estrellas, disponibilidad CI/RQ/SO, promo, mejor total y `habitaciones[]` con opciones (categoría/régimen, costo, venta, IVA, total, cupo, vencimiento). Tope de candidatos, presupuesto de tiempo (`truncado`), cache 120 s, `ms`/`candidatos` en la respuesta.
+   - **Ofertas** (`POST nueva/ofertas`, `OfertasService`): alternativas más baratas de la misma categoría (en el front, sobre la grilla), misma estadía ±3 días (respeta la fecha mínima), promociones del destino (vigencias promocionales y `destacado`) y lo que el cliente pagó por el mismo producto / mismo tipo en la ciudad.
+   - **Cross-selling** (`POST nueva/cross-selling`, `CrossSellingService`): al agregar, "Completar el viaje" con los tipos complementarios del config cotizados para las fechas y pax, ordenados por co-ocurrencia histórica en `servicio` (24 meses) y completados con productos del destino.
+3. **Carrito**: una línea por habitación (`agregarDesdeResultado`: costo sin IVA neto de promo en moneda de costo, IVA costo, total en moneda de venta, CI→CO / RQ,SO→RQ, vencimiento del tarifador), margen por línea y total en la moneda del file, `total` editable sólo para internos, servicio manual (card reducido con autocompletes), nómina única asignable a servicios por tilde. Aviso si una línea se cotizó hace más de 2 h.
+4. **Confirmar**: `validar` corre al entrar; errores bloquean, avisos y crédito ahí mismo (`forzar_credito` si corresponde). La validación **recotiza las líneas tarifadas** (envían `edades` y `tarifario_id`) y avisa si el total cambió o la opción ya no existe. Un solo botón de crear; redirect al listado.
+
+Backend que cambió: `NuevaReservaRequest` (antes reglas inline), `fk_base_id` y `servicio_extra` (pickup/dropoff/hora_pickup) en `filaServicio()`, `Tarifador::cotizar()` acepta `producto` precargado y `tipopax`. Tests: `GeneradorReservaTest`, `BusquedaAlojamientoTest`, `BusquedaTiposTest`, `OfertasTest`, `CrossSellingTest`.
+
+Sigue en el CI hasta cubrirlo: PKD/CAE/CTK (paquetes dinámicos, cupos aéreos, entradas), interfases XML (HotelBeds, RIU, Roombeast…), cupos (`cupo_reservado`), fees automáticos y gastos de reserva, cotizaciones (ctz), mails y `colaevento`. Cuando el tenant no dependa de eso, dar de alta `reserva/nueva/{área}` en `config/menu.php` → `rutas_migradas`.

@@ -27,6 +27,7 @@ class NuevaReservaRequest extends FormRequest
             'titular_celular' => 'nullable|string|max:50',
             'fk_moneda_id' => 'required|string|max:3',
             'residente' => 'nullable|in:R,N',
+            'tarifario_id' => 'nullable|integer|min:0',
             'agente' => 'nullable|integer',
             'observaciones' => 'nullable|string',
             'fecha_vencimiento' => 'nullable|date_format:Y-m-d',
@@ -58,6 +59,9 @@ class NuevaReservaRequest extends FormRequest
             'servicios.*.nro_confirmacion' => 'nullable|string|max:200',
             'servicios.*.comentarios' => 'nullable|string',
             'servicios.*.vencimiento_proveedor' => 'nullable|date_format:Y-m-d',
+            // Edades de los menores con que se cotizó (sólo líneas tarifadas): permite recotizar en la validación previa.
+            'servicios.*.edades' => 'nullable|array|max:9',
+            'servicios.*.edades.*' => 'integer|min:0|max:17',
             'servicios.*.servicio_extra' => 'nullable|array',
             'servicios.*.servicio_extra.pickup' => 'nullable|string|max:200',
             'servicios.*.servicio_extra.dropoff' => 'nullable|string|max:200',

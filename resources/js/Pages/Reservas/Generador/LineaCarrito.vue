@@ -19,6 +19,9 @@ const margen = computed(() => g.margenLinea(l))
 const tipoNombre = computed(() => g.props.opciones.tipos.find((t) => t.value === l.fk_tipoproducto_id)?.label || l.fk_tipoproducto_id || '—')
 const conPickup = computed(() => ['EXC', 'TRN', 'TRA', 'GUI'].includes(l.fk_tipoproducto_id))
 const asignados = computed(() => l.pasajeros_ids.length)
+// Precio cotizado hace más de dos horas: el carrito sobrevive en el navegador y la tarifa puede haber cambiado.
+const horasCotizado = computed(() => (l._cotizado_en ? (Date.now() - l._cotizado_en) / 36e5 : 0))
+const envejecido = computed(() => l._origen === 'TAR' && horasCotizado.value >= 2)
 </script>
 
 <template>
@@ -32,6 +35,7 @@ const asignados = computed(() => l.pasajeros_ids.length)
             {{ tipoNombre }} · {{ formatearFecha(l.vigencia_ini) }}<span v-if="l.vigencia_fin && l.vigencia_fin !== l.vigencia_ini"> → {{ formatearFecha(l.vigencia_fin) }}</span>
             · {{ g.paxLinea(l) }} pax<span v-if="l.ciudad_label"> · {{ l.ciudad_label }}</span><span v-if="l._detalle?.nombre"> · {{ l._detalle.nombre }}</span>
             · <span :class="asignados ? '' : 'text-amber-700'">{{ asignados }} en nómina</span>
+            <span v-if="envejecido" class="text-amber-700"> · cotizado hace {{ Math.round(horasCotizado) }} h: la validación final recotiza y avisa si cambió</span>
           </div>
         </div>
       </div>
