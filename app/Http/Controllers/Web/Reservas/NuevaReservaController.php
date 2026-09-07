@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web\Reservas;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Reservas\BusquedaRequest;
+use App\Http\Requests\Reservas\CrossSellingRequest;
 use App\Http\Requests\Reservas\NuevaReservaRequest;
 use App\Http\Requests\Reservas\OfertasRequest;
 use App\Services\CatalogosService;
@@ -11,6 +12,7 @@ use App\Services\CotizacionService;
 use App\Services\Pricing\Tarifador;
 use App\Services\Reservas\BusquedaProductosService;
 use App\Services\Reservas\ContextoVentaService;
+use App\Services\Reservas\CrossSellingService;
 use App\Services\Reservas\EscritorioService;
 use App\Services\Reservas\GeneradorReservaService;
 use App\Services\Reservas\OfertasService;
@@ -190,6 +192,18 @@ class NuevaReservaController extends Controller
             'promociones' => in_array('promociones', $que, true) ? $ofertas->promociones($tipo, $ciudad, (string) $p['from'], $p['to'] ?? null, $ctx) : [],
             'historial' => in_array('historial', $que, true) ? $ofertas->historial((int) $p['cliente_id'], (int) $p['producto_id'], $tipo, $ciudad, $total, (string) ($p['moneda'] ?? '')) : null,
         ]);
+    }
+
+    /** "Completar el viaje": complementarios del destino para el servicio recién agregado, ordenados por co-ocurrencia histórica. */
+    public function crossSelling(CrossSellingRequest $request, string $area, CrossSellingService $cross): JsonResponse
+    {
+        $p = $request->validated();
+        $ctx = $this->busqueda->contexto(Auth::user(), $this->idsistema($area), (int) $p['cliente_id'], (string) ($p['residente'] ?? 'N'));
+        if (($p['from'] ?? '') < $ctx['fecha_minima']) {
+            return response()->json(['grupos' => []]);
+        }
+
+        return response()->json($cross->sugerir($p, $ctx));
     }
 
     /**

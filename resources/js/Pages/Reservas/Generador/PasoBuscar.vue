@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import FormBusqueda from './FormBusqueda.vue'
 import GrillaResultados from './GrillaResultados.vue'
+import PanelCrossSelling from './PanelCrossSelling.vue'
 import { useGenerador } from './useGenerador'
 
 /**
@@ -52,6 +53,8 @@ function agregado(lineas) {
       <span>{{ aviso }}</span>
       <button type="button" class="text-xs text-green-900 underline" @click="g.irA('carrito')">Ir al carrito</button>
     </div>
+
+    <PanelCrossSelling @agregado="agregado" />
 
     <GrillaResultados v-if="g.pestana.value" @agregado="agregado" />
 

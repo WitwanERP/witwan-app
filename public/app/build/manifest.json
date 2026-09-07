@@ -749,6 +749,18 @@
       "_envio.js"
     ]
   },
+  "resources/js/Pages/Reservas/Generador/PanelCrossSelling.vue": {
+    "file": "assets/PanelCrossSelling.js",
+    "name": "PanelCrossSelling",
+    "src": "resources/js/Pages/Reservas/Generador/PanelCrossSelling.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_formato.js",
+      "_useGenerador.js",
+      "resources/js/app.js",
+      "_envio.js"
+    ]
+  },
   "resources/js/Pages/Reservas/Generador/PanelOfertas.vue": {
     "file": "assets/PanelOfertas.js",
     "name": "PanelOfertas",
@@ -769,6 +781,7 @@
     "imports": [
       "resources/js/Pages/Reservas/Generador/FormBusqueda.vue",
       "resources/js/Pages/Reservas/Generador/GrillaResultados.vue",
+      "resources/js/Pages/Reservas/Generador/PanelCrossSelling.vue",
       "_useGenerador.js",
       "resources/js/app.js",
       "_BuscadorRemoto.js",
@@ -853,6 +866,7 @@
       "resources/js/Pages/Reservas/Generador/GrillaResultados.vue",
       "resources/js/Pages/Reservas/Generador/DetalleResultado.vue",
       "resources/js/Pages/Reservas/Generador/PanelOfertas.vue",
+      "resources/js/Pages/Reservas/Generador/PanelCrossSelling.vue",
       "resources/js/Pages/Reservas/Generador/LineaCarrito.vue",
       "resources/js/Pages/Reservas/Generador/Nomina.vue"
     ]
@@ -982,6 +996,7 @@
       "resources/js/Pages/Reservas/Generador/GrillaResultados.vue",
       "resources/js/Pages/Reservas/Generador/LineaCarrito.vue",
       "resources/js/Pages/Reservas/Generador/Nomina.vue",
+      "resources/js/Pages/Reservas/Generador/PanelCrossSelling.vue",
       "resources/js/Pages/Reservas/Generador/PanelOfertas.vue",
       "resources/js/Pages/Reservas/Generador/PasoBuscar.vue",
       "resources/js/Pages/Reservas/Generador/PasoContexto.vue",

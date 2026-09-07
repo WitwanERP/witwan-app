@@ -160,6 +160,7 @@ Route::prefix('app')->group(function () {
         Route::get('/{area}/nueva/productos', [NuevaReservaController::class, 'productos'])->where('area', $areas)->name('reservas.nueva.productos');
         Route::post('/{area}/nueva/buscar', [NuevaReservaController::class, 'buscar'])->where('area', $areas)->name('reservas.nueva.buscar');
         Route::post('/{area}/nueva/ofertas', [NuevaReservaController::class, 'ofertas'])->where('area', $areas)->name('reservas.nueva.ofertas');
+        Route::post('/{area}/nueva/cross-selling', [NuevaReservaController::class, 'crossSelling'])->where('area', $areas)->name('reservas.nueva.cross');
         Route::get('/{area}/resumen/{id}', [ReservaListadoController::class, 'resumen'])->where('area', $areas)->whereNumber('id')->name('reservas.resumen');
         Route::get('/{area}/clientes', [ReservaListadoController::class, 'clientesAutocomplete'])->where('area', $areas)->name('reservas.clientes');
         Route::post('/{area}/eliminar', [ReservaListadoController::class, 'eliminar'])->where('area', $areas)->name('reservas.eliminar');

@@ -69,6 +69,7 @@ export function crearGenerador(props) {
     busqueda: busquedaInicial(),
     seleccion: null,
     ofertas: { producto_id: 0, corriendo: false, datos: null, error: '' },
+    cross: { base: '', corriendo: false, grupos: [], error: '' },
     carrito: [],
     pasajeros: [],
     previa: { errores: {}, advertencias: [], corriendo: false, hecha: false },
@@ -300,7 +301,7 @@ export function crearGenerador(props) {
       .slice(0, 5)
   async function pedirOfertas(fila, total) {
     const elegidas = estado.seleccion?.producto_id === fila.producto_id ? estado.seleccion.elegidas : fila.habitaciones.map((h) => h.mejor)
-    estado.ofertas = { producto_id: fila.producto_id, corriendo: true, datos: null, error: '' }
+    Object.assign(estado.ofertas, { producto_id: fila.producto_id, corriendo: true, datos: null, error: '' })
     try {
       estado.ofertas.datos = await postJson(`${props.baseUrl}/nueva/ofertas`, {
         ...cuerpoBusqueda(),
@@ -364,7 +365,34 @@ export function crearGenerador(props) {
       lineas.push(l)
     })
     estado.seleccion = null
+    if (lineas.length) pedirCross(fila)
     return lineas
+  }
+
+  // ---- Cross-selling: "completar el viaje" tras agregar ----
+  async function pedirCross(fila) {
+    if (!fila.ciudad?.id) return
+    Object.assign(estado.cross, { base: fila.nombre, corriendo: true, grupos: [], error: '' })
+    try {
+      const data = await postJson(`${props.baseUrl}/nueva/cross-selling`, {
+        tipo: fila.tipo,
+        producto_id: fila.producto_id,
+        ciudad_id: fila.ciudad.id,
+        cliente_id: estado.contexto.fk_cliente_id,
+        residente: estado.contexto.residente,
+        from: fila.vigencia_ini,
+        to: fila.vigencia_fin && fila.vigencia_fin !== fila.vigencia_ini ? fila.vigencia_fin : null,
+        habitaciones: fila.habitaciones.map((h) => ({ ad: h.ad, mn: h.edades })),
+      })
+      estado.cross.grupos = data.grupos || []
+    } catch (e) {
+      estado.cross.error = e?.data?.message || 'No se pudieron buscar complementarios.'
+    } finally {
+      estado.cross.corriendo = false
+    }
+  }
+  function cerrarCross() {
+    Object.assign(estado.cross, { base: '', corriendo: false, grupos: [], error: '' })
   }
 
   // ---- Pasos ----
@@ -540,6 +568,8 @@ export function crearGenerador(props) {
     totalSeleccion,
     alternativas,
     pedirOfertas,
+    pedirCross,
+    cerrarCross,
     agregarDesdeResultado,
     contextoListo,
     faltantesContexto,
