@@ -419,6 +419,7 @@ trait CreaEsquemaConfiguracion
             $t->integer('infante')->default(0);
             $t->integer('fk_tarifacategoria_id')->default(0);
             $t->integer('fk_regimen_id')->default(0);
+            $t->string('fk_base_id', 3)->nullable();
             $t->string('status', 2)->default('');
             $t->string('moneda_costo', 3)->default('');
             $t->decimal('iva', 15, 2)->default(0);

@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Services\AuditoriaService;
 use App\Services\CotizacionService;
 use App\Support\Licencia;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -30,6 +31,9 @@ use Illuminate\Support\Facades\DB;
 class GeneradorReservaService
 {
     public const PASAJEROS_TIPOS = ['ADT', 'CHD', 'INF', 'JUN'];
+
+    /** Extras de servicio que acepta el alta (EAV `servicio_extra`): pickup/dropoff de EXC y TRN como en el carrito del CI. */
+    public const EXTRAS_SERVICIO = ['pickup', 'dropoff', 'hora_pickup'];
 
     public function __construct(
         private CotizacionService $cotizaciones,
@@ -57,8 +61,14 @@ class GeneradorReservaService
         return $fecha->toDateString();
     }
 
-    /** Clientes habilitados para reservar en el área (mismas reglas que reserva.php::nueva()). */
-    public function clientes(int $idsistema): array
+    /**
+     * Query de clientes habilitados para reservar en el área (mismas reglas que
+     * el combo de reserva.php::nueva()): todos en minorista/administración,
+     * `clienteminorista` en área 3, `consolidador` en área 4, y por
+     * rel_clientesistema en el resto. La comparten el listado completo, el
+     * autocomplete del generador y la validación del alta.
+     */
+    public function queryClientes(int $idsistema): Builder
     {
         $q = DB::table('cliente')->whereIn('cliente.habilita', ['Y', '1'])->orderByRaw('TRIM(cliente.cliente_nombre)');
         if (Licencia::flag('tipolicencia') === 'minorista' || $idsistema === 5) {
@@ -71,7 +81,13 @@ class GeneradorReservaService
             $q->join('rel_clientesistema as rcs', 'rcs.fk_cliente_id', '=', 'cliente.cliente_id')->where('rcs.fk_sistema_id', $idsistema)->distinct();
         }
 
-        return $q->get(['cliente.cliente_id', 'cliente.cliente_nombre', 'cliente.limite_credito', 'cliente.credito_habilitado', 'cliente.fk_moneda_id', 'cliente.fk_usuario_vendedor'])
+        return $q;
+    }
+
+    /** Clientes habilitados para reservar en el área, como opciones {value,label,…}. */
+    public function clientes(int $idsistema): array
+    {
+        return $this->queryClientes($idsistema)->get(['cliente.cliente_id', 'cliente.cliente_nombre', 'cliente.limite_credito', 'cliente.credito_habilitado', 'cliente.fk_moneda_id', 'cliente.fk_usuario_vendedor'])
             ->map(fn ($c) => [
                 'value' => (int) $c->cliente_id,
                 'label' => $c->cliente_nombre.((float) $c->limite_credito != 0 ? ' ('.number_format((float) $c->limite_credito, 0, ',', '.').')' : ''),
@@ -98,7 +114,7 @@ class GeneradorReservaService
             $errores['fk_cliente_id'] = 'Elegí un cliente.';
         } elseif (! in_array((string) $cliente->habilita, ['Y', '1'], true)) {
             $errores['fk_cliente_id'] = 'El cliente está deshabilitado.';
-        } elseif (! collect($this->clientes($idsistema))->contains('value', (int) $cliente->cliente_id)) {
+        } elseif (! $this->queryClientes($idsistema)->where('cliente.cliente_id', (int) $cliente->cliente_id)->exists()) {
             $errores['fk_cliente_id'] = 'El cliente no está habilitado para reservar en esta área.';
         }
         if (trim((string) ($cab['titular_nombre'] ?? '')) === '' || trim((string) ($cab['titular_apellido'] ?? '')) === '') {
@@ -268,8 +284,13 @@ class GeneradorReservaService
 
                 foreach ($filasServicio as $i => $fila) {
                     $pasajeros = $fila['_pasajeros'];
-                    unset($fila['_pasajeros']);
+                    $extras = $fila['_extras'];
+                    unset($fila['_pasajeros'], $fila['_extras']);
                     $servicioId = (int) DB::table('servicio')->insertGetId($fila + ['fk_reserva_id' => $reservaId, 'regdate' => now()], 'servicio_id');
+                    // pickup/dropoff/hora_pickup de excursiones y traslados (reserva.php:2717-2724 hace REPLACE INTO servicio_extra).
+                    foreach ($extras as $nombre => $valor) {
+                        DB::table('servicio_extra')->insert(['fk_servicio_id' => $servicioId, 'extra_nombre' => $nombre, 'extra_valor' => $valor, 'regdate' => now()]);
+                    }
                     foreach ($pasajeros as $p) {
                         DB::table('servicio_nomina')->insert([
                             'fk_servicio_id' => $servicioId, 'nombre' => mb_strtoupper(trim((string) ($p['nombre'] ?? ''))), 'apellido' => mb_strtoupper(trim((string) ($p['apellido'] ?? ''))),
@@ -312,13 +333,14 @@ class GeneradorReservaService
         return [
             'servicio_nombre' => trim((string) $s['servicio_nombre']), 'fk_tipoproducto_id' => $tipo, 'fk_producto_id' => (int) ($s['fk_producto_id'] ?? 0),
             'fk_proveedor_id' => (int) ($s['fk_proveedor_id'] ?? 0), 'fk_prestador_id' => (int) ($s['fk_prestador_id'] ?? 0), 'fk_ciudad_id' => (int) ($s['fk_ciudad_id'] ?? 0),
-            'fk_tarifacategoria_id' => (int) ($s['fk_tarifacategoria_id'] ?? 0), 'fk_regimen_id' => (int) ($s['fk_regimen_id'] ?? 0),
+            'fk_tarifacategoria_id' => (int) ($s['fk_tarifacategoria_id'] ?? 0), 'fk_regimen_id' => (int) ($s['fk_regimen_id'] ?? 0), 'fk_base_id' => substr(trim((string) ($s['fk_base_id'] ?? '')), 0, 3),
             'vigencia_ini' => $ini, 'vigencia_fin' => $fin, 'adultos' => (int) ($s['adultos'] ?? 0), 'menores' => (int) ($s['menores'] ?? 0), 'infante' => (int) ($s['infante'] ?? 0), 'juniors' => (int) ($s['juniors'] ?? 0),
             'status' => (string) ($s['status'] ?? 'CO'), 'fk_moneda_id' => $monedaVenta, 'moneda_costo' => $monedaCosto, 'total' => $total, 'totalservicio' => $total, 'costo' => $costo,
             'iva' => $iva, 'iva_costo' => $ivaCosto, 'impuestos' => $impuestos, 'cotventa' => $cotventa, 'cotcosto' => $cotcosto, 'renta' => round($renta, 4),
             'nro_confirmacion' => (string) ($s['nro_confirmacion'] ?? ''), 'comentarios' => (string) ($s['comentarios'] ?? ''), 'vencimiento_proveedor' => (string) ($s['vencimiento_proveedor'] ?? '') ?: null,
             'origen' => (int) ($s['fk_producto_id'] ?? 0) > 0 ? 'TAR' : 'APP',
             '_pasajeros' => array_values(array_filter($s['pasajeros'] ?? [], fn ($p) => trim((string) ($p['apellido'] ?? '').($p['nombre'] ?? '')) !== '')),
+            '_extras' => array_filter(array_map(fn ($v) => trim((string) $v), array_intersect_key((array) ($s['servicio_extra'] ?? []), array_flip(self::EXTRAS_SERVICIO))), fn ($v) => $v !== ''),
         ];
     }
 

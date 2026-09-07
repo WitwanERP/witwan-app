@@ -158,6 +158,18 @@ class GeneradorReservaTest extends TestCase
         $this->assertSame(['1500', '1501', '1502'], DB::table('reserva')->orderBy('reserva_id')->pluck('codigo')->all());
     }
 
+    public function test_persiste_base_y_extras_pickup_dropoff_del_servicio(): void
+    {
+        $this->post('/app/reservas/mayorista/nueva', $this->payload([], [
+            'fk_tipoproducto_id' => 'TRS', 'fk_base_id' => '2', 'servicio_extra' => ['pickup' => 'Hotel Sol', 'dropoff' => '', 'hora_pickup' => '08:30', 'otro' => 'no va'],
+        ]))->assertRedirect('/app/reservas/mayorista?codigo=1501');
+
+        $s = DB::table('servicio')->where('fk_reserva_id', DB::table('reserva')->where('codigo', '1501')->value('reserva_id'))->first();
+        $this->assertSame('2', (string) $s->fk_base_id);
+        $extras = DB::table('servicio_extra')->where('fk_servicio_id', $s->servicio_id)->orderBy('extra_nombre')->pluck('extra_valor', 'extra_nombre')->all();
+        $this->assertSame(['hora_pickup' => '08:30', 'pickup' => 'Hotel Sol'], $extras, 'los vacíos y los no permitidos no se graban');
+    }
+
     public function test_cotizador_delega_en_el_tarifador_y_el_alta_persiste_producto_categoria_y_regimen(): void
     {
         $this->postJson('/app/reservas/mayorista/nueva/cotizar', ['producto_id' => 999, 'fecha_ini' => now()->addDays(10)->toDateString(), 'adultos' => 2])

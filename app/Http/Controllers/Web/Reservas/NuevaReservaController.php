@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web\Reservas;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Reservas\NuevaReservaRequest;
 use App\Services\CatalogosService;
 use App\Services\Pricing\Tarifador;
 use App\Services\Reservas\EscritorioService;
@@ -60,54 +61,10 @@ class NuevaReservaController extends Controller
         ]);
     }
 
-    public function store(Request $request, string $area): RedirectResponse
+    public function store(NuevaReservaRequest $request, string $area): RedirectResponse
     {
         $usuario = Auth::user();
-        $data = $request->validate([
-            'fk_cliente_id' => 'required|integer',
-            'titular_nombre' => 'required|string|max:150',
-            'titular_apellido' => 'required|string|max:150',
-            'titular_email' => 'nullable|email|max:50',
-            'titular_celular' => 'nullable|string|max:50',
-            'fk_moneda_id' => 'required|string|max:3',
-            'agente' => 'nullable|integer',
-            'observaciones' => 'nullable|string',
-            'fecha_vencimiento' => 'nullable|date_format:Y-m-d',
-            'forzar_credito' => 'nullable|boolean',
-            'servicios' => 'required|array|min:1',
-            'servicios.*.fk_tipoproducto_id' => 'required|string|max:3',
-            'servicios.*.servicio_nombre' => 'required|string|max:200',
-            'servicios.*.fk_proveedor_id' => 'nullable|integer',
-            'servicios.*.fk_prestador_id' => 'nullable|integer',
-            'servicios.*.fk_producto_id' => 'nullable|integer',
-            'servicios.*.fk_tarifacategoria_id' => 'nullable|integer',
-            'servicios.*.fk_regimen_id' => 'nullable|integer',
-            'servicios.*.fk_ciudad_id' => 'nullable|integer',
-            'servicios.*.vigencia_ini' => 'required|date_format:Y-m-d',
-            'servicios.*.vigencia_fin' => 'nullable|date_format:Y-m-d',
-            'servicios.*.adultos' => 'nullable|integer|min:0',
-            'servicios.*.menores' => 'nullable|integer|min:0',
-            'servicios.*.infante' => 'nullable|integer|min:0',
-            'servicios.*.juniors' => 'nullable|integer|min:0',
-            'servicios.*.fk_moneda_id' => 'required|string|max:3',
-            'servicios.*.moneda_costo' => 'nullable|string|max:3',
-            'servicios.*.total' => 'required|numeric|min:0',
-            'servicios.*.costo' => 'nullable|numeric|min:0',
-            'servicios.*.iva' => 'nullable|numeric|min:0',
-            'servicios.*.iva_costo' => 'nullable|numeric|min:0',
-            'servicios.*.impuestos' => 'nullable|numeric|min:0',
-            'servicios.*.status' => 'nullable|in:CO,RQ',
-            'servicios.*.nro_confirmacion' => 'nullable|string|max:200',
-            'servicios.*.comentarios' => 'nullable|string',
-            'servicios.*.vencimiento_proveedor' => 'nullable|date_format:Y-m-d',
-            'servicios.*.pasajeros' => 'nullable|array',
-            'servicios.*.pasajeros.*.nombre' => 'nullable|string|max:100',
-            'servicios.*.pasajeros.*.apellido' => 'nullable|string|max:100',
-            'servicios.*.pasajeros.*.documento' => 'nullable|string|max:50',
-            'servicios.*.pasajeros.*.nacionalidad' => 'nullable|string|max:50',
-            'servicios.*.pasajeros.*.tipopax' => 'nullable|string|max:3',
-            'servicios.*.pasajeros.*.nacimiento' => 'nullable|string|max:50',
-        ]);
+        $data = $request->validated();
         $data['fk_sistema_id'] = $this->idsistema($area);
 
         try {
