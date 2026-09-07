@@ -214,6 +214,133 @@ export function crearGenerador(props) {
     }
   }
 
+  // ---- Búsqueda por tipo de producto ----
+  const pestana = computed(() => props.pestanas.find((p) => p.tipo === estado.busqueda.tipo) || null)
+  const campos = computed(() => pestana.value?.campos || [])
+  const tiene = (campo) => campos.value.includes(campo)
+  const presente = (campo) => {
+    const f = estado.busqueda.form
+    if (campo === 'producto') return Number(f.producto_id) > 0
+    if (campo === 'habitaciones') return f.habitaciones.length > 0 && f.habitaciones.every((h) => Number(h.ad) >= 1)
+    const v = f[campo]
+    return Array.isArray(v) ? v.length > 0 : v !== '' && v !== 0 && v !== null && v !== undefined
+  }
+  const etiquetasCampo = { from: 'fecha de inicio', to: 'fecha de fin', ciudad: 'ciudad', origen: 'origen', destino: 'destino', nombre: 'nombre', producto: 'producto', habitaciones: 'habitaciones', ad: 'adultos' }
+  const faltantesBusqueda = computed(() => {
+    const out = []
+    for (const r of pestana.value?.requiere || []) {
+      const alts = r.split('|')
+      if (!alts.some(presente)) out.push(alts.map((a) => etiquetasCampo[a] || a).join(' o '))
+    }
+    return out
+  })
+  function cuerpoBusqueda() {
+    const f = estado.busqueda.form
+    const b = { tipo: estado.busqueda.tipo, cliente_id: estado.contexto.fk_cliente_id, residente: estado.contexto.residente, from: f.from }
+    if (tiene('to')) b.to = f.to || null
+    if (tiene('ciudad')) b.ciudad = Number(f.ciudad) || 0
+    if (tiene('origen')) b.origen = Number(f.origen) || 0
+    if (tiene('destino')) b.destino = Number(f.destino) || 0
+    if (tiene('nombre')) b.nombre = f.nombre || ''
+    b.producto_id = Number(f.producto_id) || 0
+    if (tiene('stars')) b.stars = f.stars
+    if (tiene('habitaciones')) b.habitaciones = f.habitaciones.map((h) => ({ ad: Number(h.ad) || 1, mn: (h.mn || []).map(Number) }))
+    if (tiene('ad')) b.ad = Number(f.ad) || 0
+    if (tiene('mn')) b.mn = (f.mn || []).map(Number)
+    if (tiene('mayores70')) b.mayores70 = Number(f.mayores70) || 0
+    return b
+  }
+  async function buscar(forzar = false) {
+    if (!pestana.value || faltantesBusqueda.value.length) return
+    const body = cuerpoBusqueda()
+    const hash = JSON.stringify(body)
+    if (!forzar && hash === estado.busqueda.hash && estado.busqueda.resultados.length) return
+    estado.busqueda.corriendo = true
+    estado.busqueda.error = ''
+    estado.seleccion = null
+    try {
+      const data = await postJson(`${props.baseUrl}/nueva/buscar`, body)
+      estado.busqueda.resultados = data.resultados || []
+      estado.busqueda.truncado = !!data.truncado
+      estado.busqueda.candidatos = data.candidatos || 0
+      estado.busqueda.ms = data.ms || 0
+      estado.busqueda.hash = hash
+    } catch (e) {
+      estado.busqueda.resultados = []
+      estado.busqueda.hash = ''
+      estado.busqueda.error = e?.data?.errors ? Object.values(e.data.errors).flat().join(' ') : e?.data?.message || 'No se pudo buscar.'
+    } finally {
+      estado.busqueda.corriendo = false
+    }
+  }
+  function cambiarTipo(tipo) {
+    if (estado.busqueda.tipo === tipo) return
+    estado.busqueda.tipo = tipo
+    estado.busqueda.resultados = []
+    estado.busqueda.hash = ''
+    estado.busqueda.error = ''
+    estado.seleccion = null
+  }
+  const opcionDe = (hab, el) => (el && hab.opciones.find((o) => o.categoria === el.categoria && o.regimen === el.regimen)) || hab.opciones[0] || null
+  function seleccionar(fila) {
+    if (!fila || estado.seleccion?.producto_id === fila.producto_id) {
+      estado.seleccion = null
+      return
+    }
+    estado.seleccion = { producto_id: fila.producto_id, elegidas: fila.habitaciones.map((h) => (h.mejor ? { ...h.mejor } : null)), pickup: '', dropoff: '', hora_pickup: '' }
+  }
+  const totalSeleccion = (fila, elegidas) => fila.habitaciones.reduce((acc, h, i) => acc + (Number(opcionDe(h, elegidas[i])?.total) || 0), 0)
+
+  /**
+   * Una línea de carrito por habitación con la opción elegida (categoría/régimen).
+   * Mapa fila → servicio como reservar() 2447-2523: costo sin IVA en moneda de
+   * costo (neto de promo), IVA costo aparte, total final en moneda de venta,
+   * CI → CO y RQ/SO → RQ, vencimiento de pago del tarifador.
+   */
+  function agregarDesdeResultado(fila, elegidas, extras = {}) {
+    const lineas = []
+    fila.habitaciones.forEach((h, i) => {
+      const op = opcionDe(h, elegidas[i])
+      if (!op) return
+      const nombreOp = op.nombre && op.nombre !== String(op.categoria) ? op.nombre : ''
+      const l = agregarLinea({
+        _origen: 'TAR',
+        _abierto: false,
+        fk_tipoproducto_id: fila.tipo,
+        servicio_nombre: [fila.nombre, nombreOp, op.regimen_nombre].filter(Boolean).join(' - ').slice(0, 200),
+        fk_proveedor_id: fila.proveedor.id,
+        proveedor_label: fila.proveedor.nombre,
+        fk_prestador_id: fila.prestador_id,
+        fk_producto_id: fila.producto_id,
+        fk_tarifacategoria_id: op.categoria,
+        fk_regimen_id: op.regimen,
+        fk_base_id: h.fk_base_id,
+        fk_ciudad_id: fila.ciudad.id,
+        ciudad_label: fila.ciudad.nombre,
+        vigencia_ini: fila.vigencia_ini,
+        vigencia_fin: fila.vigencia_fin || fila.vigencia_ini,
+        adultos: h.pax.adultos,
+        menores: h.pax.menores,
+        infante: h.pax.infante,
+        juniors: h.pax.juniors,
+        fk_moneda_id: op.moneda,
+        moneda_costo: op.moneda_costo,
+        total: Number(op.total) || 0,
+        costo: Math.max(0, (Number(op.costosiniva) || 0) - (Number(op.descuento) || 0)),
+        iva: Number(op.iva) || 0,
+        iva_costo: Number(op.ivacosto) || 0,
+        impuestos: Number(op.impuestos) || 0,
+        status: op.disponibilidad === 'CI' ? 'CO' : 'RQ',
+        vencimiento_proveedor: op.vencepago || '',
+        servicio_extra: { pickup: extras.pickup || '', dropoff: extras.dropoff || '', hora_pickup: extras.hora_pickup || '' },
+        _detalle: { nombre: nombreOp, regimen_nombre: op.regimen_nombre, noches: op.noches, textodescuento: op.textodescuento, disponibilidad: op.disponibilidad, comision: op.comision, cupo: op.cupo, estrellas: fila.estrellas },
+      })
+      lineas.push(l)
+    })
+    estado.seleccion = null
+    return lineas
+  }
+
   // ---- Pasos ----
   const contextoListo = computed(() => estado.contexto.fk_cliente_id > 0 && !!estado.clienteInfo)
   const faltantesContexto = computed(() => {
@@ -377,6 +504,15 @@ export function crearGenerador(props) {
     asignado,
     alternarAsignacion,
     elegirCliente,
+    pestana,
+    tiene,
+    faltantesBusqueda,
+    buscar,
+    cambiarTipo,
+    seleccionar,
+    opcionDe,
+    totalSeleccion,
+    agregarDesdeResultado,
     contextoListo,
     faltantesContexto,
     puedeIr,

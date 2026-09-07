@@ -647,6 +647,17 @@
       "_RangoFechas.js"
     ]
   },
+  "resources/js/Pages/Reservas/Generador/CamposHabitaciones.vue": {
+    "file": "assets/CamposHabitaciones.js",
+    "name": "CamposHabitaciones",
+    "src": "resources/js/Pages/Reservas/Generador/CamposHabitaciones.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_useGenerador.js",
+      "resources/js/app.js",
+      "_envio.js"
+    ]
+  },
   "resources/js/Pages/Reservas/Generador/Carrito.vue": {
     "file": "assets/Carrito.js",
     "name": "Carrito",
@@ -670,6 +681,44 @@
     "imports": [
       "resources/js/app.js",
       "_formato.js",
+      "_useGenerador.js",
+      "_envio.js"
+    ]
+  },
+  "resources/js/Pages/Reservas/Generador/DetalleResultado.vue": {
+    "file": "assets/DetalleResultado.js",
+    "name": "DetalleResultado",
+    "src": "resources/js/Pages/Reservas/Generador/DetalleResultado.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_formato.js",
+      "_useGenerador.js",
+      "_envio.js"
+    ]
+  },
+  "resources/js/Pages/Reservas/Generador/FormBusqueda.vue": {
+    "file": "assets/FormBusqueda.js",
+    "name": "FormBusqueda",
+    "src": "resources/js/Pages/Reservas/Generador/FormBusqueda.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_BuscadorRemoto.js",
+      "resources/js/Pages/Reservas/Generador/CamposHabitaciones.vue",
+      "_useGenerador.js",
+      "_envio.js"
+    ]
+  },
+  "resources/js/Pages/Reservas/Generador/GrillaResultados.vue": {
+    "file": "assets/GrillaResultados.js",
+    "name": "GrillaResultados",
+    "src": "resources/js/Pages/Reservas/Generador/GrillaResultados.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_formato.js",
+      "resources/js/Pages/Reservas/Generador/DetalleResultado.vue",
       "_useGenerador.js",
       "_envio.js"
     ]
@@ -704,9 +753,15 @@
     "src": "resources/js/Pages/Reservas/Generador/PasoBuscar.vue",
     "isDynamicEntry": true,
     "imports": [
+      "resources/js/Pages/Reservas/Generador/FormBusqueda.vue",
+      "resources/js/Pages/Reservas/Generador/GrillaResultados.vue",
       "_useGenerador.js",
       "resources/js/app.js",
-      "_envio.js"
+      "_BuscadorRemoto.js",
+      "resources/js/Pages/Reservas/Generador/CamposHabitaciones.vue",
+      "_envio.js",
+      "_formato.js",
+      "resources/js/Pages/Reservas/Generador/DetalleResultado.vue"
     ]
   },
   "resources/js/Pages/Reservas/Generador/PasoContexto.vue": {
@@ -778,6 +833,10 @@
       "_BuscadorRemoto.js",
       "resources/js/Pages/Reservas/Generador/ResumenCliente.vue",
       "_formato.js",
+      "resources/js/Pages/Reservas/Generador/FormBusqueda.vue",
+      "resources/js/Pages/Reservas/Generador/CamposHabitaciones.vue",
+      "resources/js/Pages/Reservas/Generador/GrillaResultados.vue",
+      "resources/js/Pages/Reservas/Generador/DetalleResultado.vue",
       "resources/js/Pages/Reservas/Generador/LineaCarrito.vue",
       "resources/js/Pages/Reservas/Generador/Nomina.vue"
     ]
@@ -899,8 +958,12 @@
       "resources/js/Pages/Productos/components/CampoProducto.vue",
       "resources/js/Pages/Productos/components/Habitaciones.vue",
       "resources/js/Pages/Reportes/Listado.vue",
+      "resources/js/Pages/Reservas/Generador/CamposHabitaciones.vue",
       "resources/js/Pages/Reservas/Generador/Carrito.vue",
       "resources/js/Pages/Reservas/Generador/Confirmacion.vue",
+      "resources/js/Pages/Reservas/Generador/DetalleResultado.vue",
+      "resources/js/Pages/Reservas/Generador/FormBusqueda.vue",
+      "resources/js/Pages/Reservas/Generador/GrillaResultados.vue",
       "resources/js/Pages/Reservas/Generador/LineaCarrito.vue",
       "resources/js/Pages/Reservas/Generador/Nomina.vue",
       "resources/js/Pages/Reservas/Generador/PasoBuscar.vue",

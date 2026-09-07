@@ -24,7 +24,7 @@ trait CreaEsquemaProductos
         'rel_productociudad', 'rel_productoalojamientofacilidad', 'productogaleria', 'cupo', 'soldout', 'iva',
         'ciudad', 'proveedor', 'regimen', 'cotizacion', 'moneda', 'reserva', 'servicio',
         'submodulo', 'pais', 'alojamientofacilidad', 'alojamientotipo', 'region', 'usuario', 'tipousuario', 'permisogrupo', 'permiso',
-        'sistema', 'rel_clientesistema',
+        'sistema', 'rel_clientesistema', 'productogrupo', 'hotelcategoria',
     ];
 
     protected function crearEsquemaProductos(): void
@@ -69,6 +69,17 @@ trait CreaEsquemaProductos
             $t->timestamp('regdate')->nullable();
             $t->string('extra_nombre', 50);
             $t->text('extra_valor');
+        });
+        Schema::create('productogrupo', function (Blueprint $t) {
+            $t->increments('productogrupo_id');
+            $t->string('productogrupo_nombre', 200)->default('');
+            $t->integer('eliminar')->default(0);
+        });
+        Schema::create('hotelcategoria', function (Blueprint $t) {
+            $t->increments('hotelcategoria_id');
+            $t->string('hotelcategoria_nombre', 100)->default('');
+            $t->string('hotelcategoria_label', 255)->default('');
+            $t->decimal('hotelcategoria_stars', 2, 1)->default(0);
         });
 
         Schema::create('vigencia', function (Blueprint $t) {
@@ -319,6 +330,7 @@ trait CreaEsquemaProductos
             $t->string('tipoproducto_id', 3)->primary();
             $t->string('tipoproducto_nombre', 100)->default('');
             $t->integer('submodulo_orden')->default(10);
+            $t->integer('tipoproducto_activo')->default(1);
         });
         Schema::create('pais', function (Blueprint $t) {
             $t->increments('pais_id');

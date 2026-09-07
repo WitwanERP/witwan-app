@@ -157,6 +157,8 @@ Route::prefix('app')->group(function () {
         Route::get('/{area}/nueva/cliente/{id}', [NuevaReservaController::class, 'cliente'])->where('area', $areas)->whereNumber('id')->name('reservas.nueva.cliente');
         Route::get('/{area}/nueva/proveedores', [NuevaReservaController::class, 'proveedores'])->where('area', $areas)->name('reservas.nueva.proveedores');
         Route::get('/{area}/nueva/ciudades', [NuevaReservaController::class, 'ciudades'])->where('area', $areas)->name('reservas.nueva.ciudades');
+        Route::get('/{area}/nueva/productos', [NuevaReservaController::class, 'productos'])->where('area', $areas)->name('reservas.nueva.productos');
+        Route::post('/{area}/nueva/buscar', [NuevaReservaController::class, 'buscar'])->where('area', $areas)->name('reservas.nueva.buscar');
         Route::get('/{area}/resumen/{id}', [ReservaListadoController::class, 'resumen'])->where('area', $areas)->whereNumber('id')->name('reservas.resumen');
         Route::get('/{area}/clientes', [ReservaListadoController::class, 'clientesAutocomplete'])->where('area', $areas)->name('reservas.clientes');
         Route::post('/{area}/eliminar', [ReservaListadoController::class, 'eliminar'])->where('area', $areas)->name('reservas.eliminar');

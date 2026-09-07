@@ -58,7 +58,7 @@ function buscar() {
   debounce = setTimeout(async () => {
     buscando.value = true
     try {
-      const r = await fetch(`${props.url}?q=${encodeURIComponent(texto.value)}`, {
+      const r = await fetch(`${props.url}${props.url.includes('?') ? '&' : '?'}q=${encodeURIComponent(texto.value)}`, {
         headers: { Accept: 'application/json' },
       })
       sugerencias.value = r.ok ? await r.json() : []

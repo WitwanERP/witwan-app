@@ -51,7 +51,8 @@ class Tarifador
     public function cotizar(array $q): array
     {
         $productoId = (int) $q['producto_id'];
-        $producto = $this->productos->cargar($productoId);
+        // El generador cotiza el mismo producto para varias habitaciones: acepta el producto ya cargado.
+        $producto = isset($q['producto']) && (int) ($q['producto']['producto_id'] ?? 0) === $productoId ? $q['producto'] : $this->productos->cargar($productoId);
         if ($producto === null) {
             return ['ok' => false, 'motivos' => ['El producto no existe.'], 'resultado' => []];
         }
@@ -109,7 +110,9 @@ class Tarifador
         $extra2 = $aplicaExtras ? (float) ($sis->extra2 ?? 0) / 100 : 0.0;
 
         // Filas candidatas de tarifa × vigencia para todo el rango (una sola query).
-        $filas = $this->filas($productoId, $noches, $hoy, $ad, $residente, $tarifarioId, $esAlojamiento, $esHotel, (int) ($q['categoria_id'] ?? 0), (int) ($q['vigencia_id'] ?? 0), $nNoches);
+        // Tramos: tipos de pax de la tarifa a considerar (ADU por defecto; ASV usa '<70' / '>70').
+        $tiposPax = array_values(array_unique(array_merge(array_map('strval', (array) ($q['tipopax'] ?? ['ADU'])), [''])));
+        $filas = $this->filas($productoId, $noches, $hoy, $ad, $residente, $tarifarioId, $esAlojamiento, $esHotel, (int) ($q['categoria_id'] ?? 0), (int) ($q['vigencia_id'] ?? 0), $nNoches, $tiposPax);
 
         $habitaciones = $esHotel ? $this->habitacionesValidas($productoId, $ad, $mn) : null;
         $edades = $producto['edades'];
@@ -347,7 +350,7 @@ class Tarifador
      * Tarifa × vigencia candidatas para el rango. Réplica del SELECT de
      * tarifar() :2189-2226 con sus filtros (:2166-2180 y :2140-2160).
      */
-    private function filas(int $productoId, array $noches, string $hoy, int $ad, string $residente, int $tarifarioId, bool $esAlojamiento, bool $esHotel, int $categoriaId, int $vigenciaId, int $nNoches): array
+    private function filas(int $productoId, array $noches, string $hoy, int $ad, string $residente, int $tarifarioId, bool $esAlojamiento, bool $esHotel, int $categoriaId, int $vigenciaId, int $nNoches, array $tiposPax = ['ADU', '']): array
     {
         $q = DB::table('tarifa')
             ->join('vigencia', 'vigencia.vigencia_id', '=', 'tarifa.fk_vigencia_id')
@@ -368,7 +371,7 @@ class Tarifador
                 $q->where('tarifa.fk_tarifacategoria_id', $categoriaId);
             }
         } else {
-            $q->where('tarifa.min_pax', '<=', $ad)->where('tarifa.max_pax', '>=', $ad)->whereIn('tarifa.fk_tipopax_id', ['ADU', '']);
+            $q->where('tarifa.min_pax', '<=', $ad)->where('tarifa.max_pax', '>=', $ad)->whereIn('tarifa.fk_tipopax_id', $tiposPax);
         }
 
         // Residente: 'R' ve R y todos; el resto ve O, N y todos (:2172-2178).

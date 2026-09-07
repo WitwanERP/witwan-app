@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Web\Reservas;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Reservas\BusquedaRequest;
 use App\Http\Requests\Reservas\NuevaReservaRequest;
 use App\Services\CatalogosService;
 use App\Services\CotizacionService;
 use App\Services\Pricing\Tarifador;
+use App\Services\Reservas\BusquedaProductosService;
 use App\Services\Reservas\ContextoVentaService;
 use App\Services\Reservas\EscritorioService;
 use App\Services\Reservas\GeneradorReservaService;
@@ -35,6 +37,7 @@ class NuevaReservaController extends Controller
         private CatalogosService $catalogos,
         private EscritorioService $escritorios,
         private CotizacionService $cotizaciones,
+        private BusquedaProductosService $busqueda,
     ) {}
 
     public function create(string $area): Response
@@ -59,7 +62,7 @@ class NuevaReservaController extends Controller
             'statusFile' => Licencia::pais() === 'CL' ? 'RQ' : 'CO',
             'esInterno' => $this->esInterno($usuario),
             'puedeForzarCredito' => (string) $usuario->fk_tipousuario_id === 'POW' || \App\Helpers\PermisoHelper::tienePermiso(255, 'cambiar_limite_credito'),
-            'pestanas' => [],
+            'pestanas' => $this->busqueda->pestanas($this->sistemaProductos($area), $this->esInterno($usuario)),
             'opciones' => [
                 'tipos' => DB::table('submodulo')->where('tipoproducto_activo', 1)->orderBy('tipoproducto_nombre')->get()
                     ->map(fn ($t) => ['value' => (string) $t->tipoproducto_id, 'label' => $t->tipoproducto_nombre])->all(),
@@ -130,6 +133,41 @@ class NuevaReservaController extends Controller
     public function ciudades(Request $request, string $area): JsonResponse
     {
         return response()->json($this->contexto->ciudades((string) $request->input('q', ''), (string) $request->input('tipo', ''), $this->sistemaProductos($area)));
+    }
+
+    /** Autocomplete de productos habilitados de un tipo en el sistema del área. */
+    public function productos(Request $request, string $area): JsonResponse
+    {
+        $q = trim((string) $request->input('q', ''));
+        $tipo = (string) $request->input('tipo', '');
+        if ($q === '') {
+            return response()->json([]);
+        }
+        $query = DB::table('producto')->where('habilitar', 1)->where('eliminar', 0)->where('fk_sistema_id', $this->sistemaProductos($area))
+            ->where('producto_nombre', 'LIKE', "%{$q}%")->orderBy('producto_nombre')->limit(30);
+        if ($tipo !== '') {
+            $query->where('fk_tipoproducto_id', $tipo);
+        }
+        if (! $this->esInterno(Auth::user())) {
+            $query->where('aparece_tarifario', 1);
+        }
+
+        return response()->json($query->get(['producto_id', 'producto_nombre', 'fk_tipoproducto_id'])
+            ->map(fn ($p) => ['id' => (int) $p->producto_id, 'label' => trim((string) $p->producto_nombre), 'tipo' => (string) $p->fk_tipoproducto_id])->all());
+    }
+
+    // ---- Paso 2: búsqueda por tipo de producto -------------------------------------
+
+    /** Busca y cotiza productos de un tipo para el contexto de venta (cliente, tipo de pasajero). */
+    public function buscar(BusquedaRequest $request, string $area): JsonResponse
+    {
+        $p = $request->validated();
+        $ctx = $this->busqueda->contexto(Auth::user(), $this->idsistema($area), (int) $p['cliente_id'], (string) ($p['residente'] ?? 'N'));
+        if (($p['from'] ?? '') < $ctx['fecha_minima']) {
+            return response()->json(['message' => 'La fecha de inicio no puede ser anterior al '.date('d/m/Y', strtotime($ctx['fecha_minima'])).'.', 'errors' => ['from' => ['Fecha anterior a la mínima permitida.']]], 422);
+        }
+
+        return response()->json($this->busqueda->buscar((string) $p['tipo'], $p, $ctx) + ['contexto' => ['tarifario_id' => $ctx['tarifario_id'], 'residente' => $ctx['residente']]]);
     }
 
     /**
