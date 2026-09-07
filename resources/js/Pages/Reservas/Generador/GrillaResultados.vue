@@ -65,7 +65,7 @@ function agregarRapido(f) {
                   <span v-if="mejorPorEstrellas.has(f.producto_id)" class="badge badge-info">Mejor precio{{ f.estrellas ? ' ' + Math.floor(f.estrellas) + '★' : '' }}</span>
                   <span v-if="f.promo" class="badge badge-success" :title="f.promo.nota">Promo{{ f.promo.texto ? ' ' + f.promo.texto : '' }}</span>
                 </div>
-                <div class="text-xs text-gray-500">{{ f.proveedor.nombre }}<span v-if="f.noches"> · {{ f.noches }} noche{{ f.noches !== 1 ? 's' : '' }}</span></div>
+                <div class="text-xs text-gray-500">{{ f.proveedor.nombre }}<span v-if="f.noches && !['EXC', 'GUI', 'TRN', 'TRE'].includes(f.tipo)"> · {{ f.noches }} {{ ['ASV', 'AUT', 'CRU'].includes(f.tipo) ? 'día' : 'noche' }}{{ f.noches !== 1 ? 's' : '' }}</span></div>
               </td>
               <td class="px-2 py-2 text-gray-700">{{ f.ciudad.nombre }}</td>
               <td class="px-2 py-2"><span class="badge" :class="dispCls(f.disponibilidad)">{{ dispTxt(f.disponibilidad) }}</span></td>

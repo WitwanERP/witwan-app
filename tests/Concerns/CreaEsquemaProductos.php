@@ -24,7 +24,7 @@ trait CreaEsquemaProductos
         'rel_productociudad', 'rel_productoalojamientofacilidad', 'productogaleria', 'cupo', 'soldout', 'iva',
         'ciudad', 'proveedor', 'regimen', 'cotizacion', 'moneda', 'reserva', 'servicio',
         'submodulo', 'pais', 'alojamientofacilidad', 'alojamientotipo', 'region', 'usuario', 'tipousuario', 'permisogrupo', 'permiso',
-        'sistema', 'rel_clientesistema', 'productogrupo', 'hotelcategoria',
+        'sistema', 'rel_clientesistema', 'productogrupo', 'hotelcategoria', 'destacado',
     ];
 
     protected function crearEsquemaProductos(): void
@@ -74,6 +74,16 @@ trait CreaEsquemaProductos
             $t->increments('productogrupo_id');
             $t->string('productogrupo_nombre', 200)->default('');
             $t->integer('eliminar')->default(0);
+        });
+        Schema::create('destacado', function (Blueprint $t) {
+            $t->increments('destacado_id');
+            $t->string('destacado_nombre', 150)->default('');
+            $t->integer('fk_producto_id')->default(0);
+            $t->integer('fk_vigencia_id')->default(0);
+            $t->integer('fk_tarifa_id')->default(0);
+            $t->string('fk_moneda_id', 3)->default('');
+            $t->string('costo_pkd', 10)->default('');
+            $t->string('imagen', 150)->default('');
         });
         Schema::create('hotelcategoria', function (Blueprint $t) {
             $t->increments('hotelcategoria_id');
@@ -323,6 +333,15 @@ trait CreaEsquemaProductos
             $t->string('tipocodigo', 3)->default('');
             $t->string('codigo', 20)->default('');
             $t->string('fk_filestatus_id', 3)->default('');
+            $t->integer('fk_cliente_id')->default(0);
+            $t->integer('fk_sistema_id')->default(0);
+            $t->integer('escotizacion')->default(0);
+            $t->date('fecha_alta')->nullable();
+            $t->date('inicio')->nullable();
+            $t->decimal('total', 15, 2)->default(0);
+            $t->string('fk_moneda_id', 3)->default('');
+            $t->string('titular_nombre', 150)->default('');
+            $t->string('titular_apellido', 150)->default('');
         });
 
         // Catálogos y usuario que consultan los controllers Inertia.
@@ -397,6 +416,14 @@ trait CreaEsquemaProductos
             $t->string('vigencia_ini', 10)->default('0000-00-00');
             $t->string('vigencia_fin', 10)->default('0000-00-00');
             $t->string('status', 2)->default('');
+            $t->string('servicio_nombre', 200)->default('');
+            $t->string('fk_tipoproducto_id', 3)->default('');
+            $t->integer('fk_ciudad_id')->default(0);
+            $t->integer('adultos')->default(0);
+            $t->integer('menores')->default(0);
+            $t->decimal('total', 15, 2)->default(0);
+            $t->string('fk_moneda_id', 3)->default('');
+            $t->string('regdate', 19)->default('2020-01-01 00:00:00');
         });
     }
 

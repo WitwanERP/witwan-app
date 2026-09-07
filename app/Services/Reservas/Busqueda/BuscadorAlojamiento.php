@@ -30,17 +30,8 @@ class BuscadorAlojamiento implements BuscadorTipo
     {
         $habitaciones = $this->habitaciones($p);
         $to = $this->fechaFin($tipo, $p);
-        $cfg = (array) config("reservas_busqueda.tipos.{$tipo}", []);
 
-        $c = $this->candidatos->buscar($tipo, [
-            'ciudades' => array_filter([(int) ($p['ciudad'] ?? 0)]),
-            'nombre' => $p['nombre'] ?? '',
-            'producto_ids' => $p['producto_ids'] ?? array_filter([(int) ($p['producto_id'] ?? 0)]),
-            'stars' => $p['stars'] ?? [],
-            'from' => $p['from'],
-            'to' => $to,
-            'solo_circuito' => (bool) ($cfg['solo_circuito'] ?? false),
-        ], $ctx);
+        $c = $this->candidatos->buscar($tipo, $this->filtrosCandidatos($tipo, $p, $to), $ctx);
 
         $resultados = [];
         $truncado = $c['truncado'];
@@ -92,6 +83,22 @@ class BuscadorAlojamiento implements BuscadorTipo
         }
 
         return $out ?: [['ad' => 2, 'mn' => []]];
+    }
+
+    /** Filtros para CandidatosQuery a partir del formulario. */
+    protected function filtrosCandidatos(string $tipo, array $p, ?string $to): array
+    {
+        $cfg = (array) config("reservas_busqueda.tipos.{$tipo}", []);
+
+        return [
+            'ciudades' => array_filter([(int) ($p['ciudad'] ?? 0)]),
+            'nombre' => $p['nombre'] ?? '',
+            'producto_ids' => $p['producto_ids'] ?? array_filter([(int) ($p['producto_id'] ?? 0)]),
+            'stars' => $p['stars'] ?? [],
+            'from' => $p['from'],
+            'to' => $to,
+            'solo_circuito' => (bool) ($cfg['solo_circuito'] ?? false),
+        ];
     }
 
     protected function fechaFin(string $tipo, array $p): ?string

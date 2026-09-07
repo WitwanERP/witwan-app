@@ -103,7 +103,7 @@ class CandidatosQuery
         $proveedores = DB::table('proveedor')->whereIn('proveedor_id', array_unique(array_filter(array_map(fn ($p) => (int) $p->fk_proveedor_id, $productos))))->pluck('proveedor_nombre', 'proveedor_id');
         $estrellas = DB::table('producto_extra as pe')->join('hotelcategoria as hc', DB::raw('CAST(hc.hotelcategoria_id AS CHAR)'), '=', 'pe.extra_valor')
             ->whereIn('pe.fk_producto_id', $ids)->where('pe.extra_nombre', 'fk_hotelcategoria_id')->pluck('hc.hotelcategoria_stars', 'pe.fk_producto_id');
-        $ciudadIds = array_unique(array_filter(array_map(fn ($p) => (int) $p->destino ?: (int) $p->origen, $productos)));
+        $ciudadIds = array_unique(array_filter(array_merge(array_map(fn ($p) => (int) $p->destino, $productos), array_map(fn ($p) => (int) $p->origen, $productos))));
         $primeraCiudad = DB::table('rel_productociudad as rpc')->join('ciudad as c', 'c.ciudad_id', '=', 'rpc.fk_ciudad_id')->whereIn('rpc.fk_producto_id', $ids)->orderBy('c.ciudad_nombre')->get(['rpc.fk_producto_id', 'c.ciudad_id', 'c.ciudad_nombre']);
         $porProducto = [];
         foreach ($primeraCiudad as $c) {
@@ -116,6 +116,8 @@ class CandidatosQuery
             $p->estrellas = isset($estrellas[(int) $p->producto_id]) ? (float) $estrellas[(int) $p->producto_id] : null;
             $destino = (int) $p->destino ?: (int) $p->origen;
             $p->ciudad = $destino && isset($nombresCiudad[$destino]) ? ['id' => $destino, 'nombre' => (string) $nombresCiudad[$destino]] : ($porProducto[(int) $p->producto_id] ?? ['id' => $destino, 'nombre' => '']);
+            $origen = (int) $p->origen;
+            $p->ciudad_origen = $origen > 0 ? ['id' => $origen, 'nombre' => (string) ($nombresCiudad[$origen] ?? '')] : null;
         }
 
         return $productos;
