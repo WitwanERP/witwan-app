@@ -33,14 +33,15 @@ Cómo verificar: `php vendor/bin/phpunit` (no `php artisan test`). Build de asse
 | 21 | Balance 8 columnas y estado de cuenta | ver `git log` | port de `administracion/Balance` (árbol de cuentas, deudor/acreedor y columnas patrimoniales, SUMAS/RESULTADO) y de `cuentas/micuenta` (files del cliente con documentos, recibos e hijos). 2 tests |
 | 22 | Caja: cartera y arqueo del día; solicitudes de alta | ver `git log` | port de `cartera/lista` (con quitar de cartera), `caja/arqueos` (saldo inicial, movimientos del día, saldo final) y `configuracion/solicitud` (listado; aprobar/rechazar al legacy). 3 tests |
 | 23 | Cierre contable | ver `git log` | ABM de `cierrecaja` (port de `libros/cierrecontable`). 1 test |
+| 24 | Generador de reservas v2 (asistente de venta) | 683e927 … ver `git log` | Rehecho el front como wizard cliente → buscar → carrito → confirmar sobre el mismo backend de alta. Contexto de venta (tarifario, crédito, historial del cliente), búsqueda por tipo de producto con buscadores por familia (alojamiento, circuitos, tramos, asistencia por días de cobertura), grilla con detalle por habitación, ofertas (fechas cercanas, promos del destino, historial, alternativas), cross-selling por co-ocurrencia histórica, nómina única, recotización en la validación previa. `config/reservas_busqueda.php` declarativo. Detalle en `docs/GENERADOR_RESERVAS.md` §5. 20 tests nuevos |
 
-Suite completa al cierre del bloque 23: **410 tests OK**. Todo publicado en `origin/main` (último commit b117668).
+Suite completa al cierre del bloque 24: **432 tests OK** (`php vendor/bin/phpunit`). Todo publicado en `origin/main`.
 
 ---
 
 ## En curso
 
-Nada en curso: bloque 23 cerrado. Quedan: analítico de cuentas (con conciliación), rentabilidad (depende de `reserva_model::listar`), reportes `porboletear` / ventas por cliente / por proveedor / gasto e ingreso, cobranzas y pagos (transaccionales), cierre de arqueo, consolidador/BSP, destacados.
+Nada en curso: bloque 24 cerrado. Para el generador quedan PKD/CAE/CTK e interfases XML (nuevos `BuscadorTipo` en `config/reservas_busqueda.php`), cupos, fees/gastos, mails y `colaevento`; recién ahí dar de alta `reserva/nueva/{área}` en `rutas_migradas`. Del resto quedan: analítico de cuentas (con conciliación), rentabilidad (depende de `reserva_model::listar`), reportes `porboletear` / ventas por cliente / por proveedor / gasto e ingreso, cobranzas y pagos (transaccionales), cierre de arqueo, consolidador/BSP, destacados.
 
 ---
 
