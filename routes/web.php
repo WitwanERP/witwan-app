@@ -102,6 +102,7 @@ use App\Http\Controllers\Web\Reservas\BuscarPaxController;
 use App\Http\Controllers\Web\Reservas\CotizacionesListadoController;
 use App\Http\Controllers\Web\Reservas\NuevaReservaController;
 use App\Http\Controllers\Web\Reservas\ReservaListadoController;
+use App\Http\Controllers\Web\SeccionesController;
 use App\Services\CiSessionReader;
 use App\Services\CiUserResolver;
 use App\Support\Contable\TipoAsiento;
@@ -126,6 +127,9 @@ Route::prefix('app')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/reservas', [DashboardController::class, 'reservas'])->name('dashboard.reservas');
     Route::get('/dashboard/cobranzas', [DashboardController::class, 'cobranzas'])->name('dashboard.cobranzas');
+
+    // TEMPORAL (desarrollo): índice de todas las pantallas de /app leído del router. Quitar cuando no haga falta.
+    Route::get('/secciones', [SeccionesController::class, 'index'])->name('secciones');
 
     // Clientes
     Route::get('/clientes', [ClienteController::class, 'index'])->name('clientes.index');

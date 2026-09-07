@@ -907,6 +907,16 @@
       "resources/js/app.js"
     ]
   },
+  "resources/js/Pages/Sistema/Secciones.vue": {
+    "file": "assets/Secciones.js",
+    "name": "Secciones",
+    "src": "resources/js/Pages/Sistema/Secciones.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppLayout.js"
+    ]
+  },
   "resources/js/Pages/Tarifarios/Form.vue": {
     "file": "assets/Form8.js",
     "name": "Form",
@@ -1008,6 +1018,7 @@
       "resources/js/Pages/Reservas/components/ModalResumen.vue",
       "resources/js/Pages/Reservas/components/TablaReservas.vue",
       "resources/js/Pages/Reservas/components/TotalesMoneda.vue",
+      "resources/js/Pages/Sistema/Secciones.vue",
       "resources/js/Pages/Tarifarios/Form.vue",
       "resources/js/Pages/Tarifarios/Index.vue"
     ]
