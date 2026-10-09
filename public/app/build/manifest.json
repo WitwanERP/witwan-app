@@ -843,6 +843,17 @@
       "resources/js/Pages/Reservas/components/ModalResumen.vue"
     ]
   },
+  "resources/js/Pages/Reservas/MapaContable.vue": {
+    "file": "assets/MapaContable.js",
+    "name": "MapaContable",
+    "src": "resources/js/Pages/Reservas/MapaContable.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_AppLayout.js",
+      "_formato.js",
+      "resources/js/app.js"
+    ]
+  },
   "resources/js/Pages/Reservas/Nueva.vue": {
     "file": "assets/Nueva.js",
     "name": "Nueva",
@@ -1013,6 +1024,7 @@
       "resources/js/Pages/Reservas/Generador/ResumenCliente.vue",
       "resources/js/Pages/Reservas/Generador/Stepper.vue",
       "resources/js/Pages/Reservas/Listado.vue",
+      "resources/js/Pages/Reservas/MapaContable.vue",
       "resources/js/Pages/Reservas/Nueva.vue",
       "resources/js/Pages/Reservas/components/FiltrosReserva.vue",
       "resources/js/Pages/Reservas/components/ModalResumen.vue",
