@@ -100,6 +100,7 @@ use App\Http\Controllers\Web\Reportes\ServiciosSinFacturaController;
 use App\Http\Controllers\Web\Reportes\VentasNetasController;
 use App\Http\Controllers\Web\Reservas\BuscarPaxController;
 use App\Http\Controllers\Web\Reservas\CotizacionesListadoController;
+use App\Http\Controllers\Web\Reservas\MapaContableController;
 use App\Http\Controllers\Web\Reservas\NuevaReservaController;
 use App\Http\Controllers\Web\Reservas\ReservaListadoController;
 use App\Http\Controllers\Web\SeccionesController;
@@ -150,6 +151,9 @@ Route::prefix('app')->group(function () {
     // sistema (receptivo, mayorista, minorista, …); el resto de filtros van por query-string.
     Route::prefix('reservas')->group(function () {
         $areas = 'corporativo|receptivo|mayorista|nacional|minorista|consolidador|administracion|admin|configuracion|all';
+
+        // Mapa contable del file (venta, costo, contabilidad y desvíos). Detrás de sysconfig.mapa_contable_file.
+        Route::get('/mapa-contable/{id}', [MapaContableController::class, 'show'])->whereNumber('id')->name('reservas.mapa-contable');
 
         Route::get('/{area}', [ReservaListadoController::class, 'index'])->where('area', $areas)->name('reservas.index');
         Route::get('/{area}/export', [ReservaListadoController::class, 'exportar'])->where('area', $areas)->name('reservas.export');

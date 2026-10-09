@@ -133,6 +133,7 @@ function exportarUrl() {
       v-if="resumenAbierto"
       :id="resumenId"
       :base-url="config.baseUrl"
+      :mapa-contable="config.flags.mapa_contable"
       @cerrar="resumenAbierto = false"
     />
   </div>

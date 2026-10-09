@@ -4,6 +4,7 @@ import { ref, onMounted } from 'vue'
 const props = defineProps({
   id: { type: Number, required: true },
   baseUrl: { type: String, required: true },
+  mapaContable: { type: Boolean, default: false },
 })
 const emit = defineEmits(['cerrar'])
 
@@ -33,7 +34,10 @@ function num(v) {
     <div class="w-full max-w-2xl max-h-[85vh] overflow-auto rounded-lg bg-white shadow-xl">
       <div class="card-header sticky top-0">
         <h3 class="card-title">Resumen de reserva #{{ id }}</h3>
-        <button type="button" class="text-gray-500 hover:text-red-600" @click="emit('cerrar')">✕</button>
+        <div class="flex items-center gap-3">
+          <a v-if="mapaContable" :href="`/app/reservas/mapa-contable/${id}`" class="text-xs text-blue-700 hover:underline">Mapa contable</a>
+          <button type="button" class="text-gray-500 hover:text-red-600" @click="emit('cerrar')">✕</button>
+        </div>
       </div>
       <div class="card-body">
         <div v-if="cargando" class="py-8 text-center text-gray-500">Cargando…</div>

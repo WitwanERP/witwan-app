@@ -25,7 +25,7 @@ trait CreaEsquemaConfiguracion
         'reserva', 'usuario', 'tipousuario', 'submodulo', 'plancuenta', 'proveedor', 'permisogrupo', 'permiso', 'moneda',
         'cotizacion', 'iva', 'modoivaventa', 'producto', 'sysconfig', 'rel_usuariomodelocomision', 'modelocomision',
         'modelofee', 'region', 'cliente', 'rel_usuariousuario', 'sistema', 'condicioniva', 'idioma', 'servicio', 'negocio', 'pnraereo', 'aerolinea', 'servicio_extra', 'reserva_extra',
-        'facturaproveedor', 'movimiento', 'factura', 'rel_serviciofactura', 'reservain', 'rel_facturaproveedorocupacion',
+        'facturaproveedor', 'movimiento', 'factura', 'rel_serviciofactura', 'serviciofactura', 'reservain', 'rel_facturaproveedorocupacion',
         'rel_ordenadminocupacion', 'ordenadmin', 'rel_facturarecibo', 'rel_filefactura', 'recibo', 'rel_filerecibo', 'servicio_nomina', 'vigencia', 'notacredito', 'notadebito', 'ctz', 'servicioctz', 'imputacion', 'precompra', 'canje', 'sysnotification', 'pasajero', 'cliente_extra', 'pasajero_extra', 'rel_clientetag', 'rel_pasajerotag', 'rel_clientesistema', 'tarifario', 'tipofactura', 'tipoclavefiscal', 'creditoextra', 'feriado', 'historialfile', 'auditoria', 'solicitud', 'cierrecaja', 'rel_servicio', 'filestatus',
     ];
 
@@ -447,6 +447,7 @@ trait CreaEsquemaConfiguracion
             $t->integer('fk_prestador_id')->default(0);
             $t->decimal('extra1', 15, 2)->default(0);
             $t->decimal('extra2', 15, 2)->default(0);
+            $t->integer('facturado')->default(0);
         });
         Schema::create('facturaproveedor', function (Blueprint $t) {
             $t->increments('facturaproveedor_id');
@@ -495,6 +496,9 @@ trait CreaEsquemaConfiguracion
             $t->text('descripcion')->nullable();
             $t->string('banco', 200)->default('');
             $t->date('fecha_acreditacion')->nullable();
+            $t->integer('afecta_cobranza')->default(1);
+            $t->integer('filtro_servicio')->default(0);
+            $t->char('deha', 1)->nullable();
         });
         Schema::create('factura', function (Blueprint $t) {
             $t->increments('factura_id');
@@ -522,6 +526,7 @@ trait CreaEsquemaConfiguracion
             $t->decimal('factura_impuesto5', 15, 2)->default(0);
             $t->string('remitofull', 100)->default('0:0:0');
             $t->decimal('factura_tipo_cambio', 15, 4)->default(0);
+            $t->decimal('factura_total', 15, 2)->default(0);
         });
         foreach (['notacredito', 'notadebito'] as $tabla) {
             Schema::create($tabla, function (Blueprint $t) use ($tabla) {
@@ -591,6 +596,18 @@ trait CreaEsquemaConfiguracion
             $t->integer('fk_factura_id');
             $t->integer('tipodocumento')->default(1);
         });
+        // Vínculo histórico servicio ↔ comprobante de venta; `renta` es la renta
+        // congelada al facturar y `activo` pasa a 0 con la NC (witwan_tower.sql:4035).
+        Schema::create('serviciofactura', function (Blueprint $t) {
+            $t->integer('fk_servicio_id');
+            $t->integer('fk_factura_id');
+            $t->integer('tipodocumento')->default(1);
+            $t->decimal('monto', 15, 2)->default(0);
+            $t->decimal('renta', 15, 2)->default(0);
+            $t->decimal('iva', 15, 2)->default(0);
+            $t->integer('activo')->default(1);
+            $t->primary(['fk_servicio_id', 'fk_factura_id', 'tipodocumento']);
+        });
         Schema::create('reservain', function (Blueprint $t) {
             $t->integer('fk_reserva_id');
             $t->date('inicio')->nullable();
@@ -605,6 +622,8 @@ trait CreaEsquemaConfiguracion
             $t->integer('fk_ocupacion_id');
             $t->string('fk_moneda_id', 3)->default('');
             $t->decimal('monto', 15, 2)->default(0);
+            $t->date('fecha')->nullable();
+            $t->string('status', 1)->default('A');
         });
         Schema::create('ordenadmin', function (Blueprint $t) {
             $t->increments('ordenadmin_id');
@@ -727,6 +746,7 @@ trait CreaEsquemaConfiguracion
             $t->string('submodulo_id', 3)->default('');
             $t->string('tipoproducto_tipo', 1)->default('S');
             $t->integer('fk_plancuenta_id')->default(0);
+            $t->integer('cuenta_renta')->default(0);
             $t->integer('tipoproducto_activo')->default(1);
         });
 

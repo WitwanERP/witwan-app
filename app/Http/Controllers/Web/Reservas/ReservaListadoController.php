@@ -200,6 +200,7 @@ class ReservaListadoController extends Controller
                 'codigo_externo_visible' => (bool) Licencia::flag('codigo_externo_visible'),
                 'facturado_med' => (bool) Licencia::flag('facturado_med'),
                 'productos_toggle' => (bool) Licencia::flag('productos_toggle'),
+                'mapa_contable' => $interno && (int) Licencia::sysconfig('mapa_contable_file', 0) === 1,
             ],
         ];
     }
